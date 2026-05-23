@@ -1,0 +1,28 @@
+npcs:
+  - id: "npc_001"
+    name: "NPC名"
+    role: "guide | key_person | antagonist | companion_candidate"
+    generated_by_ai: true
+    gender: "任意"
+    age: "任意"
+    personality_tags:
+      - "calm"
+      - "mysterious"
+    has_affection_system: true
+    affection:
+      initial: 50
+      contact_unlock_threshold: 70
+      after_story_threshold: 80
+    status: "active"
+    can_be_contact: true
+    can_be_companion: true
+    can_be_lost: true
+    ai_roleplay:
+      speech_style: "話し方の指定"
+      motivation: "このNPCの目的"
+      hidden_note: "プレイヤーに最初は見せない情報"
+    available_actions:
+      - id: "talk"
+        description: "会話する"
+      - id: "assist"
+        description: "判定を補助する"
