@@ -1,0 +1,16 @@
+game:
+  title: "TRPG AI Game"
+  genre: "single_player_trpg_like_web_game"
+  ai_role: "roleplay_support"
+  core_loop:
+    - create_or_select_player_character
+    - select_scenario
+    - choose_companion_npc_optional
+    - bring_items_optional
+    - play_scenario
+    - resolve_clear_or_lost
+    - grant_rewards
+    - update_character_growth
+    - update_npc_relationships
+    - update_ending_tree
+    - return_to_home
