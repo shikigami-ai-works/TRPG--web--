@@ -1,0 +1,42 @@
+scenario:
+  id: "template_scenario_id"
+  title: "シナリオタイトル"
+  ruleset_id: "cthulhu_like | shinobi_like | original"
+  summary: "シナリオの短い説明"
+
+  source:
+    author: "作者名"
+    url: "配布元URL"
+    license_note: "利用条件の要約"
+    commercial_use: "allowed | denied | unknown"
+    modification: "allowed | denied | unknown"
+    redistribution: "allowed | denied | unknown"
+    credit_required: true
+
+  play_time:
+    estimated_minutes: 60
+    scene_count: 5
+
+  required_npc_roles:
+    - "guide"
+    - "key_person"
+
+  files:
+    npcs: "npcs.yaml"
+    scenes: "scenes.yaml"
+    endings: "endings.yaml"
+    items: "items.yaml"
+    license: "license.md"
+
+  clear_conditions:
+    - id: "clear_main"
+      description: "主要目的を達成する"
+
+  lost_conditions:
+    - id: "lost_main"
+      description: "致命的な失敗条件"
+
+  rewards:
+    - id: "reward_clear_bonus"
+      type: "bonus_points"
+      amount: 5
