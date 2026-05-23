@@ -1,0 +1,17 @@
+player_character:
+  id: string
+  name: string
+  appearance_note: string
+  personality_note: string
+  status: active | lost | memorial
+  stats:
+    body: number
+    dexterity: number
+    intelligence: number
+    intuition: number
+    social: number
+    sanity: number
+  inventory:
+    - item_id
+  scenario_history:
+    - scenario_id
