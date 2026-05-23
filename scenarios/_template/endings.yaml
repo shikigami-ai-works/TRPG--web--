@@ -1,0 +1,46 @@
+endings:
+  - id: "ending_true"
+    title: "真相到達エンド"
+    ending_type: "true | good | normal | bad | lost"
+    description: "到達済みの場合に表示するエンディング説明。"
+    hidden_description: "未到達時に隠しておく詳細。"
+    unlock_conditions:
+      - "has_flag:noticed_hint_001"
+      - "scenario_clear:true"
+    rewards:
+      - id: "reward_true_bonus"
+        type: "bonus_points"
+        amount: 8
+    ending_tree:
+      visible_before_unlock: true
+      blurred_title: "？？？エンド"
+      route_hint: "真相に近づく必要がある。"
+
+  - id: "ending_normal"
+    title: "通常エンド"
+    ending_type: "normal"
+    description: "通常到達するエンディング説明。"
+    hidden_description: "未到達時に隠しておく詳細。"
+    unlock_conditions:
+      - "scenario_clear:true"
+    rewards:
+      - id: "reward_normal_bonus"
+        type: "bonus_points"
+        amount: 5
+    ending_tree:
+      visible_before_unlock: true
+      blurred_title: "別の結末"
+      route_hint: "最低限の目的を果たす。"
+
+  - id: "ending_lost"
+    title: "ロストエンド"
+    ending_type: "lost"
+    description: "ロスト時の結末。"
+    hidden_description: "未到達時に隠しておく詳細。"
+    unlock_conditions:
+      - "character_status:lost"
+    rewards: []
+    ending_tree:
+      visible_before_unlock: true
+      blurred_title: "暗い結末"
+      route_hint: "重大な失敗が関係する。"
