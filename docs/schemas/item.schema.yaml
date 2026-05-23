@@ -1,0 +1,9 @@
+item:
+  id: string
+  name: string
+  type: consumable | equipment | key_item | story_item
+  description: string
+  effects:
+    - effect
+  can_carry_out: boolean
+  can_bring_into_scenario: boolean
