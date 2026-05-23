@@ -1,7 +1,14 @@
 scenario:
   id: string
   title: string
+  ruleset_id: cthulhu_like | shinobi_like | original
   summary: string
+  source:
+    author: string
+    url: string
+    license_note: string
+    commercial_use: allowed | denied | unknown
+    modification: allowed | denied | unknown
   required_npc_roles:
     - role_id
   scenes:
