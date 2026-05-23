@@ -1,33 +1,61 @@
 player_character:
   id: string
   name: string
+  ruleset_id: cthulhu_like | shinobi_like | original
   appearance_note: string
   personality_note: string
   status: active | lost | memorial
-  stats:
-    strength: number
-    constitution: number
-    dexterity: number
-    appearance: number
-    intelligence: number
-    willpower: number
-    education: number
-    luck: number
-  derived_stats:
-    hp: number
-    sanity: number
-    idea: number
-    knowledge: number
-  skills:
-    observe: number
-    listen: number
-    search: number
-    persuade: number
-    occult: number
-    medicine: number
-    stealth: number
-    combat: number
-  inventory:
-    - item_id
-  scenario_history:
-    - scenario_id
+  common:
+    inventory:
+      - item_id
+    scenario_history:
+      - scenario_id
+  ruleset_data:
+    cthulhu_like:
+      stats:
+        strength: number
+        constitution: number
+        dexterity: number
+        appearance: number
+        intelligence: number
+        willpower: number
+        education: number
+        luck: number
+      derived_stats:
+        hp: number
+        sanity: number
+        idea: number
+        knowledge: number
+      skills:
+        observe: number
+        listen: number
+        search: number
+        persuade: number
+        occult: number
+        medicine: number
+        stealth: number
+        combat: number
+    shinobi_like:
+      stats:
+        body: number
+        technique: number
+        speed: number
+        mind: number
+        shadow: number
+        charisma: number
+      derived_stats:
+        vitality: number
+        initiative: number
+        secrecy: number
+      arts:
+        attack: number
+        guard: number
+        move: number
+        trick: number
+        illusion: number
+        support: number
+      mission:
+        public_goal: string
+        secret_goal: string
+        secret_reveal_condition: string
+    original: {}
