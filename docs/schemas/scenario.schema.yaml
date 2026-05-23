@@ -1,0 +1,16 @@
+scenario:
+  id: string
+  title: string
+  summary: string
+  required_npc_roles:
+    - role_id
+  scenes:
+    - scene_id
+  clear_conditions:
+    - condition
+  lost_conditions:
+    - condition
+  endings:
+    - ending_id
+  rewards:
+    - reward
