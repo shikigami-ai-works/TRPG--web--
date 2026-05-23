@@ -5,12 +5,28 @@ player_character:
   personality_note: string
   status: active | lost | memorial
   stats:
-    body: number
+    strength: number
+    constitution: number
     dexterity: number
+    appearance: number
     intelligence: number
-    intuition: number
-    social: number
+    willpower: number
+    education: number
+    luck: number
+  derived_stats:
+    hp: number
     sanity: number
+    idea: number
+    knowledge: number
+  skills:
+    observe: number
+    listen: number
+    search: number
+    persuade: number
+    occult: number
+    medicine: number
+    stealth: number
+    combat: number
   inventory:
     - item_id
   scenario_history:
