@@ -1,0 +1,16 @@
+npc:
+  id: string
+  name: string
+  gender: string
+  age: number
+  role: string
+  personality_tags:
+    - string
+  affection:
+    enabled: boolean
+    value: number
+    contact_unlock_threshold: number
+    after_story_threshold: number
+  status: active | lost
+  can_be_contact: boolean
+  can_be_companion: boolean
