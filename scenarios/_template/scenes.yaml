@@ -1,0 +1,43 @@
+scenes:
+  - id: "scene_001_intro"
+    title: "導入"
+    description: "プレイヤーが事件や依頼に関わる導入シーン。"
+    scene_type: "intro | exploration | conversation | danger | climax | ending"
+    npc_ids:
+      - "npc_001"
+    available_actions:
+      - id: "ask_npc"
+        label: "NPCに話を聞く"
+        type: "conversation"
+      - id: "look_around"
+        label: "周囲を調べる"
+        type: "check"
+    checks:
+      - id: "check_observe_intro"
+        label: "周囲の違和感を探す"
+        ruleset_id: "cthulhu_like | shinobi_like | original"
+        related_stat: "intelligence"
+        skill_or_art: "observe"
+        target_number: 12
+        success:
+          add_flags:
+            - "noticed_hint_001"
+          reveal_text: "成功時に開示する情報。"
+        failure:
+          reveal_text: "失敗時に表示する情報。"
+    next_scene_rules:
+      - condition: "always"
+        next_scene_id: "scene_002_exploration"
+
+  - id: "scene_002_exploration"
+    title: "探索"
+    description: "プレイヤーが情報を集めるシーン。"
+    scene_type: "exploration"
+    npc_ids: []
+    available_actions: []
+    checks: []
+    next_scene_rules:
+      - condition: "has_flag:noticed_hint_001"
+        next_scene_id: "scene_003_branch_a"
+      - condition: "default"
+        next_scene_id: "scene_003_branch_b"
