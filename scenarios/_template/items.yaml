@@ -1,0 +1,28 @@
+items:
+  - id: "item_001"
+    name: "アイテム名"
+    type: "consumable | equipment | key_item | story_item"
+    description: "アイテムの説明。"
+    found_in_scene_id: "scene_002_exploration"
+    effects:
+      - id: "effect_001"
+        type: "stat_bonus | skill_bonus | flag_unlock | healing | story"
+        description: "効果の説明。"
+    can_carry_out: true
+    can_bring_into_scenario: true
+    can_give_to_companion_npc: true
+    lost_if_holder_lost: true
+
+  - id: "key_item_001"
+    name: "重要アイテム名"
+    type: "key_item"
+    description: "シナリオ進行に必要な重要アイテム。"
+    found_in_scene_id: "scene_001_intro"
+    effects:
+      - id: "unlock_route_001"
+        type: "flag_unlock"
+        description: "特定ルートを開放する。"
+    can_carry_out: false
+    can_bring_into_scenario: false
+    can_give_to_companion_npc: false
+    lost_if_holder_lost: false
