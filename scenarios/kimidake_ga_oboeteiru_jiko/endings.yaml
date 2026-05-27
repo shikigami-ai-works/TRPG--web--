@@ -58,20 +58,20 @@ endings:
             id: "four_room_artifacts_carried_out"
             operator: "<="
             value: 1
-      any:
-        - flag: "requested_akari_return"
-          value: false
-        - any_missing:
-            - trust:
-                npc_id: "minase_akari"
-                operator: ">="
-                value: 70
-            - flag: "gift_opened"
+        - any:
+            - flag: "requested_akari_return"
               value: false
-            - flag: "regret_resolved"
-              value: true
-            - flag: "shared_guilt"
-              value: true
+            - any_missing:
+                - trust:
+                    npc_id: "minase_akari"
+                    operator: ">="
+                    value: 70
+                - flag: "gift_opened"
+                  value: false
+                - flag: "regret_resolved"
+                  value: true
+                - flag: "shared_guilt"
+                  value: true
     result:
       player_returns: true
       npc_returns: false
@@ -147,7 +147,6 @@ endings:
       npc_returns: false
       npc_memory_inheritance: false
       relationship_asset_preserved: false
-    rewards: []
     ending_tree:
       visible_before_unlock: true
       blurred_title: "帰れない結末"

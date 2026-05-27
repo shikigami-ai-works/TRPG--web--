@@ -18,8 +18,10 @@ import {
   restoreRuntimeState,
   saveActiveRun,
 } from "../lib/scenarios/storage";
+import { validateScenarioPack } from "../lib/scenarios/validation";
 import type {
   CheckOutcome,
+  ConditionExpr,
   EndingDefinition,
   ScenarioPack,
   ScenarioRuntimeState,
@@ -110,6 +112,75 @@ test("resolveEnding matches true, normal, lost, and good routes from scenario da
   assert.equal(playReturnRoute({ carryTwoArtifacts: false, openGift: true }).ending?.id, "return_without_akari");
   assert.equal(playReturnRoute({ carryTwoArtifacts: true, openGift: false }).ending?.id, "boundary_collapse");
   assert.equal(playStayRoute().ending?.id, "stay_with_akari");
+});
+
+test("validateScenarioPack accepts the bundled scenario data", () => {
+  const result = validateScenarioPack(pack);
+
+  assert.deepEqual(result.issues, []);
+});
+
+test("validateScenarioPack reports broken references, invalid conditions, and unreachable endings", () => {
+  const broken = clonePack(pack);
+  broken.scenario.scenes = [...broken.scenario.scenes, "missing_scene"];
+  broken.scenario.endings = [...broken.scenario.endings, "missing_ending"];
+  broken.scenario.ending_resolution_order = (broken.scenario.ending_resolution_order ?? []).filter(
+    (endingId) => endingId !== "stay_with_akari",
+  );
+  broken.scenario.mechanics = {
+    ...broken.scenario.mechanics,
+    carry_out_groups: [
+      {
+        id: "four_room_artifact",
+        item_ids: ["boundary_ember", "missing_item"],
+        max_count_at_clear: 3,
+        return_ritual_requires_returned_count: 4,
+      },
+    ],
+  };
+  broken.scenes[0] = {
+    ...broken.scenes[0],
+    next_scene_rules: [
+      {
+        condition: "choice:missing_action",
+        next_scene_id: "missing_scene",
+      },
+      {
+        condition: "default",
+        next_scene_id: "scene_002_accident_trace",
+        ending_id: "missing_ending",
+      },
+    ],
+  };
+  broken.items = broken.items.map((item) =>
+    item.id === "empty_nameplate"
+      ? {
+          ...item,
+          carry_out_group: "missing_group",
+        }
+      : item,
+  );
+  broken.endings[0] = {
+    ...broken.endings[0],
+    unlock_conditions: {
+      all: [],
+      any: [],
+    } as unknown as ConditionExpr,
+  };
+
+  const result = validateScenarioPack(broken);
+  const codes = new Set(result.issues.map((issue) => issue.code));
+
+  assert.equal(result.errorCount > 0, true);
+  assert.equal(codes.has("UNKNOWN_SCENE_ID"), true);
+  assert.equal(codes.has("UNKNOWN_ENDING_ID"), true);
+  assert.equal(codes.has("UNKNOWN_ACTION_ID"), true);
+  assert.equal(codes.has("UNKNOWN_ITEM_ID"), true);
+  assert.equal(codes.has("UNKNOWN_CARRY_OUT_GROUP_ID"), true);
+  assert.equal(codes.has("INVALID_CONDITION_SHAPE"), true);
+  assert.equal(codes.has("INVALID_NEXT_SCENE_RULE_TARGET"), true);
+  assert.equal(codes.has("RETURN_REQUIREMENT_EXCEEDS_GROUP_SIZE"), true);
+  assert.equal(codes.has("UNREACHABLE_ENDING"), true);
 });
 
 test("save/load restores active run state and rejects corrupt or mismatched saves", () => {
@@ -283,6 +354,10 @@ function installMemoryStorage(): void {
       localStorage: new MemoryStorage(),
     },
   });
+}
+
+function clonePack(source: ScenarioPack): ScenarioPack {
+  return JSON.parse(JSON.stringify(source)) as ScenarioPack;
 }
 
 class MemoryStorage implements Storage {

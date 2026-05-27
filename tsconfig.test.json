@@ -14,6 +14,6 @@
     "target": "es2022",
     "types": ["node"]
   },
-  "include": ["lib/scenarios/**/*.ts", "tests/**/*.ts"],
+  "include": ["lib/scenarios/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"],
   "exclude": ["node_modules", ".next", ".test-build"]
 }

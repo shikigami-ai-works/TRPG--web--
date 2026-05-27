@@ -1,5 +1,17 @@
 # Implementation Notes
 
+## 2026-05-27 Scenario Data Validation Tool
+
+- シナリオ検証は `loadScenarioPack` 本体には混ぜず、`lib/scenarios/validation.ts` の純粋関数として分離した。UIやランタイムの読み込み挙動を変えず、CLIと回帰テストから同じ検証を呼べるようにするため。
+- 実行入口は外部依存を増やさず、既存の `tsc -p tsconfig.test.json` で `.test-build/` にビルドしてから `scripts/validate-scenarios.ts` を Node.js で実行する形にした。
+- 到達不能エンドの判定は、開始シーンから `next_scene_rules.next_scene_id` をたどり、到達可能なシーンの `ending_id` と `resolve_ending` の解決順を候補にする静的判定にした。条件式の完全充足可能性までは解かず、MVPの遷移構造で「そもそも遷移先にならない」エンドを検出する。
+- `next_scene_rules` は `next_scene_id` / `ending_id` / `resolve_ending` のうち1つだけを持つものとして検証する。複数指定や未指定は、実行時に解釈が曖昧になるためエラー扱いにした。
+- 条件式オブジェクトは `all` / `any` / `any_missing` / `flag` / `counter` / `trust` / `item` / `choice` のうち1キーだけを持つものとして検証する。`return_without_akari` の `unlock_conditions` は同階層に `all` と `any` が並んでいたため、仕様通り `all` の中に `any` をネストする形へ修正した。
+- flag/counter は `scenario.mechanics.initial_flags` と `scenario.mechanics.counters` を宣言元として扱い、state_changes や条件式が未宣言IDを参照した場合はエラーにした。ランタイムは暗黙生成できるが、仕様データのtypo検出を優先した。
+- `simple-yaml` は `rewards: []` のようなインライン空配列を配列として読まないため、同梱シナリオの任意空配列は省略する形にした。正式YAMLパーサ導入前のMVPデータ表記ルールとして扱う。
+- `scenario.mechanics.trust_loss.dismiss_akari_regret` は過去のシナリオ決定メモにある信頼度低下選択だったため、参照を削除せず `scene_002_accident_trace` に実アクションとして追加した。
+- アプリ本体の `tsconfig.json` が `target: es5` のため、検証コードでは `.entries()` や `Set` / `Map` への `for...of` を避け、配列 `forEach` と `Array.from` に寄せた。tsconfig変更で影響範囲を広げるより、検証ツール側を既存設定へ合わせる判断にした。
+
 ## 2026-05-27 Regression Tests
 
 - 回帰テスト基盤は外部依存を増やさず、`tsc -p tsconfig.test.json` でテスト対象を `.test-build/` に一時ビルドし、Node.js標準の `node --test` で実行する構成にした。既存依存だけで動かせることを優先した。

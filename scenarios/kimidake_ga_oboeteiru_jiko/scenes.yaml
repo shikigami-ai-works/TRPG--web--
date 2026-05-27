@@ -69,6 +69,13 @@ scenes:
             minase_akari: 15
           add_flags:
             - "gift_respected_unopened"
+      - id: "dismiss_akari_regret"
+        label: "灯の未練を大げさなものとして流す"
+        type: "conversation"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: -10
       - id: "trace_cult_recovery"
         label: "事故現場から持ち去られた遺留品を追う"
         type: "check"
