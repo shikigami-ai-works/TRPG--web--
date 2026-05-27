@@ -1,0 +1,58 @@
+scenes:
+  - id: scene_id
+    title: string
+    description: string
+    scene_type: intro | exploration | conversation | danger | climax | ending
+
+    npc_ids:
+      - npc_id
+
+    available_actions:
+      - id: action_id
+        label: string
+        type: conversation | check | story | danger | ending_choice
+        once_per_run: boolean
+        requirements:
+          - condition_shortcut | condition_expr
+        state_changes: state_changes
+
+    checks:
+      - id: check_id
+        label: string
+        ruleset_id: cthulhu_like | shinobi_like | original
+        related_stat: string
+        skill_or_art: string
+        target_number: number
+        requirements:
+          - condition_shortcut | condition_expr
+        success:
+          reveal_text: string
+          add_flags:
+            - flag_id
+          set_flags:
+            flag_id: boolean
+          counter_delta:
+            counter_id: number
+          add_items:
+            - item_id
+        failure:
+          reveal_text: string
+          add_flags:
+            - flag_id
+          set_flags:
+            flag_id: boolean
+          counter_delta:
+            counter_id: number
+          add_items:
+            - item_id
+
+    next_scene_rules:
+      - condition: condition_shortcut | condition_expr
+        next_scene_id: scene_id
+        ending_id: ending_id
+        resolve_ending: boolean
+
+imports:
+  condition_expr: "docs/schemas/scenario.schema.yaml#/shared_types/condition_expr"
+  condition_shortcut: "docs/schemas/scenario.schema.yaml#/shared_types/condition_shortcut"
+  state_changes: "docs/schemas/scenario.schema.yaml#/shared_types/state_changes"

@@ -1,0 +1,36 @@
+endings:
+  - id: ending_id
+    title: string
+    ending_type: true | good | normal | bad | lost
+    description: string
+    hidden_description: string
+
+    unlock_conditions:
+      all:
+        - condition_expr
+      any:
+        - condition_expr
+      any_missing:
+        - condition_expr
+
+    result:
+      player_returns: boolean
+      npc_returns: boolean
+      player_stays_with_npc: boolean
+      npc_memory_inheritance: boolean
+      relationship_asset_preserved: boolean
+
+    unlocks:
+      - unlock_id
+
+    rewards:
+      - reward
+
+    ending_tree:
+      visible_before_unlock: boolean
+      blurred_title: string
+      route_hint: string
+
+imports:
+  condition_expr: "docs/schemas/scenario.schema.yaml#/shared_types/condition_expr"
+  reward: "docs/schemas/scenario.schema.yaml#/shared_types/reward"

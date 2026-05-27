@@ -1,0 +1,149 @@
+npcs:
+  - id: "minase_akari"
+    name: "水瀬 灯"
+    reading: "みなせ あかり"
+    role: "companion_candidate"
+    roles:
+      - "companion_candidate"
+      - "key_person"
+    generated_by_ai: true
+    gender: "female"
+    age: 18
+    age_label: "18"
+    status: "active"
+    can_be_contact: true
+    can_be_companion: true
+    can_be_lost: true
+    personality_tags:
+      - "same_age"
+      - "traumatized"
+      - "dependent_under_pressure"
+      - "honest_when_safe"
+      - "survivor_guilt"
+    has_affection_system: true
+    affection:
+      enabled: true
+      min: 0
+      max: 100
+      value: 25
+      initial: 25
+      contact_unlock_threshold: 70
+      after_story_threshold: 80
+      memory_bonus_empty_nameplate: 10
+    scenario_role:
+      relation_to_parallel_player: "同い年の親友。18歳の誕生日旅行に同行していた。"
+      core_regret: "親友だけが自分を助けて死んだと思っていた。"
+      current_need: "死んだ親友の代わりではなく、別世界から来た探索者本人として向き合われること。"
+      return_requirement: "信頼度70以上、誕生日プレゼント未開封、未練解決、共犯の罪の共有、帰還儀式再現。"
+    ai_roleplay:
+      first_person: "わたし"
+      player_call: "きみ"
+      speech_style: "短く砕けた同年代口調。動揺すると言葉が途切れやすい。"
+      motivation: "置いていかれたくない。けれど探索者を死んだ親友の代わりにしてはいけないと分かりかけている。"
+      hidden_note: "主人公探索者に、死んだ親友と同じ魂の芯のようなものを直感している。これは親友本人の証明ではない。"
+      sample_lines:
+        - "……なんで、そこにいるの。"
+        - "違うって分かってる。分かってるのに、顔を見ると息ができなくなる。"
+        - "きみは、あの子じゃない。……でも、置いていかないで。"
+        - "開けないで。それは、あの子に渡すはずだったものだから。"
+        - "今度は、一緒に帰ろうって言って。嘘でもいいから。"
+    available_actions:
+      - id: "talk"
+        description: "灯と会話し、事故や未練の断片を聞く。"
+      - id: "support"
+        description: "灯の意思を尊重しながら危機を切り抜ける。"
+      - id: "promise_return_together"
+        description: "今度は一緒に帰ろうと約束する。"
+
+  - id: "makabe_touichiro"
+    name: "真壁透一郎"
+    reading: "まかべ とういちろう"
+    role: "antagonist"
+    roles:
+      - "antagonist"
+      - "key_person"
+    generated_by_ai: true
+    gender: "male"
+    age: 50
+    age_label: "40代後半から50代前半"
+    status: "tentative"
+    can_be_contact: false
+    can_be_companion: false
+    can_be_lost: false
+    personality_tags:
+      - "quiet"
+      - "researcher"
+      - "exploitative_savior"
+      - "ritualist"
+    cult:
+      name: "帰還の環"
+      public_role: "喪失者支援団体代表 / 元民俗学講師"
+      true_goal: "ヨグ・ソトースの先触れを召喚し、境界を観測する。"
+    ai_roleplay:
+      speech_style: "静かで穏やか。共感を装いながら、悲しみと罪悪感を誘導する。"
+      motivation: "信徒の喪失を燃料に境界観測実験を進める。"
+      hidden_note: "信徒には失った人を取り戻す儀式だと説明しているが、本命は先触れ召喚。"
+      sample_lines:
+        - "悲しみは、閉じ込めるものではありません。正しい場所へ、返してあげるものです。"
+        - "あなたが願ったのです。ならば、扉が開くことを恐れてはいけない。"
+        - "死は壁ではない。ただ、まだ名前のない通路です。"
+    combat_style:
+      physical_strength: "low"
+      ritual_control: "high"
+      effects:
+        - "time_loop_glitch"
+        - "dead_voice_echo"
+        - "empty_chair_shadow"
+        - "boundary_gate_manifestation"
+
+  - id: "relative_mother"
+    name: "灯の引き取り先の母親"
+    role: "antagonist"
+    roles:
+      - "antagonist"
+    generated_by_ai: true
+    gender: "female"
+    age: 50
+    age_label: "中年"
+    status: "active"
+    can_be_contact: false
+    can_be_companion: false
+    can_be_lost: true
+    personality_tags:
+      - "bereaved"
+      - "cult_collaborator"
+      - "direct_threat"
+    scenario_role:
+      lost_child: true
+      belief: "主人公探索者を殺せば、次は自分の息子が呼ばれると思い込んでいる。"
+      event: "主人公探索者を殺そうとし、灯に殺められる。"
+    ai_roleplay:
+      speech_style: "追い詰められた遺族の言葉。救済への執着が強い。"
+      motivation: "失った息子を取り戻すため、灯と探索者を儀式の材料として扱う。"
+      hidden_note: "悲嘆はあるが、灯への加害の免罪にはしない。"
+
+  - id: "relative_father"
+    name: "灯の引き取り先の父親"
+    role: "antagonist"
+    roles:
+      - "antagonist"
+    generated_by_ai: true
+    gender: "male"
+    age: 50
+    age_label: "中年"
+    status: "active"
+    can_be_contact: false
+    can_be_companion: false
+    can_be_lost: true
+    personality_tags:
+      - "bereaved"
+      - "cult_collaborator"
+      - "violent"
+    scenario_role:
+      lost_child: true
+      belief: "主人公探索者は儀式が失敗した証であり、殺せば息子が戻ると考えている。"
+      event: "母親を殺めた灯を見て激昂し、主人公探索者に殺められる。"
+    ai_roleplay:
+      speech_style: "短く荒い。責任を他者に押しつける。"
+      motivation: "息子の帰還と、自分たちの罪の正当化。"
+      hidden_note: "親族夫婦の結婚指輪が帰還儀式再現の媒介になる。"

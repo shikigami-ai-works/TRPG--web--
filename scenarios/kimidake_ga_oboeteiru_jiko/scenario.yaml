@@ -1,0 +1,196 @@
+scenario:
+  id: "kimidake_ga_oboeteiru_jiko"
+  title: "きみだけが覚えている事故"
+  ruleset_id: "cthulhu_like"
+  summary: "平行世界に迷い込んだ探索者が、死んだ自分の親友だった水瀬灯と出会い、夜行バス事故と教団儀式の真相を追う短編シナリオ。"
+
+  source:
+    author: "しき / shiki-ai-works"
+    url: ""
+    license_note: "TRPG--web-- MVP用のオリジナルシナリオ案。外部配布元なし。"
+    commercial_use: "unknown"
+    modification: "allowed"
+    redistribution: "unknown"
+    credit_required: true
+
+  play_time:
+    estimated_minutes: 90
+    scene_count: 7
+
+  required_npc_roles:
+    - "companion_candidate"
+    - "key_person"
+    - "antagonist"
+
+  files:
+    npcs: "npcs.yaml"
+    scenes: "scenes.yaml"
+    endings: "endings.yaml"
+    items: "items.yaml"
+    license: "license.md"
+
+  scenes:
+    - "scene_001_parallel_arrival"
+    - "scene_002_accident_trace"
+    - "scene_003_relative_house"
+    - "scene_004_accomplice_night"
+    - "scene_005_cult_facility"
+    - "scene_006_four_rooms_ritual"
+    - "scene_007_return_fire"
+
+  endings:
+    - "return_with_akari"
+    - "return_without_akari"
+    - "stay_with_akari"
+    - "boundary_collapse"
+
+  ending_resolution_order:
+    - "boundary_collapse"
+    - "stay_with_akari"
+    - "return_with_akari"
+    - "return_without_akari"
+
+  content_warnings:
+    - "夜行バス事故"
+    - "家族と親友の死"
+    - "サバイバーズギルト"
+    - "教団による喪失の搾取"
+    - "性加害の示唆"
+    - "自衛・防衛の文脈を含む殺害"
+
+  safety_notes:
+    - "親族による性加害は直接描写しない。回避反応、生活環境、言葉の詰まりとして扱う。"
+    - "加害は悲嘆や教団儀式で免罪しない。親族個人の加害性として切り分ける。"
+    - "遺留品を燃やす場面は思い出の破壊ではなく、教団が縛った未練を送り火として返す行為にする。"
+    - "灯が受けた被害を、探索者の保護欲や恋愛報酬を強めるための装置として扱わない。"
+
+  core_premise:
+    player_state: "探索者は平行世界へ迷い込み、その世界では平行世界側の自分が夜行バス事故で死亡している。"
+    npc_regret: "親友だけが自分を助けて死んだと思っていた。"
+    cult_name: "帰還の環"
+    cult_public_face: "喪失や事故の当事者が集まる自助グループ。"
+    cult_true_goal: "ヨグ・ソトースの先触れを研究し、交信し、召喚するための境界観測実験。"
+    direct_enemy: "灯を引き取った親族夫婦。"
+    ritual_solution: "四方アーティファクトを使って教団儀式を妨害し、親族夫婦の結婚指輪で帰還儀式を再現する。"
+
+  mechanics:
+    npc_trust:
+      npc_id: "minase_akari"
+      max: 100
+      initial: 25
+      return_required: 70
+      memory_bonus_empty_nameplate: 10
+    trust_gain:
+      say_not_replacement: 10
+      respect_gift_unopened: 15
+      protect_akari_without_possessing: 10
+      let_akari_speak_regret: 10
+      share_guilt_truthfully: 15
+      promise_return_together: 10
+    trust_loss:
+      act_as_dead_friend: -15
+      open_birthday_gift: -10
+      dismiss_akari_regret: -10
+      abandon_akari_in_crisis: -20
+      make_akari_bear_guilt: -20
+
+    initial_flags:
+      said_not_replacement: false
+      acted_as_dead_friend: false
+      noticed_parallel_displacement: false
+      akari_regret_spoken: false
+      gift_respected_unopened: false
+      found_cult_recovery_trace: false
+      protected_akari_without_possessing: false
+      abandoned_akari_in_crisis: false
+      survived_relative_attack: false
+      wounded_by_relatives: false
+      made_akari_bear_guilt: false
+      crime_processed_together: false
+      stolen_keyholder_recovered: false
+      understood_cult_true_goal: false
+      artifact_taken_boundary_ember: false
+      artifact_taken_empty_nameplate: false
+      artifact_taken_stopped_pocket_watch: false
+      artifact_taken_ash_vial: false
+      boundary_contamination_rises: false
+      promised_return_together: false
+      gift_opened: false
+      regret_resolved: false
+      shared_guilt: false
+      ritual_disrupted: false
+      cult_leader_defeated: false
+      relatives_killed: false
+      ritual_reproduced: false
+      player_attempts_return: false
+      requested_akari_return: false
+      player_chooses_to_stay: false
+      akari_survives: true
+      boundary_stable: false
+      boundary_unstable: false
+      boundary_contamination_too_high: false
+
+    counters:
+      boundary_contamination: 0
+      boundary_contamination_limit: 3
+      four_room_artifacts_taken: 0
+      four_room_artifacts_returned: 0
+      four_room_artifacts_carried_out: 0
+
+    four_rooms_rule:
+      temporary_disruption_requires_artifacts_taken: 2
+      return_ritual_requires_artifacts_returned: 3
+      max_four_room_artifacts_carried_out: 1
+      too_many_carried_out_blocks_return: true
+      carry_out_group_id: "four_room_artifact"
+
+    carry_out_groups:
+      - id: "four_room_artifact"
+        item_ids:
+          - "boundary_ember"
+          - "empty_nameplate"
+          - "stopped_pocket_watch"
+          - "ash_vial"
+        max_count_at_clear: 1
+        return_ritual_requires_returned_count: 3
+
+    carry_slots:
+      player_carry_out_slots: 2
+      companion_carry_out_slots: 2
+      next_run_bring_in_slots: 4
+      armor_and_weapon_are_separate: true
+
+  clear_conditions:
+    - id: "clear_return_possible"
+      description: "教団儀式を妨害し、導師を倒し、帰還儀式を再現する。"
+      required_flags:
+        - "ritual_disrupted"
+        - "cult_leader_defeated"
+        - "ritual_reproduced"
+    - id: "clear_akari_return"
+      description: "灯の信頼度を70以上にし、未練と共犯の罪を共有したうえで、誕生日プレゼントを開けずに帰還する。"
+      required_flags:
+        - "gift_opened:false"
+        - "regret_resolved"
+        - "shared_guilt"
+        - "ritual_reproduced"
+
+  lost_conditions:
+    - id: "lost_boundary_collapse"
+      description: "帰還儀式の再現に失敗する、または境界侵食が高すぎて境界が崩壊する。"
+    - id: "lost_akari_abandoned"
+      description: "危機の中で灯を見捨て、関係性の継承も帰還条件も失う。"
+
+  rewards:
+    - id: "relationship_asset_akari"
+      type: "relationship_asset"
+      npc_id: "minase_akari"
+      description: "水瀬灯との関係性と記憶断片を次周へ継承する。"
+    - id: "carry_four_room_artifact"
+      type: "carry_out_choice"
+      max_count: 1
+      item_ids:
+        - "boundary_ember"
+        - "empty_nameplate"
+        - "stopped_pocket_watch"
+        - "ash_vial"

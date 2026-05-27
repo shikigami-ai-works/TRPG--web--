@@ -1,0 +1,12 @@
+node_modules/
+.next/
+.tmp-chrome-profile/
+.test-build/
+out/
+dist/
+
+*.log
+*.tsbuildinfo
+
+.env
+.env*.local

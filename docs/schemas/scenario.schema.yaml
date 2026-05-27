@@ -3,21 +3,181 @@ scenario:
   title: string
   ruleset_id: cthulhu_like | shinobi_like | original
   summary: string
+
   source:
     author: string
     url: string
     license_note: string
     commercial_use: allowed | denied | unknown
     modification: allowed | denied | unknown
+    redistribution: allowed | denied | unknown
+    credit_required: boolean
+
+  play_time:
+    estimated_minutes: number
+    scene_count: number
+
   required_npc_roles:
     - role_id
+
+  files:
+    npcs: "npcs.yaml"
+    scenes: "scenes.yaml"
+    endings: "endings.yaml"
+    items: "items.yaml"
+    license: "license.md"
+
   scenes:
     - scene_id
-  clear_conditions:
-    - condition
-  lost_conditions:
-    - condition
   endings:
     - ending_id
+  ending_resolution_order:
+    - ending_id
+
+  content_warnings:
+    - string
+  safety_notes:
+    - string
+
+  core_premise:
+    # Scenario-specific text fields. Keys are stable ids, values are display/editor notes.
+    key: string
+
+  mechanics:
+    npc_trust:
+      npc_id: npc_id
+      max: number
+      initial: number
+      return_required: number
+      memory_bonus_empty_nameplate: number
+
+    trust_gain:
+      action_id: number
+    trust_loss:
+      action_id: number
+
+    initial_flags:
+      flag_id: boolean
+
+    counters:
+      counter_id: number
+
+    carry_out_groups:
+      - id: group_id
+        item_ids:
+          - item_id
+        max_count_at_clear: number
+        return_ritual_requires_returned_count: number
+
+    carry_slots:
+      player_carry_out_slots: number
+      companion_carry_out_slots: number
+      next_run_bring_in_slots: number
+      armor_and_weapon_are_separate: boolean
+
+  clear_conditions:
+    - id: condition_id
+      description: string
+      required_flags:
+        - flag_id | "flag_id:false"
+
+  lost_conditions:
+    - id: condition_id
+      description: string
+
   rewards:
-    - reward
+    - id: reward_id
+      type: reward_type
+      description: string
+      npc_id: npc_id
+      item_ids:
+        - item_id
+      max_count: number
+
+shared_types:
+  ids:
+    scenario_id: string
+    scene_id: string
+    npc_id: string
+    item_id: string
+    ending_id: string
+    flag_id: string
+    counter_id: string
+    action_id: string
+    check_id: string
+    group_id: string
+
+  comparison_operator:
+    - ">"
+    - ">="
+    - "<"
+    - "<="
+    - "=="
+    - "!="
+
+  condition_expr:
+    # Recursive expression used by endings and, over time, scene requirements.
+    all:
+      - condition_expr
+    any:
+      - condition_expr
+    any_missing:
+      - condition_expr
+    flag:
+      flag: flag_id
+      value: boolean
+    counter:
+      counter:
+        id: counter_id
+        operator: comparison_operator
+        value: number
+    trust:
+      trust:
+        npc_id: npc_id
+        operator: comparison_operator
+        value: number
+    item:
+      item:
+        id: item_id
+        owned: boolean
+    choice:
+      choice:
+        action_id: action_id
+
+  condition_shortcut:
+    # Current scene YAML may use these strings. New complex conditions should prefer condition_expr.
+    - "always"
+    - "default"
+    - "has_flag:<flag_id>"
+    - "has_item:<item_id>"
+    - "choice:<action_id>"
+    - "counter:<counter_id><comparison_operator><number>"
+    - "owned_items_in_group:<group_id><comparison_operator><number>"
+    - "carry_out_selection_count:<group_id><comparison_operator><number>"
+
+  state_changes:
+    trust_delta:
+      npc_id: number
+    add_flags:
+      - flag_id
+    set_flags:
+      flag_id: boolean
+    counter_delta:
+      counter_id: number
+    add_items:
+      - item_id
+    remove_items:
+      - item_id
+    enforce_carry_out_limit:
+      group: group_id
+      max_count: number
+
+  reward:
+    id: reward_id
+    type: relationship_asset | memory_fragment | carry_out_choice | bonus_points | item_unlock | story
+    description: string
+    npc_id: npc_id
+    item_ids:
+      - item_id
+    amount: number
+    max_count: number

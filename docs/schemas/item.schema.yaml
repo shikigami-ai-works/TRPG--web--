@@ -1,9 +1,27 @@
-item:
-  id: string
-  name: string
-  type: consumable | equipment | key_item | story_item
-  description: string
-  effects:
-    - effect
-  can_carry_out: boolean
-  can_bring_into_scenario: boolean
+items:
+  - id: item_id
+    name: string
+    type: consumable | equipment | key_item | story_item
+    description: string
+    found_in_scene_id: scene_id
+
+    # Optional scenario-specific grouping. Used for mutually limited carry-out rewards.
+    room: front | back | left | right | string
+    role: string
+    carry_out_group: group_id
+    counts_for_ritual_disruption: boolean
+    counts_for_return_ritual: boolean
+
+    effects:
+      - id: effect_id
+        type: stat_bonus | skill_bonus | flag_unlock | healing | story
+        amount: number
+        description: string
+
+    cost:
+      key: string | number | boolean
+
+    can_carry_out: boolean
+    can_bring_into_scenario: boolean
+    can_give_to_companion_npc: boolean
+    lost_if_holder_lost: boolean

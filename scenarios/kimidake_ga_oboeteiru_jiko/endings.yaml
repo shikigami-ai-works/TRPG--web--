@@ -1,0 +1,154 @@
+endings:
+  - id: "return_with_akari"
+    title: "双つ灯の生還"
+    ending_type: "true"
+    description: "探索者と灯は、教団が縛った未練を送り火として返し、二人で元の世界へ帰る。"
+    hidden_description: "灯を親友の代わりではなく別人として受け止め、共犯の罪も共有した場合に到達する。"
+    unlock_conditions:
+      all:
+        - flag: "player_attempts_return"
+          value: true
+        - flag: "requested_akari_return"
+          value: true
+        - trust:
+            npc_id: "minase_akari"
+            operator: ">="
+            value: 70
+        - flag: "gift_opened"
+          value: false
+        - flag: "regret_resolved"
+          value: true
+        - flag: "shared_guilt"
+          value: true
+        - flag: "ritual_reproduced"
+          value: true
+        - counter:
+            id: "four_room_artifacts_carried_out"
+            operator: "<="
+            value: 1
+    result:
+      player_returns: true
+      npc_returns: true
+      npc_memory_inheritance: true
+      relationship_asset_preserved: true
+    rewards:
+      - id: "reward_akari_relationship_asset"
+        type: "relationship_asset"
+        npc_id: "minase_akari"
+      - id: "reward_four_room_artifact_choice"
+        type: "carry_out_choice"
+        max_count: 1
+    ending_tree:
+      visible_before_unlock: true
+      blurred_title: "二人で帰る結末"
+      route_hint: "灯の信頼、未開封の誕生日プレゼント、共犯の罪の共有、帰還儀式の再現が必要。"
+
+  - id: "return_without_akari"
+    title: "空席に残る灯"
+    ending_type: "normal"
+    description: "探索者は帰還するが、灯は炉の前の椅子に座ったまま境界を越えられない。"
+    hidden_description: "探索者の帰還条件は満たしたが、灯の連れ帰り条件が欠けた場合に到達する記憶継承エンド。"
+    unlock_conditions:
+      all:
+        - flag: "player_attempts_return"
+          value: true
+        - flag: "ritual_reproduced"
+          value: true
+        - counter:
+            id: "four_room_artifacts_carried_out"
+            operator: "<="
+            value: 1
+      any:
+        - flag: "requested_akari_return"
+          value: false
+        - any_missing:
+            - trust:
+                npc_id: "minase_akari"
+                operator: ">="
+                value: 70
+            - flag: "gift_opened"
+              value: false
+            - flag: "regret_resolved"
+              value: true
+            - flag: "shared_guilt"
+              value: true
+    result:
+      player_returns: true
+      npc_returns: false
+      npc_memory_inheritance: true
+      relationship_asset_preserved: true
+    unlocks:
+      - "npc_memory_fragment"
+      - "ritual_room_hint"
+      - "empty_nameplate_trace"
+      - "promise_to_return_choice"
+    rewards:
+      - id: "reward_memory_fragment_akari"
+        type: "memory_fragment"
+        npc_id: "minase_akari"
+    ending_tree:
+      visible_before_unlock: true
+      blurred_title: "一人で帰る結末"
+      route_hint: "帰還儀式には成功しても、灯との条件が欠けるとこの結末に近づく。"
+
+  - id: "stay_with_akari"
+    title: "境界に灯るふたり"
+    ending_type: "good"
+    description: "探索者は帰らず、灯と共にこちらの世界に残る。帰還はしないが、関係性は次周以降へメモリーとして引き継がれる。"
+    hidden_description: "灯が生存し、探索者が残留を選んだ場合に到達する。置いていかなかった記憶の残響が次周へ残る。"
+    unlock_conditions:
+      all:
+        - flag: "player_chooses_to_stay"
+          value: true
+        - flag: "akari_survives"
+          value: true
+    result:
+      player_returns: false
+      npc_returns: false
+      player_stays_with_npc: true
+      npc_memory_inheritance: true
+      relationship_asset_preserved: true
+    unlocks:
+      - "stayed_together_memory"
+      - "abandonment_fear_softened"
+      - "boundary_residue_trace"
+    rewards:
+      - id: "reward_stayed_together_memory"
+        type: "memory_fragment"
+        npc_id: "minase_akari"
+    ending_tree:
+      visible_before_unlock: true
+      blurred_title: "残る結末"
+      route_hint: "最後の炉で、帰還ではなく灯と残る選択をする。"
+
+  - id: "boundary_collapse"
+    title: "境界の狭間に揺れる"
+    ending_type: "lost"
+    description: "帰還儀式の再現に失敗し、境界が崩れる。探索者と灯の存在は狭間に揺れ続ける。"
+    hidden_description: "儀式を再現できない、境界侵食が高すぎる、または四方アーティファクトを持ち帰りすぎた場合に到達する。"
+    unlock_conditions:
+      any:
+        - counter:
+            id: "boundary_contamination"
+            operator: ">="
+            value: 3
+        - all:
+            - flag: "player_attempts_return"
+              value: true
+            - any:
+                - flag: "ritual_reproduced"
+                  value: false
+                - counter:
+                    id: "four_room_artifacts_carried_out"
+                    operator: ">="
+                    value: 2
+    result:
+      player_returns: false
+      npc_returns: false
+      npc_memory_inheritance: false
+      relationship_asset_preserved: false
+    rewards: []
+    ending_tree:
+      visible_before_unlock: true
+      blurred_title: "帰れない結末"
+      route_hint: "帰還儀式の再現失敗、境界侵食、持ち帰りすぎに注意する。"

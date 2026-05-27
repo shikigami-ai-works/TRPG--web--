@@ -1,0 +1,176 @@
+items:
+  - id: "paired_lion_keyholder_akari"
+    name: "ライオンのキーホルダー（灯の片割れ）"
+    type: "story_item"
+    description: "水瀬灯が現在も持っている、おそろいのライオンのキーホルダー。かわいいライオンが好きな灯の好みが出ている。"
+    found_in_scene_id: "scene_001_parallel_arrival"
+    effects:
+      - id: "show_bond_with_parallel_player"
+        type: "story"
+        description: "平行世界側の探索者と灯が親友だった証拠になる。"
+    can_carry_out: false
+    can_bring_into_scenario: false
+    can_give_to_companion_npc: false
+    lost_if_holder_lost: false
+
+  - id: "paired_lion_keyholder_stolen"
+    name: "ライオンのキーホルダー（盗まれた片割れ）"
+    type: "key_item"
+    description: "事故現場から帰還の環に持ち去られた、平行世界側の探索者のキーホルダー。かっこいいライオンが好きだった痕跡。"
+    found_in_scene_id: "scene_005_cult_facility"
+    effects:
+      - id: "unlock_return_fire"
+        type: "flag_unlock"
+        description: "炉へ返すことで、教団が縛った親友同士の未練をほどく。"
+    can_carry_out: false
+    can_bring_into_scenario: false
+    can_give_to_companion_npc: true
+    lost_if_holder_lost: false
+
+  - id: "unopened_birthday_gift"
+    name: "未開封の誕生日プレゼント"
+    type: "key_item"
+    description: "灯が親友へ渡せなかった包み。中身はライオンのネックレスと短い恋文だが、NPC連れ帰りには開けないことが重要になる。"
+    found_in_scene_id: "scene_005_cult_facility"
+    effects:
+      - id: "respect_unopened_gift"
+        type: "story"
+        description: "開けずに尊重すると灯の信頼度が上がる。開けると、主人公探索者が親友の代用品として固定されやすくなる。"
+      - id: "gift_unopened_return_condition"
+        type: "flag_unlock"
+        description: "未開封のまま炉へ返すと、NPC連れ帰り条件の一つを満たす。"
+    can_carry_out: false
+    can_bring_into_scenario: false
+    can_give_to_companion_npc: true
+    lost_if_holder_lost: false
+
+  - id: "relatives_wedding_rings"
+    name: "親族夫婦の結婚指輪"
+    type: "key_item"
+    description: "灯と探索者が殺めた親族夫婦の指輪。罪の正当化ではなく、生き延びるために境界現象を逆利用する媒介。"
+    found_in_scene_id: "scene_004_accomplice_night"
+    effects:
+      - id: "reproduce_return_ritual"
+        type: "flag_unlock"
+        description: "導師撃破後、帰還儀式を再現するための焦点になる。"
+    can_carry_out: false
+    can_bring_into_scenario: false
+    can_give_to_companion_npc: false
+    lost_if_holder_lost: false
+
+  - id: "son_tournament_medal"
+    name: "親族の息子の大会メダル"
+    type: "story_item"
+    description: "親族が亡くした息子の中学生時代の大会メダル。親族はこれを儀式に差し出していた。"
+    found_in_scene_id: "scene_003_relative_house"
+    effects:
+      - id: "explain_relative_motive"
+        type: "story"
+        description: "親族が息子を取り戻すため、教団儀式に加担していた証拠になる。"
+    can_carry_out: false
+    can_bring_into_scenario: false
+    can_give_to_companion_npc: false
+    lost_if_holder_lost: false
+
+  - id: "boundary_ember"
+    name: "境界の火種"
+    type: "key_item"
+    room: "front"
+    role: "boundary_detection"
+    carry_out_group: "four_room_artifact"
+    counts_for_ritual_disruption: true
+    counts_for_return_ritual: true
+    description: "炉に火を入れるための火種。持ち帰ると、次回以降に境界現象を一度だけ事前察知できる。"
+    found_in_scene_id: "scene_006_four_rooms_ritual"
+    effects:
+      - id: "detect_boundary_event_once"
+        type: "story"
+        description: "境界現象、異界化、平行世界転移の兆候を一度だけ事前察知できる。"
+      - id: "bonus_to_ritual_detection"
+        type: "skill_bonus"
+        amount: 20
+        description: "儀式、境界、異界化、平行世界転移の兆候を調べる判定に一度だけ+20。"
+    cost:
+      boundary_contamination: 1
+    can_carry_out: true
+    can_bring_into_scenario: true
+    can_give_to_companion_npc: true
+    lost_if_holder_lost: true
+
+  - id: "empty_nameplate"
+    name: "空席の名札"
+    type: "key_item"
+    room: "back"
+    role: "npc_memory_inheritance"
+    carry_out_group: "four_room_artifact"
+    counts_for_ritual_disruption: true
+    counts_for_return_ritual: true
+    description: "呼び戻される者のための名前札。持ち帰ると、NPCの記憶継承を強化する。"
+    found_in_scene_id: "scene_006_four_rooms_ritual"
+    effects:
+      - id: "npc_initial_trust_bonus"
+        type: "story"
+        amount: 10
+        description: "次周以降、水瀬灯の初期信頼度が+10される。"
+      - id: "unlock_memory_fragment"
+        type: "flag_unlock"
+        description: "事故、炉、椅子、空席に関する記憶断片を解禁する。"
+      - id: "unlock_choice_promise_return"
+        type: "flag_unlock"
+        description: "選択肢『今度は一緒に帰ろう』を解禁する。"
+    cost:
+      npc_nightmare_level: 1
+    can_carry_out: true
+    can_bring_into_scenario: true
+    can_give_to_companion_npc: true
+    lost_if_holder_lost: true
+
+  - id: "stopped_pocket_watch"
+    name: "止まった懐中時計"
+    type: "key_item"
+    room: "left"
+    role: "time_interference"
+    carry_out_group: "four_room_artifact"
+    counts_for_ritual_disruption: true
+    counts_for_return_ritual: true
+    description: "時空系のアーティファクト。判定のやり直し、または過去視に一度だけ使える。"
+    found_in_scene_id: "scene_006_four_rooms_ritual"
+    effects:
+      - id: "reroll_once"
+        type: "story"
+        description: "失敗した判定を1回だけ振り直せる。"
+      - id: "allow_past_vision_once"
+        type: "story"
+        description: "事故、教団、親族、儀式に関する過去の断片を一度だけ覗ける。"
+    cost:
+      sanity_damage: "1d3"
+      or_boundary_contamination: 1
+    can_carry_out: true
+    can_bring_into_scenario: true
+    can_give_to_companion_npc: true
+    lost_if_holder_lost: true
+
+  - id: "ash_vial"
+    name: "灰の小瓶"
+    type: "key_item"
+    room: "right"
+    role: "truth_investigation"
+    carry_out_group: "four_room_artifact"
+    counts_for_ritual_disruption: true
+    counts_for_return_ritual: true
+    description: "炉で焼かれた遺品の灰。真相解明や教団追跡のキーになる。"
+    found_in_scene_id: "scene_006_four_rooms_ritual"
+    effects:
+      - id: "unlock_cult_trace"
+        type: "flag_unlock"
+        description: "教団、導師の過去、別拠点など次シナリオへの導線を解禁する。"
+      - id: "bonus_to_truth_investigation"
+        type: "skill_bonus"
+        amount: 15
+        description: "教団や儀式に関する調査判定に一度だけ+15。"
+    cost:
+      dead_memory_flashback: true
+    can_carry_out: true
+    can_bring_into_scenario: true
+    can_give_to_companion_npc: true
+    lost_if_holder_lost: true

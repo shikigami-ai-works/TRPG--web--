@@ -1,16 +1,58 @@
-npc:
-  id: string
-  name: string
-  gender: string
-  age: number
-  role: string
-  personality_tags:
-    - string
-  affection:
-    enabled: boolean
-    value: number
-    contact_unlock_threshold: number
-    after_story_threshold: number
-  status: active | lost
-  can_be_contact: boolean
-  can_be_companion: boolean
+npcs:
+  - id: npc_id
+    name: string
+    reading: string
+    role: role_id
+    roles:
+      - role_id
+    generated_by_ai: boolean
+    gender: string
+    age: number
+    age_label: string
+    status: active | lost | tentative
+
+    can_be_contact: boolean
+    can_be_companion: boolean
+    can_be_lost: boolean
+
+    personality_tags:
+      - string
+
+    has_affection_system: boolean
+    affection:
+      enabled: boolean
+      min: number
+      max: number
+      value: number
+      initial: number
+      contact_unlock_threshold: number
+      after_story_threshold: number
+      memory_bonus_empty_nameplate: number
+
+    scenario_role:
+      # Scenario-specific stable keys. Values are notes for UI, AI roleplay, or scenario logic.
+      key: string | number | boolean
+
+    cult:
+      name: string
+      public_role: string
+      true_goal: string
+
+    ai_roleplay:
+      first_person: string
+      player_call: string
+      speech_style: string
+      motivation: string
+      hidden_note: string
+      sample_lines:
+        - string
+
+    combat_style:
+      physical_strength: low | medium | high
+      ritual_control: low | medium | high
+      effects:
+        - effect_id
+
+    available_actions:
+      - id: action_id
+        description: string

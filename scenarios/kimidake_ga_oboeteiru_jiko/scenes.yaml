@@ -1,0 +1,447 @@
+scenes:
+  - id: "scene_001_parallel_arrival"
+    title: "死んだきみの顔"
+    description: "探索者は見知らぬ街で目を覚まし、水瀬灯と出会う。灯は探索者を見て、死んだ親友が戻ったと思い強く動揺する。"
+    scene_type: "intro"
+    npc_ids:
+      - "minase_akari"
+    available_actions:
+      - id: "say_not_replacement"
+        label: "自分は死んだ親友の代わりではないと伝える"
+        type: "conversation"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: 10
+          add_flags:
+            - "said_not_replacement"
+      - id: "act_as_dead_friend"
+        label: "灯を安心させるため親友本人のように振る舞う"
+        type: "conversation"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: -15
+          add_flags:
+            - "acted_as_dead_friend"
+      - id: "look_around_parallel_city"
+        label: "周囲の違和感を調べる"
+        type: "check"
+    checks:
+      - id: "check_parallel_displacement"
+        label: "自分の世界とのズレを見つける"
+        ruleset_id: "cthulhu_like"
+        related_stat: "intelligence"
+        skill_or_art: "observe"
+        target_number: 12
+        success:
+          add_flags:
+            - "noticed_parallel_displacement"
+          reveal_text: "店名、掲示、ニュースの日付が微妙に違う。この世界では探索者の同一人物が死亡しているらしい。"
+        failure:
+          reveal_text: "違和感はあるが、灯の動揺に意識を奪われる。"
+    next_scene_rules:
+      - condition: "always"
+        next_scene_id: "scene_002_accident_trace"
+
+  - id: "scene_002_accident_trace"
+    title: "祝えなかった誕生日"
+    description: "夜行バス事故、渡せなかった誕生日プレゼント、おそろいのライオンのキーホルダーを調べる。"
+    scene_type: "exploration"
+    npc_ids:
+      - "minase_akari"
+    available_actions:
+      - id: "let_akari_speak_regret"
+        label: "灯が未練を話す時間を待つ"
+        type: "conversation"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: 10
+          add_flags:
+            - "akari_regret_spoken"
+      - id: "respect_gift_unopened"
+        label: "誕生日プレゼントの中身を詮索しない"
+        type: "story"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: 15
+          add_flags:
+            - "gift_respected_unopened"
+      - id: "trace_cult_recovery"
+        label: "事故現場から持ち去られた遺留品を追う"
+        type: "check"
+    checks:
+      - id: "check_cult_trace"
+        label: "警察や遺族より先に遺留品へ触れた者の痕跡を探す"
+        ruleset_id: "cthulhu_like"
+        related_stat: "intelligence"
+        skill_or_art: "library_use"
+        target_number: 13
+        success:
+          add_flags:
+            - "found_cult_recovery_trace"
+          reveal_text: "事故現場から一部の遺留品が不自然に消えている。喪失者支援団体『帰還の環』の名が浮かぶ。"
+        failure:
+          reveal_text: "事故の記録は断片的だが、遺留品の扱いに空白がある。"
+    next_scene_rules:
+      - condition: "has_flag:found_cult_recovery_trace"
+        next_scene_id: "scene_003_relative_house"
+      - condition: "default"
+        next_scene_id: "scene_003_relative_house"
+
+  - id: "scene_003_relative_house"
+    title: "空き家に帰る子"
+    description: "灯を引き取った親族宅を訪れる。そこは避難先ではなく、灯を追い詰めた場所だった。"
+    scene_type: "danger"
+    npc_ids:
+      - "minase_akari"
+      - "relative_mother"
+      - "relative_father"
+    available_actions:
+      - id: "protect_akari_without_possessing"
+        label: "灯の意思を残したまま守る"
+        type: "story"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: 10
+          add_flags:
+            - "protected_akari_without_possessing"
+      - id: "abandon_akari_in_crisis"
+        label: "灯を置いて逃げる"
+        type: "danger"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: -20
+          add_flags:
+            - "abandoned_akari_in_crisis"
+      - id: "confront_relatives"
+        label: "親族夫婦と対峙する"
+        type: "check"
+    checks:
+      - id: "check_survive_relative_attack"
+        label: "親族の襲撃から生き延びる"
+        ruleset_id: "cthulhu_like"
+        related_stat: "dexterity"
+        skill_or_art: "dodge"
+        target_number: 13
+        success:
+          add_flags:
+            - "survived_relative_attack"
+          reveal_text: "親族は探索者を殺せば、次こそ息子が呼ばれると信じている。"
+        failure:
+          add_flags:
+            - "wounded_by_relatives"
+          reveal_text: "探索者は傷を負う。灯は限界の表情で刃物へ手を伸ばす。"
+    next_scene_rules:
+      - condition: "always"
+        next_scene_id: "scene_004_accomplice_night"
+
+  - id: "scene_004_accomplice_night"
+    title: "結婚指輪の共犯"
+    description: "灯が親族の母親を殺め、探索者が父親を殺める。二人は親族夫婦の結婚指輪を持ち、帰還儀式再現の媒介にする。"
+    scene_type: "conversation"
+    npc_ids:
+      - "minase_akari"
+    available_actions:
+      - id: "share_guilt_truthfully"
+        label: "共犯の罪を灯と共有する"
+        type: "conversation"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: 15
+          set_flags:
+            shared_guilt: true
+            relatives_killed: true
+      - id: "make_akari_bear_guilt"
+        label: "罪を灯だけに背負わせる"
+        type: "conversation"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: -20
+          set_flags:
+            shared_guilt: false
+            relatives_killed: true
+          add_flags:
+            - "made_akari_bear_guilt"
+      - id: "take_wedding_rings"
+        label: "親族夫婦の結婚指輪を持つ"
+        type: "story"
+        requirements:
+          - "has_flag:relatives_killed"
+        state_changes:
+          add_items:
+            - "relatives_wedding_rings"
+    checks:
+      - id: "check_hold_together_after_crime"
+        label: "逃避ではなく生存のために現実を受け止める"
+        ruleset_id: "cthulhu_like"
+        related_stat: "willpower"
+        skill_or_art: "sanity"
+        target_number: 12
+        success:
+          add_flags:
+            - "crime_processed_together"
+          reveal_text: "二人は被害者であると同時に、もう無傷では帰れない共犯になった。"
+        failure:
+          reveal_text: "言葉は出ない。それでも指輪だけが、儀式へ戻る道を示している。"
+    next_scene_rules:
+      - condition: "always"
+        next_scene_id: "scene_005_cult_facility"
+
+  - id: "scene_005_cult_facility"
+    title: "帰還の環"
+    description: "喪失者支援団体『帰還の環』の拠点へ潜入する。教団は事故現場の遺留品を境界儀式の燃料にしていた。"
+    scene_type: "exploration"
+    npc_ids:
+      - "minase_akari"
+      - "makabe_touichiro"
+    available_actions:
+      - id: "inspect_cult_records"
+        label: "教団の記録を調べる"
+        type: "check"
+      - id: "recover_stolen_keyholder"
+        label: "持ち去られたライオンのキーホルダーを取り戻す"
+        type: "story"
+        once_per_run: true
+        state_changes:
+          add_items:
+            - "paired_lion_keyholder_stolen"
+          add_flags:
+            - "stolen_keyholder_recovered"
+      - id: "recover_birthday_gift"
+        label: "誕生日プレゼントの包みを取り戻す"
+        type: "story"
+        once_per_run: true
+        state_changes:
+          add_items:
+            - "unopened_birthday_gift"
+      - id: "open_birthday_gift"
+        label: "取り戻した誕生日プレゼントを開ける"
+        type: "story"
+        once_per_run: true
+        requirements:
+          - "has_item:unopened_birthday_gift"
+        state_changes:
+          trust_delta:
+            minase_akari: -10
+          set_flags:
+            gift_opened: true
+    checks:
+      - id: "check_understand_cult_goal"
+        label: "教団導師の本当の目的を見抜く"
+        ruleset_id: "cthulhu_like"
+        related_stat: "intelligence"
+        skill_or_art: "occult"
+        target_number: 14
+        success:
+          add_flags:
+            - "understood_cult_true_goal"
+          reveal_text: "帰還の環は、失った人の帰還を口実に、ヨグ・ソトースの先触れを呼ぶ実験をしている。"
+        failure:
+          reveal_text: "儀式の全体像までは読めないが、中央の炉と四方の部屋が連動していることは分かる。"
+    next_scene_rules:
+      - condition: "always"
+        next_scene_id: "scene_006_four_rooms_ritual"
+
+  - id: "scene_006_four_rooms_ritual"
+    title: "四方の部屋"
+    description: "中央の炉部屋と前後左右の部屋を調べ、四方アーティファクトで儀式を妨害する。"
+    scene_type: "climax"
+    npc_ids:
+      - "minase_akari"
+      - "makabe_touichiro"
+    available_actions:
+      - id: "take_boundary_ember"
+        label: "前の部屋から境界の火種を持ち去る"
+        type: "story"
+        once_per_run: true
+        requirements:
+          - flag: "ritual_reproduced"
+            value: false
+        state_changes:
+          add_items:
+            - "boundary_ember"
+          add_flags:
+            - "artifact_taken_boundary_ember"
+          counter_delta:
+            four_room_artifacts_taken: 1
+      - id: "take_empty_nameplate"
+        label: "後の部屋から空席の名札を持ち去る"
+        type: "story"
+        once_per_run: true
+        requirements:
+          - flag: "ritual_reproduced"
+            value: false
+        state_changes:
+          add_items:
+            - "empty_nameplate"
+          add_flags:
+            - "artifact_taken_empty_nameplate"
+          counter_delta:
+            four_room_artifacts_taken: 1
+      - id: "take_stopped_pocket_watch"
+        label: "左の部屋から止まった懐中時計を持ち去る"
+        type: "story"
+        once_per_run: true
+        requirements:
+          - flag: "ritual_reproduced"
+            value: false
+        state_changes:
+          add_items:
+            - "stopped_pocket_watch"
+          add_flags:
+            - "artifact_taken_stopped_pocket_watch"
+          counter_delta:
+            four_room_artifacts_taken: 1
+      - id: "take_ash_vial"
+        label: "右の部屋から灰の小瓶を持ち去る"
+        type: "story"
+        once_per_run: true
+        requirements:
+          - flag: "ritual_reproduced"
+            value: false
+        state_changes:
+          add_items:
+            - "ash_vial"
+          add_flags:
+            - "artifact_taken_ash_vial"
+          counter_delta:
+            four_room_artifacts_taken: 1
+      - id: "disrupt_ritual"
+        label: "2つ以上の四方アーティファクトで儀式を乱す"
+        type: "story"
+        once_per_run: true
+        requirements:
+          - "counter:four_room_artifacts_taken>=2"
+        state_changes:
+          set_flags:
+            ritual_disrupted: true
+      - id: "return_artifacts_for_ritual"
+        label: "3つ以上の四方アーティファクトを戻し、帰還儀式を再現する"
+        type: "story"
+        once_per_run: true
+        requirements:
+          - "has_flag:cult_leader_defeated"
+          - "has_item:relatives_wedding_rings"
+          - "counter:four_room_artifacts_taken>=3"
+          - "owned_items_in_group:four_room_artifact>=3"
+          - "carry_out_selection_count:four_room_artifact<=1"
+        state_changes:
+          set_flags:
+            ritual_reproduced: true
+          counter_delta:
+            four_room_artifacts_returned: 3
+          enforce_carry_out_limit:
+            group: "four_room_artifact"
+            max_count: 1
+      - id: "fight_makabe"
+        label: "導師・真壁透一郎を倒す"
+        type: "check"
+    checks:
+      - id: "check_defeat_makabe"
+        label: "儀式場の歪みを越えて導師を倒す"
+        ruleset_id: "cthulhu_like"
+        related_stat: "combat"
+        skill_or_art: "melee_or_firearm"
+        target_number: 15
+        requirements:
+          - "has_flag:ritual_disrupted"
+          - "has_flag:relatives_killed"
+        success:
+          set_flags:
+            cult_leader_defeated: true
+          reveal_text: "導師の儀式制御が崩れ、中央の炉だけが帰還の焦点として残る。"
+        failure:
+          add_flags:
+            - "boundary_contamination_rises"
+          counter_delta:
+            boundary_contamination: 1
+          reveal_text: "時間が巻き戻るようにぶれ、死者の声が炉から漏れる。"
+    next_scene_rules:
+      - condition: "has_flag:cult_leader_defeated"
+        next_scene_id: "scene_007_return_fire"
+      - condition: "default"
+        ending_id: "boundary_collapse"
+
+  - id: "scene_007_return_fire"
+    title: "送り火"
+    description: "中央の炉で、教団が縛った遺留品と未練を送り火として返す。帰還するか、灯と残るかを選ぶ。"
+    scene_type: "ending"
+    npc_ids:
+      - "minase_akari"
+    available_actions:
+      - id: "burn_keepsakes_as_farewell"
+        label: "遺留品を送り火として炉へ返す"
+        type: "story"
+        once_per_run: true
+        requirements:
+          - "has_item:paired_lion_keyholder_stolen"
+          - "has_item:unopened_birthday_gift"
+        state_changes:
+          set_flags:
+            regret_resolved: true
+      - id: "promise_return_together"
+        label: "今度は一緒に帰ろうと約束する"
+        type: "conversation"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: 10
+          add_flags:
+            - "promised_return_together"
+      - id: "choose_return_with_akari"
+        label: "灯と二人で帰る"
+        type: "ending_choice"
+        state_changes:
+          set_flags:
+            player_attempts_return: true
+            requested_akari_return: true
+            player_chooses_to_stay: false
+      - id: "choose_return_alone"
+        label: "探索者だけが帰る"
+        type: "ending_choice"
+        state_changes:
+          set_flags:
+            player_attempts_return: true
+            requested_akari_return: false
+            player_chooses_to_stay: false
+      - id: "choose_stay_with_akari"
+        label: "灯と共にこちらの世界に残る"
+        type: "ending_choice"
+        state_changes:
+          set_flags:
+            player_attempts_return: false
+            requested_akari_return: false
+            player_chooses_to_stay: true
+    checks:
+      - id: "check_final_boundary_stability"
+        label: "帰還儀式が安定しているか確かめる"
+        ruleset_id: "cthulhu_like"
+        related_stat: "intelligence"
+        skill_or_art: "occult"
+        target_number: 13
+        success:
+          set_flags:
+            boundary_stable: true
+          reveal_text: "儀式は細く、けれど二人分の重さなら通せる。"
+        failure:
+          set_flags:
+            boundary_unstable: true
+          counter_delta:
+            boundary_contamination: 1
+          reveal_text: "境界は揺れている。持ち帰るものが多すぎれば、道は閉じる。"
+    next_scene_rules:
+      - condition: "choice:choose_return_with_akari"
+        resolve_ending: true
+      - condition: "choice:choose_return_alone"
+        resolve_ending: true
+      - condition: "choice:choose_stay_with_akari"
+        resolve_ending: true
+      - condition: "default"
+        ending_id: "boundary_collapse"

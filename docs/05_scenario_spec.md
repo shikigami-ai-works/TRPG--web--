@@ -43,22 +43,43 @@ scenarios/
 
 ## シナリオ構造
 
+正式なスキーマメモは `docs/schemas/scenario.schema.yaml`、シーン単体は `docs/schemas/scene.schema.yaml` を参照する。
+
 ```yaml
 scenario:
   id: string
   title: string
+  ruleset_id: cthulhu_like | shinobi_like | original
+  summary: string
   source:
     author: string
     url: string
     license_note: string
     commercial_use: allowed | denied | unknown
     modification: allowed | denied | unknown
-  summary: string
+    redistribution: allowed | denied | unknown
+    credit_required: boolean
+  play_time:
+    estimated_minutes: number
+    scene_count: number
   required_npc_roles: []
+  files:
+    npcs: npcs.yaml
+    scenes: scenes.yaml
+    endings: endings.yaml
+    items: items.yaml
+    license: license.md
   scenes: []
+  endings: []
+  ending_resolution_order: []
+  content_warnings: []
+  safety_notes: []
+  mechanics:
+    initial_flags: {}
+    counters: {}
+    carry_out_groups: []
   clear_conditions: []
   lost_conditions: []
-  endings: []
   rewards: []
 ```
 
@@ -69,11 +90,96 @@ scene:
   id: string
   title: string
   description: string
+  scene_type: intro | exploration | conversation | danger | climax | ending
   available_actions: []
   npc_ids: []
   checks: []
   next_scene_rules: []
 ```
+
+## 状態管理
+
+AIは演出とNPCロールを補助するだけで、フラグ、カウンター、信頼度、所持品、エンディング判定はゲーム側が管理する。
+
+シナリオ開始時、ゲーム側は `scenario.mechanics.initial_flags` と `scenario.mechanics.counters` をそのまま初期状態としてロードする。
+シーン中の選択肢や判定結果は、`state_changes` を適用してゲーム状態を更新する。
+
+```yaml
+state_changes:
+  trust_delta:
+    npc_id: number
+  add_flags:
+    - flag_id
+  set_flags:
+    flag_id: boolean
+  counter_delta:
+    counter_id: number
+  add_items:
+    - item_id
+  remove_items:
+    - item_id
+  enforce_carry_out_limit:
+    group: group_id
+    max_count: number
+```
+
+`add_flags` は指定フラグを `true` にする簡易表記。
+falseへ戻す必要がある場合は `set_flags` を使う。
+
+## 条件式
+
+エンディング条件など、複合条件が必要な箇所では構造化条件を使う。
+Next.js側では再帰的なUnion型として扱う。
+
+```yaml
+condition_expr:
+  all:
+    - condition_expr
+  any:
+    - condition_expr
+  any_missing:
+    - condition_expr
+  flag:
+    flag: flag_id
+    value: boolean
+  counter:
+    counter:
+      id: counter_id
+      operator: ">="
+      value: number
+  trust:
+    trust:
+      npc_id: npc_id
+      operator: ">="
+      value: number
+  item:
+    item:
+      id: item_id
+      owned: boolean
+```
+
+既存のシーン遷移やアクション条件では、MVP実装を軽くするため短縮文字列も許可する。
+
+```yaml
+condition_shortcut:
+  - always
+  - default
+  - has_flag:<flag_id>
+  - has_item:<item_id>
+  - choice:<action_id>
+  - counter:<counter_id><operator><number>
+  - owned_items_in_group:<group_id><operator><number>
+  - carry_out_selection_count:<group_id><operator><number>
+```
+
+新しく複雑な条件を追加する場合は、短縮文字列より構造化条件を優先する。
+
+## エンディング判定
+
+終盤の選択肢は、特定エンディングへ直行させず `resolve_ending: true` を使う。
+ゲーム側は `scenario.ending_resolution_order` の順に `endings.yaml` の `unlock_conditions` を評価し、最初に一致したエンディングを採用する。
+
+これにより「二人で帰る」を選んでも、条件不足なら `return_without_akari` や `boundary_collapse` に落とせる。
 
 ## 追加運用
 
@@ -87,7 +193,8 @@ scene:
 6. `npcs.yaml` にNPC定義を書く。
 7. `endings.yaml` にエンディング条件を書く。
 8. 必要なら `items.yaml` を追加する。
-9. ゲーム側で一覧に表示できるか確認する。
+9. `docs/schemas/*.yaml` にない独自項目を増やした場合は、先にスキーマへ追記する。
+10. ゲーム側で一覧に表示できるか確認する。
 
 ## MVP用シナリオ標準長
 
