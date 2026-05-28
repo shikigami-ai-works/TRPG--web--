@@ -13,6 +13,15 @@ import {
   resolveEnding,
   toggleCarryOutItem,
 } from "@/lib/scenarios/runtime";
+import {
+  DEFAULT_MVP_CHECK_PROFILE,
+  clonePlayerCheckProfile,
+  getCheckModifierBreakdown,
+  rollScenarioCheck,
+  updatePlayerCheckProfileValue,
+  type CheckRollResult,
+  type PlayerCheckProfile,
+} from "@/lib/scenarios/check-resolution";
 import { buildEndingProgressEntries, type EndingProgressEntry } from "@/lib/scenarios/ending-progress";
 import {
   appendCompletedRun,
@@ -60,6 +69,7 @@ export default function ScenarioExplorer({ packs }: ScenarioExplorerProps) {
   );
   const [savedRun, setSavedRun] = useState<SavedRunState | null>(null);
   const [history, setHistory] = useState<CompletedRunRecord[]>([]);
+  const [playerProfile, setPlayerProfile] = useState<PlayerCheckProfile>(() => clonePlayerCheckProfile());
   const [storageReady, setStorageReady] = useState(false);
 
   useEffect(() => {
@@ -120,6 +130,7 @@ export default function ScenarioExplorer({ packs }: ScenarioExplorerProps) {
     setSavedRun(null);
     setHistory([]);
     setPackId(nextPackId);
+    setPlayerProfile(clonePlayerCheckProfile());
     setState(createInitialState(nextPack));
   }
 
@@ -136,6 +147,7 @@ export default function ScenarioExplorer({ packs }: ScenarioExplorerProps) {
     }
     clearActiveRun(pack.scenario.id);
     setSavedRun(null);
+    setPlayerProfile(clonePlayerCheckProfile());
     setState(createInitialState(pack));
   }
 
@@ -175,9 +187,11 @@ export default function ScenarioExplorer({ packs }: ScenarioExplorerProps) {
         onResumeSavedRun={resumeSavedRun}
         onStartFreshRun={startFreshRun}
         pack={pack}
+        playerProfile={playerProfile}
         savedRun={savedRun}
         state={state}
         storageReady={storageReady}
+        setPlayerProfile={setPlayerProfile}
         setState={setState}
       />
     </main>
@@ -189,18 +203,22 @@ function ScenarioWorkspace({
   onResumeSavedRun,
   onStartFreshRun,
   pack,
+  playerProfile,
   savedRun,
   state,
   storageReady,
+  setPlayerProfile,
   setState,
 }: {
   history: CompletedRunRecord[];
   onResumeSavedRun: () => void;
   onStartFreshRun: () => void;
   pack: ScenarioPack;
+  playerProfile: PlayerCheckProfile;
   savedRun: SavedRunState | null;
   state: ScenarioRuntimeState;
   storageReady: boolean;
+  setPlayerProfile: (profile: PlayerCheckProfile) => void;
   setState: (state: ScenarioRuntimeState) => void;
 }) {
   const scene = pack.scenes.find((candidate) => candidate.id === state.sceneId) ?? pack.scenes[0];
@@ -242,17 +260,27 @@ function ScenarioWorkspace({
     setState(next);
   }
 
-  function useCheck(check: SceneCheckDefinition, branch: "success" | "failure") {
+  function applyCheckOutcome(check: SceneCheckDefinition, branch: "success" | "failure", roll?: CheckRollResult) {
     if (!canUseRequirements(check.requirements, state, pack)) {
       return;
     }
     const outcome = check[branch];
     const next = applyStateChanges(state, outcome, pack);
     const resultLabel = branch === "success" ? "成功" : "失敗";
+    const rollDetail = roll ? ` / ${formatRollResult(roll)}` : "";
     setState({
       ...next,
-      log: [`${check.label}: ${resultLabel}${outcome?.reveal_text ? ` / ${outcome.reveal_text}` : ""}`, ...next.log].slice(0, 12),
+      log: [`${check.label}: ${resultLabel}${rollDetail}${outcome?.reveal_text ? ` / ${outcome.reveal_text}` : ""}`, ...next.log].slice(0, 12),
     });
+  }
+
+  function rollCheck(check: SceneCheckDefinition) {
+    const roll = rollScenarioCheck(check, playerProfile);
+    applyCheckOutcome(check, roll.success ? "success" : "failure", roll);
+  }
+
+  function updateProfileValue(group: "stats" | "skills", id: string, value: string) {
+    setPlayerProfile(updatePlayerCheckProfileValue(playerProfile, group, id, value));
   }
 
   function advanceScene() {
@@ -309,13 +337,19 @@ function ScenarioWorkspace({
       </header>
 
       <div className="dashboard-grid">
-        <section className="surface status-panel">
-          <h3>状態</h3>
-          <MetricList title="信頼度" values={formatTrust(state, npcById)} />
-          <MetricList title="カウンター" values={formatCounters(state)} />
-          <TagList title="所持品" values={state.inventory.map((itemId) => itemById.get(itemId)?.name ?? itemId)} />
-          <TagList title="有効フラグ" values={Object.entries(state.flags).filter(([, value]) => value).map(([flag]) => flag)} />
-        </section>
+        <div className="side-stack">
+          <section className="surface status-panel">
+            <h3>状態</h3>
+            <MetricList title="信頼度" values={formatTrust(state, npcById)} />
+            <MetricList title="カウンター" values={formatCounters(state)} />
+            <TagList title="所持品" values={state.inventory.map((itemId) => itemById.get(itemId)?.name ?? itemId)} />
+            <TagList title="有効フラグ" values={Object.entries(state.flags).filter(([, value]) => value).map(([flag]) => flag)} />
+          </section>
+
+          <section className="surface player-panel">
+            <PlayerProfilePanel profile={playerProfile} onChange={updateProfileValue} />
+          </section>
+        </div>
 
         <section className="surface scene-panel">
           {ending ? (
@@ -334,7 +368,7 @@ function ScenarioWorkspace({
               <p className="scene-description">{scene.description}</p>
               <TagList title="登場NPC" values={sceneNpcs.map((npc) => npc?.name ?? "")} />
               <ActionList actions={scene.available_actions ?? []} pack={pack} state={state} onUseAction={useAction} />
-              <CheckList checks={scene.checks ?? []} pack={pack} state={state} onUseCheck={useCheck} />
+              <CheckList checks={scene.checks ?? []} pack={pack} profile={playerProfile} state={state} onRollCheck={rollCheck} onUseCheck={applyCheckOutcome} />
             </>
           )}
         </section>
@@ -545,16 +579,92 @@ function ActionList({
   );
 }
 
+function PlayerProfilePanel({
+  onChange,
+  profile,
+}: {
+  onChange: (group: "stats" | "skills", id: string, value: string) => void;
+  profile: PlayerCheckProfile;
+}) {
+  return (
+    <>
+      <div className="player-panel-header">
+        <div>
+          <h3>探索者</h3>
+          <p className="muted">
+            {profile.name} / {profile.rulesetId}
+          </p>
+        </div>
+      </div>
+      <ProfileNumberGrid
+        group="stats"
+        ids={Object.keys(DEFAULT_MVP_CHECK_PROFILE.stats)}
+        label="能力値"
+        onChange={onChange}
+        values={profile.stats}
+      />
+      <ProfileNumberGrid
+        group="skills"
+        ids={Object.keys(DEFAULT_MVP_CHECK_PROFILE.skills)}
+        label="技能"
+        onChange={onChange}
+        values={profile.skills}
+      />
+    </>
+  );
+}
+
+function ProfileNumberGrid({
+  group,
+  ids,
+  label,
+  onChange,
+  values,
+}: {
+  group: "stats" | "skills";
+  ids: string[];
+  label: string;
+  onChange: (group: "stats" | "skills", id: string, value: string) => void;
+  values: Record<string, number>;
+}) {
+  return (
+    <div className="profile-block">
+      <h4>{label}</h4>
+      <div className="profile-number-grid">
+        {ids.map((id) => (
+          <label className="profile-number-field" key={id}>
+            <span>{id}</span>
+            <input
+              data-profile-group={group}
+              data-profile-id={id}
+              inputMode="numeric"
+              max={99}
+              min={0}
+              onChange={(event) => onChange(group, id, event.currentTarget.value)}
+              type="number"
+              value={values[id] ?? 0}
+            />
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function CheckList({
   checks,
-  pack,
-  state,
+  onRollCheck,
   onUseCheck,
+  pack,
+  profile,
+  state,
 }: {
   checks: SceneCheckDefinition[];
-  pack: ScenarioPack;
-  state: ScenarioRuntimeState;
+  onRollCheck: (check: SceneCheckDefinition) => void;
   onUseCheck: (check: SceneCheckDefinition, branch: "success" | "failure") => void;
+  pack: ScenarioPack;
+  profile: PlayerCheckProfile;
+  state: ScenarioRuntimeState;
 }) {
   if (checks.length === 0) {
     return null;
@@ -566,20 +676,24 @@ function CheckList({
       <div className="check-list">
         {checks.map((check) => {
           const disabled = !canUseRequirements(check.requirements, state, pack);
+          const modifiers = getCheckModifierBreakdown(check, profile);
           return (
             <div className="check-row" key={check.id}>
               <div>
                 <strong>{check.label}</strong>
                 <small>
-                  {check.skill_or_art} / 目標 {check.target_number}
+                  {modifiers.statId} {modifiers.statValue} + {modifiers.skillId} {modifiers.skillValue} + 1d20 / 目標 {modifiers.targetNumber}
                 </small>
               </div>
               <div className="check-buttons">
+                <button data-check-roll-id={check.id} disabled={disabled} onClick={() => onRollCheck(check)} type="button">
+                  振る
+                </button>
                 <button data-check-branch="success" data-check-id={check.id} disabled={disabled} onClick={() => onUseCheck(check, "success")} type="button">
-                  成功
+                  手動成功
                 </button>
                 <button data-check-branch="failure" data-check-id={check.id} disabled={disabled} onClick={() => onUseCheck(check, "failure")} type="button">
-                  失敗
+                  手動失敗
                 </button>
               </div>
             </div>
@@ -693,6 +807,10 @@ function EndingView({ ending }: { ending: EndingDefinition }) {
       ) : null}
     </div>
   );
+}
+
+function formatRollResult(roll: CheckRollResult): string {
+  return `${roll.total} = ${roll.statId} ${roll.statValue} + ${roll.skillId} ${roll.skillValue} + d20 ${roll.dieRoll} / 目標 ${roll.targetNumber}`;
 }
 
 function resolveBySceneRules(

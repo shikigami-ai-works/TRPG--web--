@@ -3,6 +3,13 @@ import { before, beforeEach, test } from "node:test";
 
 import { loadScenarioPack } from "../lib/scenarios/loader";
 import {
+  DEFAULT_MVP_CHECK_PROFILE,
+  clonePlayerCheckProfile,
+  getCheckModifierBreakdown,
+  rollScenarioCheck,
+  updatePlayerCheckProfileValue,
+} from "../lib/scenarios/check-resolution";
+import {
   applyStateChanges,
   canUseRequirements,
   createInitialState,
@@ -28,6 +35,7 @@ import type {
   ScenarioPack,
   ScenarioRuntimeState,
   SceneActionDefinition,
+  SceneCheckDefinition,
   StateChanges,
 } from "../lib/scenarios/types";
 
@@ -107,6 +115,59 @@ test("toggleCarryOutItem toggles item ids and keeps four_room_artifacts_carried_
   const third = toggleCarryOutItem(second, "four_room_artifact", "boundary_ember");
   assert.deepEqual(third.carryOutSelections.four_room_artifact, ["empty_nameplate"]);
   assert.equal(third.counters.four_room_artifacts_carried_out, 1);
+});
+
+test("rollScenarioCheck resolves stat, skill, d20, and target number", () => {
+  const check = findCheck("check_parallel_displacement");
+  const lowRoll = rollScenarioCheck({ ...check, target_number: 20 }, DEFAULT_MVP_CHECK_PROFILE, () => 0);
+  const highRoll = rollScenarioCheck({ ...check, target_number: 20 }, DEFAULT_MVP_CHECK_PROFILE, () => 0.999999);
+
+  assert.equal(lowRoll.statValue, 10);
+  assert.equal(lowRoll.skillValue, 2);
+  assert.equal(lowRoll.dieRoll, 1);
+  assert.equal(lowRoll.total, 13);
+  assert.equal(lowRoll.success, false);
+
+  assert.equal(highRoll.dieRoll, 20);
+  assert.equal(highRoll.total, 32);
+  assert.equal(highRoll.success, true);
+});
+
+test("rollScenarioCheck uses the provided player check profile", () => {
+  const check = findCheck("check_parallel_displacement");
+  const customProfile = clonePlayerCheckProfile(DEFAULT_MVP_CHECK_PROFILE);
+  customProfile.stats.intelligence = 4;
+  customProfile.skills.observe = 3;
+
+  const roll = rollScenarioCheck({ ...check, target_number: 16 }, customProfile, () => 0.4);
+
+  assert.equal(roll.statValue, 4);
+  assert.equal(roll.skillValue, 3);
+  assert.equal(roll.dieRoll, 9);
+  assert.equal(roll.total, 16);
+  assert.equal(roll.success, true);
+});
+
+test("updatePlayerCheckProfileValue keeps profile edits numeric and isolated", () => {
+  const original = clonePlayerCheckProfile(DEFAULT_MVP_CHECK_PROFILE);
+  const updated = updatePlayerCheckProfileValue(original, "stats", "intelligence", "18");
+  const emptied = updatePlayerCheckProfileValue(updated, "skills", "observe", "");
+  const clamped = updatePlayerCheckProfileValue(emptied, "skills", "occult", "120");
+
+  assert.equal(original.stats.intelligence, 10);
+  assert.equal(updated.stats.intelligence, 18);
+  assert.equal(emptied.skills.observe, 0);
+  assert.equal(clamped.skills.occult, 99);
+});
+
+test("check modifier breakdown can fall back to skill ids when scenario data uses a skill-like related_stat", () => {
+  const check = findCheck("check_defeat_makabe");
+  const modifiers = getCheckModifierBreakdown(check, DEFAULT_MVP_CHECK_PROFILE);
+
+  assert.equal(modifiers.statId, "combat");
+  assert.equal(modifiers.statValue, 2);
+  assert.equal(modifiers.skillId, "melee_or_firearm");
+  assert.equal(modifiers.skillValue, 2);
 });
 
 test("resolveEnding matches true, normal, lost, and good routes from scenario data", () => {
@@ -407,6 +468,12 @@ function findAction(actionId: string): SceneActionDefinition {
   const action = pack.scenes.flatMap((scene) => scene.available_actions ?? []).find((candidate) => candidate.id === actionId);
   assert.ok(action, `${actionId} should exist`);
   return action;
+}
+
+function findCheck(checkId: string): SceneCheckDefinition {
+  const check = pack.scenes.flatMap((scene) => scene.checks ?? []).find((candidate) => candidate.id === checkId);
+  assert.ok(check, `${checkId} should exist`);
+  return check;
 }
 
 function findEnding(endingId: string): EndingDefinition {
