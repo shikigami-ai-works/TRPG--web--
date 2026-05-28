@@ -20,11 +20,14 @@ import { buildEndingProgressEntries } from "../lib/scenarios/ending-progress";
 import {
   appendCompletedRun,
   clearActiveRun,
+  clearCheckProfile,
   getReachedEndings,
   loadActiveRun,
+  loadCheckProfile,
   loadRunHistory,
   restoreRuntimeState,
   saveActiveRun,
+  saveCheckProfile,
   type CompletedRunRecord,
 } from "../lib/scenarios/storage";
 import { validateScenarioPack } from "../lib/scenarios/validation";
@@ -42,6 +45,7 @@ import type {
 const SCENARIO_DIRECTORY = "kimidake_ga_oboeteiru_jiko";
 const SCENARIO_ID = "kimidake_ga_oboeteiru_jiko";
 const ACTIVE_RUN_KEY = `trpg-web:v1:active-run:${SCENARIO_ID}`;
+const CHECK_PROFILE_KEY = `trpg-web:v1:check-profile:${SCENARIO_ID}`;
 const HISTORY_KEY = "trpg-web:v1:run-history";
 
 let pack: ScenarioPack;
@@ -285,6 +289,70 @@ test("save/load restores active run state and rejects corrupt or mismatched save
   window.localStorage.setItem(ACTIVE_RUN_KEY, JSON.stringify({ ...saved, scenarioId: "other_scenario" }));
   assert.equal(loadActiveRun(SCENARIO_ID), null);
   assert.equal(window.localStorage.getItem(ACTIVE_RUN_KEY), null);
+});
+
+test("save/load persists player check profiles per scenario", () => {
+  const profile = clonePlayerCheckProfile(DEFAULT_MVP_CHECK_PROFILE);
+  profile.stats.intelligence = 7;
+  profile.skills.observe = 5;
+
+  const saved = saveCheckProfile(SCENARIO_ID, profile);
+  assert.equal(saved?.scenarioId, SCENARIO_ID);
+  assert.equal(typeof saved?.updatedAt, "string");
+
+  const loaded = loadCheckProfile(SCENARIO_ID);
+  assert.equal(loaded.stats.intelligence, 7);
+  assert.equal(loaded.skills.observe, 5);
+  assert.equal(loadCheckProfile("other_scenario").stats.intelligence, DEFAULT_MVP_CHECK_PROFILE.stats.intelligence);
+
+  const roll = rollScenarioCheck({ ...findCheck("check_parallel_displacement"), target_number: 15 }, loaded, () => 0.1);
+  assert.equal(roll.total, 15);
+  assert.equal(roll.success, true);
+});
+
+test("loadCheckProfile falls back safely from corrupt or invalid profile data", () => {
+  window.localStorage.setItem(CHECK_PROFILE_KEY, "{broken");
+  assert.equal(loadCheckProfile(SCENARIO_ID).stats.intelligence, DEFAULT_MVP_CHECK_PROFILE.stats.intelligence);
+  assert.equal(window.localStorage.getItem(CHECK_PROFILE_KEY), null);
+
+  window.localStorage.setItem(
+    CHECK_PROFILE_KEY,
+    JSON.stringify({
+      version: 999,
+      scenarioId: SCENARIO_ID,
+      profile: clonePlayerCheckProfile(DEFAULT_MVP_CHECK_PROFILE),
+      updatedAt: "2026-05-28T00:00:00.000Z",
+    }),
+  );
+  assert.equal(loadCheckProfile(SCENARIO_ID).skills.observe, DEFAULT_MVP_CHECK_PROFILE.skills.observe);
+  assert.equal(window.localStorage.getItem(CHECK_PROFILE_KEY), null);
+
+  window.localStorage.setItem(
+    CHECK_PROFILE_KEY,
+    JSON.stringify({
+      version: 1,
+      scenarioId: SCENARIO_ID,
+      profile: {
+        ...clonePlayerCheckProfile(DEFAULT_MVP_CHECK_PROFILE),
+        stats: {
+          intelligence: "18",
+        },
+        skills: {
+          observe: "not-a-number",
+          occult: 120,
+        },
+      },
+      updatedAt: "2026-05-28T00:00:00.000Z",
+    }),
+  );
+  const repaired = loadCheckProfile(SCENARIO_ID);
+  assert.equal(repaired.stats.intelligence, 18);
+  assert.equal(repaired.stats.dexterity, DEFAULT_MVP_CHECK_PROFILE.stats.dexterity);
+  assert.equal(repaired.skills.observe, 0);
+  assert.equal(repaired.skills.occult, 99);
+
+  clearCheckProfile(SCENARIO_ID);
+  assert.equal(window.localStorage.getItem(CHECK_PROFILE_KEY), null);
 });
 
 test("run history preserves duplicate completions and reached endings are deduplicated", () => {

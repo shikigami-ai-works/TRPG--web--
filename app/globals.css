@@ -317,8 +317,28 @@ button {
   gap: 14px;
 }
 
+.player-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .player-panel-header h3 {
   margin: 0 0 6px;
+}
+
+.profile-reset-button {
+  min-height: 34px;
+  border: 1px solid rgba(36, 34, 40, 0.14);
+  border-radius: 8px;
+  padding: 0 10px;
+  background: #ffffff;
+  color: #19171d;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .profile-block {

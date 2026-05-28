@@ -1,3 +1,8 @@
+import {
+  clonePlayerCheckProfile,
+  normalizePlayerCheckProfile,
+  type PlayerCheckProfile,
+} from "./check-resolution";
 import type { EndingDefinition, RewardDefinition, ScenarioPack, ScenarioRuntimeState } from "./types";
 
 export const STORAGE_VERSION = 1;
@@ -46,7 +51,15 @@ export interface ReachedEndingSummary {
   count: number;
 }
 
+export interface SavedCheckProfile {
+  version: number;
+  scenarioId: string;
+  profile: PlayerCheckProfile;
+  updatedAt: string;
+}
+
 const ACTIVE_RUN_KEY_PREFIX = "trpg-web:v1:active-run:";
+const CHECK_PROFILE_KEY_PREFIX = "trpg-web:v1:check-profile:";
 const HISTORY_KEY = "trpg-web:v1:run-history";
 
 export function saveActiveRun(scenarioId: string, state: ScenarioRuntimeState): SavedRunState | null {
@@ -102,6 +115,70 @@ export function clearActiveRun(scenarioId: string): void {
   }
   try {
     window.localStorage.removeItem(activeRunKey(scenarioId));
+  } catch {
+    // Ignore storage cleanup failures.
+  }
+}
+
+export function saveCheckProfile(scenarioId: string, profile: PlayerCheckProfile): SavedCheckProfile | null {
+  if (!canUseStorage()) {
+    return null;
+  }
+
+  const saved: SavedCheckProfile = {
+    version: STORAGE_VERSION,
+    scenarioId,
+    profile: normalizePlayerCheckProfile(profile),
+    updatedAt: new Date().toISOString(),
+  };
+
+  try {
+    window.localStorage.setItem(checkProfileKey(scenarioId), JSON.stringify(saved));
+    return saved;
+  } catch {
+    return null;
+  }
+}
+
+export function loadCheckProfile(scenarioId: string): PlayerCheckProfile {
+  if (!canUseStorage()) {
+    return clonePlayerCheckProfile();
+  }
+
+  const key = checkProfileKey(scenarioId);
+  let raw: string | null;
+  try {
+    raw = window.localStorage.getItem(key);
+  } catch {
+    return clonePlayerCheckProfile();
+  }
+  if (!raw) {
+    return clonePlayerCheckProfile();
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (isSavedCheckProfile(parsed) && parsed.scenarioId === scenarioId) {
+      return normalizePlayerCheckProfile(parsed.profile);
+    }
+  } catch {
+    // Invalid profile data is removed below.
+  }
+
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // Ignore cleanup failures; callers already receive a default profile.
+  }
+  return clonePlayerCheckProfile();
+}
+
+export function clearCheckProfile(scenarioId: string): void {
+  if (!canUseStorage()) {
+    return;
+  }
+  try {
+    window.localStorage.removeItem(checkProfileKey(scenarioId));
   } catch {
     // Ignore storage cleanup failures.
   }
@@ -260,6 +337,10 @@ function activeRunKey(scenarioId: string): string {
   return `${ACTIVE_RUN_KEY_PREFIX}${scenarioId}`;
 }
 
+function checkProfileKey(scenarioId: string): string {
+  return `${CHECK_PROFILE_KEY_PREFIX}${scenarioId}`;
+}
+
 function createRunId(scenarioId: string, endingId: string): string {
   const safeRandom =
     typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -321,6 +402,14 @@ function isCompletedRunRecord(value: unknown): value is CompletedRunRecord {
     isStringArray(value.unlocks) &&
     Array.isArray(value.rewards)
   );
+}
+
+function isSavedCheckProfile(value: unknown): value is SavedCheckProfile {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return value.version === STORAGE_VERSION && typeof value.scenarioId === "string" && isRecord(value.profile) && typeof value.updatedAt === "string";
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

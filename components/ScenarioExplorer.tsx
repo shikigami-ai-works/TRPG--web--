@@ -26,11 +26,14 @@ import { buildEndingProgressEntries, type EndingProgressEntry } from "@/lib/scen
 import {
   appendCompletedRun,
   clearActiveRun,
+  clearCheckProfile,
   hasMeaningfulProgress,
   loadActiveRun,
+  loadCheckProfile,
   loadRunHistory,
   restoreRuntimeState,
   saveActiveRun,
+  saveCheckProfile,
   type CompletedRunRecord,
   type SavedRunState,
 } from "@/lib/scenarios/storage";
@@ -82,6 +85,7 @@ export default function ScenarioExplorer({ packs }: ScenarioExplorerProps) {
 
     setSavedRun(loadActiveRun(scenarioId));
     setHistory(loadRunHistory(scenarioId));
+    setPlayerProfile(loadCheckProfile(scenarioId));
     setStorageReady(true);
   }, [scenarioId]);
 
@@ -121,6 +125,14 @@ export default function ScenarioExplorer({ packs }: ScenarioExplorerProps) {
     }
   }, [pack, state, storageReady]);
 
+  useEffect(() => {
+    if (!scenarioId || !storageReady) {
+      return;
+    }
+
+    saveCheckProfile(scenarioId, playerProfile);
+  }, [playerProfile, scenarioId, storageReady]);
+
   function switchPack(nextPackId: string) {
     const nextPack = packs.find((candidate) => candidate.scenario.id === nextPackId);
     if (!nextPack) {
@@ -130,7 +142,7 @@ export default function ScenarioExplorer({ packs }: ScenarioExplorerProps) {
     setSavedRun(null);
     setHistory([]);
     setPackId(nextPackId);
-    setPlayerProfile(clonePlayerCheckProfile());
+    setPlayerProfile(loadCheckProfile(nextPack.scenario.id));
     setState(createInitialState(nextPack));
   }
 
@@ -147,8 +159,15 @@ export default function ScenarioExplorer({ packs }: ScenarioExplorerProps) {
     }
     clearActiveRun(pack.scenario.id);
     setSavedRun(null);
-    setPlayerProfile(clonePlayerCheckProfile());
     setState(createInitialState(pack));
+  }
+
+  function resetPlayerProfile() {
+    if (!pack) {
+      return;
+    }
+    clearCheckProfile(pack.scenario.id);
+    setPlayerProfile(clonePlayerCheckProfile());
   }
 
   if (!pack) {
@@ -186,6 +205,7 @@ export default function ScenarioExplorer({ packs }: ScenarioExplorerProps) {
         history={history}
         onResumeSavedRun={resumeSavedRun}
         onStartFreshRun={startFreshRun}
+        onResetPlayerProfile={resetPlayerProfile}
         pack={pack}
         playerProfile={playerProfile}
         savedRun={savedRun}
@@ -201,6 +221,7 @@ export default function ScenarioExplorer({ packs }: ScenarioExplorerProps) {
 function ScenarioWorkspace({
   history,
   onResumeSavedRun,
+  onResetPlayerProfile,
   onStartFreshRun,
   pack,
   playerProfile,
@@ -212,6 +233,7 @@ function ScenarioWorkspace({
 }: {
   history: CompletedRunRecord[];
   onResumeSavedRun: () => void;
+  onResetPlayerProfile: () => void;
   onStartFreshRun: () => void;
   pack: ScenarioPack;
   playerProfile: PlayerCheckProfile;
@@ -347,7 +369,7 @@ function ScenarioWorkspace({
           </section>
 
           <section className="surface player-panel">
-            <PlayerProfilePanel profile={playerProfile} onChange={updateProfileValue} />
+            <PlayerProfilePanel profile={playerProfile} onChange={updateProfileValue} onReset={onResetPlayerProfile} />
           </section>
         </div>
 
@@ -581,9 +603,11 @@ function ActionList({
 
 function PlayerProfilePanel({
   onChange,
+  onReset,
   profile,
 }: {
   onChange: (group: "stats" | "skills", id: string, value: string) => void;
+  onReset: () => void;
   profile: PlayerCheckProfile;
 }) {
   return (
@@ -595,6 +619,9 @@ function PlayerProfilePanel({
             {profile.name} / {profile.rulesetId}
           </p>
         </div>
+        <button className="profile-reset-button" data-control="reset-player-profile" onClick={onReset} type="button">
+          初期値
+        </button>
       </div>
       <ProfileNumberGrid
         group="stats"

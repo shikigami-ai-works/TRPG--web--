@@ -1,5 +1,7 @@
 import type { SceneCheckDefinition } from "./types";
 
+export type PlayerCheckProfileGroup = "stats" | "skills";
+
 export interface PlayerCheckProfile {
   id: string;
   name: string;
@@ -62,7 +64,7 @@ export function clonePlayerCheckProfile(profile: PlayerCheckProfile = DEFAULT_MV
 
 export function updatePlayerCheckProfileValue(
   profile: PlayerCheckProfile,
-  group: "stats" | "skills",
+  group: PlayerCheckProfileGroup,
   id: string,
   rawValue: string | number,
 ): PlayerCheckProfile {
@@ -74,6 +76,20 @@ export function updatePlayerCheckProfileValue(
       ...profile[group],
       [id]: value,
     },
+  };
+}
+
+export function normalizePlayerCheckProfile(value: unknown, fallback: PlayerCheckProfile = DEFAULT_MVP_CHECK_PROFILE): PlayerCheckProfile {
+  if (!isRecord(value)) {
+    return clonePlayerCheckProfile(fallback);
+  }
+
+  return {
+    id: typeof value.id === "string" ? value.id : fallback.id,
+    name: typeof value.name === "string" ? value.name : fallback.name,
+    rulesetId: typeof value.rulesetId === "string" ? value.rulesetId : fallback.rulesetId,
+    stats: normalizeProfileValues(value.stats, fallback.stats),
+    skills: normalizeProfileValues(value.skills, fallback.skills),
   };
 }
 
@@ -120,13 +136,34 @@ function getValue(values: Record<string, number>, id: string): number | undefine
   return Number.isFinite(value) ? value : undefined;
 }
 
-function normalizeProfileNumber(rawValue: string | number): number {
-  const value = typeof rawValue === "number" ? rawValue : Number.parseInt(rawValue, 10);
+function normalizeProfileValues(rawValues: unknown, fallback: Record<string, number>): Record<string, number> {
+  const values: Record<string, number> = {};
+  const record = isRecord(rawValues) ? rawValues : {};
+
+  Object.keys(fallback).forEach((id) => {
+    values[id] = normalizeProfileNumber(id in record ? record[id] : fallback[id]);
+  });
+
+  Object.entries(record).forEach(([id, value]) => {
+    if (!(id in values)) {
+      values[id] = normalizeProfileNumber(value);
+    }
+  });
+
+  return values;
+}
+
+function normalizeProfileNumber(rawValue: unknown): number {
+  const value = typeof rawValue === "number" ? rawValue : typeof rawValue === "string" ? Number.parseInt(rawValue, 10) : Number.NaN;
   if (!Number.isFinite(value)) {
     return 0;
   }
 
   return Math.max(0, Math.min(Math.trunc(value), 99));
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function rollD20(random: () => number): number {
