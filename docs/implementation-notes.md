@@ -1,5 +1,13 @@
 # Implementation Notes
 
+## 2026-05-27 Ending Progress UI
+
+- エンディング進捗表示は保存データ構造を変更せず、既存の完了ラン履歴 `CompletedRunRecord[]` と `getReachedEndings(history)` から `endingId` 単位で到達済み判定する形にした。localStorage移行を発生させず、既存セーブ/履歴を壊さないため。
+- エンディング一覧の表示順は `scenario.ending_resolution_order` を優先し、そこに含まれないエンディングを末尾に追加する形にした。仕様にUI表示順は未定義だが、解決順がプレイヤーの到達判定順に近いため。
+- 未到達エンディングは `ending_tree.visible_before_unlock` が true のものだけ表示し、タイトルは `blurred_title`、本文は `route_hint` に限定した。正式説明、`hidden_description`、解禁、報酬は到達後だけ表示し、伏せ情報の露出を避ける。
+- 報酬表示は新しいマスタ参照を増やさず、`RewardDefinition.description` があればそれを優先し、なければ `type` / `npc_id` / `item_ids` / 数値フィールドの簡易ラベルにした。MVPの確認UIとして、保存仕様やシナリオデータ形式を広げない判断。
+- エンディング進捗UIの回帰確認は、ブラウザE2Eを常設化せず `lib/scenarios/ending-progress.ts` の表示データ整形を純粋関数として切り出し、既存の `node --test` 回帰テストに載せる形にした。外部依存を増やさず、localStorage履歴と伏せ表示ルールの破損を軽量に検出するため。
+
 ## 2026-05-27 Scenario Data Validation Tool
 
 - シナリオ検証は `loadScenarioPack` 本体には混ぜず、`lib/scenarios/validation.ts` の純粋関数として分離した。UIやランタイムの読み込み挙動を変えず、CLIと回帰テストから同じ検証を呼べるようにするため。

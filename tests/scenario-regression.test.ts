@@ -9,6 +9,7 @@ import {
   resolveEnding,
   toggleCarryOutItem,
 } from "../lib/scenarios/runtime";
+import { buildEndingProgressEntries } from "../lib/scenarios/ending-progress";
 import {
   appendCompletedRun,
   clearActiveRun,
@@ -17,6 +18,7 @@ import {
   loadRunHistory,
   restoreRuntimeState,
   saveActiveRun,
+  type CompletedRunRecord,
 } from "../lib/scenarios/storage";
 import { validateScenarioPack } from "../lib/scenarios/validation";
 import type {
@@ -249,6 +251,66 @@ test("run history preserves duplicate completions and reached endings are dedupl
   assert.equal(reached.length, 2);
 });
 
+test("ending progress entries show only visible locked endings before unlock", () => {
+  const hiddenPack = clonePack(pack);
+  hiddenPack.endings = hiddenPack.endings.map((ending) =>
+    ending.id === "return_without_akari"
+      ? {
+          ...ending,
+          ending_tree: {
+            ...ending.ending_tree,
+            visible_before_unlock: false,
+          },
+        }
+      : ending,
+  );
+
+  const entries = buildEndingProgressEntries(hiddenPack, []);
+  const returnWithAkari = findProgressEntry(entries, "return_with_akari");
+  const originalEnding = findEnding("return_with_akari");
+
+  assert.equal(entries.every((entry) => entry.status === "locked"), true);
+  assert.equal(entries.some((entry) => entry.endingId === "return_without_akari"), false);
+  assert.equal(returnWithAkari.title, "二人で帰る結末");
+  assert.equal(returnWithAkari.description, originalEnding.ending_tree?.route_hint);
+  assert.notEqual(returnWithAkari.title, originalEnding.title);
+  assert.notEqual(returnWithAkari.description, originalEnding.description);
+  assert.equal("hiddenDescription" in returnWithAkari, false);
+  assert.deepEqual(returnWithAkari.unlocks, []);
+  assert.deepEqual(returnWithAkari.rewards, []);
+});
+
+test("ending progress entries expose reached details and keep locked endings concealed", () => {
+  const normalEnding = findEnding("return_without_akari");
+  const history = [
+    createCompletedRunRecord("return_without_akari", "2026-05-27T12:30:00.000Z"),
+    createCompletedRunRecord("return_without_akari", "2026-05-27T11:00:00.000Z"),
+  ];
+
+  const entries = buildEndingProgressEntries(pack, history);
+  const reached = findProgressEntry(entries, "return_without_akari");
+  const locked = findProgressEntry(entries, "return_with_akari");
+
+  assert.equal(reached.status, "reached");
+  if (reached.status !== "reached") {
+    assert.fail("return_without_akari should be reached");
+  }
+  assert.equal(reached.title, normalEnding.title);
+  assert.equal(reached.description, normalEnding.description);
+  assert.equal(reached.count, 2);
+  assert.equal(reached.firstCompletedAt, "2026-05-27T11:00:00.000Z");
+  assert.equal(reached.latestCompletedAt, "2026-05-27T12:30:00.000Z");
+  assert.equal(reached.hiddenDescription, normalEnding.hidden_description);
+  assert.deepEqual(reached.unlocks, normalEnding.unlocks);
+  assert.deepEqual(reached.rewards, ["memory_fragment / minase_akari"]);
+
+  assert.equal(locked.status, "locked");
+  assert.equal(locked.title, findEnding("return_with_akari").ending_tree?.blurred_title);
+  assert.equal(locked.description, findEnding("return_with_akari").ending_tree?.route_hint);
+  assert.notEqual(locked.title, findEnding("return_with_akari").title);
+  assert.equal("hiddenDescription" in locked, false);
+});
+
 function playReturnRoute({
   carryTwoArtifacts,
   openGift,
@@ -345,6 +407,39 @@ function findAction(actionId: string): SceneActionDefinition {
   const action = pack.scenes.flatMap((scene) => scene.available_actions ?? []).find((candidate) => candidate.id === actionId);
   assert.ok(action, `${actionId} should exist`);
   return action;
+}
+
+function findEnding(endingId: string): EndingDefinition {
+  const ending = pack.endings.find((candidate) => candidate.id === endingId);
+  assert.ok(ending, `${endingId} should exist`);
+  return ending;
+}
+
+function findProgressEntry(entries: ReturnType<typeof buildEndingProgressEntries>, endingId: string) {
+  const entry = entries.find((candidate) => candidate.endingId === endingId);
+  assert.ok(entry, `${endingId} should be visible in ending progress`);
+  return entry;
+}
+
+function createCompletedRunRecord(endingId: string, completedAt: string): CompletedRunRecord {
+  const ending = findEnding(endingId);
+
+  return {
+    version: 1,
+    runId: `test:${endingId}:${completedAt}`,
+    scenarioId: pack.scenario.id,
+    scenarioTitle: pack.scenario.title,
+    endingId: ending.id,
+    endingTitle: ending.title,
+    endingType: ending.ending_type,
+    completedAt,
+    finalTrust: {},
+    finalCounters: {},
+    finalInventory: [],
+    carryOutSelections: {},
+    unlocks: [...(ending.unlocks ?? [])],
+    rewards: [...(ending.rewards ?? [])],
+  };
 }
 
 function installMemoryStorage(): void {

@@ -13,10 +13,10 @@ import {
   resolveEnding,
   toggleCarryOutItem,
 } from "@/lib/scenarios/runtime";
+import { buildEndingProgressEntries, type EndingProgressEntry } from "@/lib/scenarios/ending-progress";
 import {
   appendCompletedRun,
   clearActiveRun,
-  getReachedEndings,
   hasMeaningfulProgress,
   loadActiveRun,
   loadRunHistory,
@@ -343,6 +343,7 @@ function ScenarioWorkspace({
           history={history}
           onResumeSavedRun={onResumeSavedRun}
           onStartFreshRun={onStartFreshRun}
+          pack={pack}
           savedRun={savedRun}
           storageReady={storageReady}
         />
@@ -369,16 +370,18 @@ function SaveHistoryPanel({
   history,
   onResumeSavedRun,
   onStartFreshRun,
+  pack,
   savedRun,
   storageReady,
 }: {
   history: CompletedRunRecord[];
   onResumeSavedRun: () => void;
   onStartFreshRun: () => void;
+  pack: ScenarioPack;
   savedRun: SavedRunState | null;
   storageReady: boolean;
 }) {
-  const reachedEndings = getReachedEndings(history);
+  const endingProgress = useMemo(() => buildEndingProgressEntries(pack, history), [pack, history]);
   const recentRuns = history.slice(0, 5);
   const saveStatus = storageReady ? (savedRun ? "保存済みランあり" : "保存済みランなし") : "確認中";
 
@@ -406,10 +409,7 @@ function SaveHistoryPanel({
         </button>
       </div>
 
-      <TagList
-        title="到達済みエンディング"
-        values={reachedEndings.map((ending) => `${ending.endingTitle} / ${ending.endingType}${ending.count > 1 ? ` x${ending.count}` : ""}`)}
-      />
+      <EndingProgressList entries={endingProgress} />
 
       <div className="metric-block">
         <h4>最近のラン履歴</h4>
@@ -429,6 +429,79 @@ function SaveHistoryPanel({
         )}
       </div>
     </section>
+  );
+}
+
+function EndingProgressList({
+  entries,
+}: {
+  entries: EndingProgressEntry[];
+}) {
+  return (
+    <div className="metric-block ending-progress-block">
+      <h4>エンディング進捗</h4>
+      {entries.length === 0 ? (
+        <p className="muted">表示できるエンディングなし</p>
+      ) : (
+        <div className="ending-progress-list">
+          {entries.map((entry) => {
+            const reached = entry.status === "reached";
+            const reachedLabel = reached ? "到達済み" : "未到達";
+
+            return (
+              <article
+                className={reached ? "ending-progress-item reached" : "ending-progress-item locked"}
+                data-ending-progress-id={entry.endingId}
+                data-ending-progress-state={entry.status}
+                key={entry.endingId}
+              >
+                <div className="ending-progress-heading">
+                  <div>
+                    <span className="ending-status">{reachedLabel}</span>
+                    <strong>{entry.title}</strong>
+                  </div>
+                  <small>{entry.endingType}</small>
+                </div>
+
+                <p>{entry.description}</p>
+
+                {reached ? (
+                  <div className="ending-progress-meta">
+                    <span>到達 {entry.count}回</span>
+                    <span>初回 {formatDateTime(entry.firstCompletedAt)}</span>
+                    <span>最新 {formatDateTime(entry.latestCompletedAt)}</span>
+                  </div>
+                ) : null}
+
+                {reached && entry.hiddenDescription ? <p className="ending-hidden-note">{entry.hiddenDescription}</p> : null}
+
+                {reached && entry.unlocks.length ? (
+                  <div className="ending-progress-subblock">
+                    <span>解禁</span>
+                    <div className="tags">
+                      {entry.unlocks.map((unlock) => (
+                        <span key={unlock}>{unlock}</span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {reached && entry.rewards.length ? (
+                  <div className="ending-progress-subblock">
+                    <span>報酬</span>
+                    <div className="tags">
+                      {entry.rewards.map((reward) => (
+                        <span key={reward}>{reward}</span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 
