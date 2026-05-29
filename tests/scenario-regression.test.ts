@@ -181,6 +181,38 @@ test("resolveEnding matches true, normal, lost, and good routes from scenario da
   assert.equal(playStayRoute().ending?.id, "stay_with_akari");
 });
 
+test("wedding rings are retrieved only after Makabe is gone and the ritual reproduction is realized", () => {
+  let state = playCommonRouteBeforeMakabe({ openGift: false });
+  const takeRings = findAction("take_wedding_rings");
+
+  assert.equal(canUseRequirements(takeRings.requirements, state, pack), false);
+
+  state = applySuccess(state, "check_defeat_makabe");
+  assert.equal(state.flags.makabe_gone, true);
+  assert.equal(canUseRequirements(takeRings.requirements, state, pack), false);
+
+  state = applyAction(state, "realize_return_ritual_reproduction");
+  assert.equal(canUseRequirements(takeRings.requirements, state, pack), true);
+
+  state = applyAction(state, "take_wedding_rings");
+  assert.equal(state.inventory.includes("relatives_wedding_rings"), true);
+});
+
+test("Makabe leaves the ritual scene even when the combat check fails", () => {
+  let state = playCommonRouteBeforeMakabe({ openGift: false });
+
+  state = applyFailure(state, "check_defeat_makabe");
+  assert.equal(state.flags.makabe_gone, true);
+  assert.equal(state.flags.cult_leader_defeated, false);
+  assert.equal(state.counters.boundary_contamination, 1);
+
+  state = applyAction(state, "realize_return_ritual_reproduction");
+  state = applyAction(state, "take_stopped_pocket_watch");
+  state = applyAction(state, "take_wedding_rings");
+  state = applyAction(state, "return_artifacts_for_ritual");
+  assert.equal(state.flags.ritual_reproduced, true);
+});
+
 test("validateScenarioPack accepts the bundled scenario data", () => {
   const result = validateScenarioPack(pack);
 
@@ -481,6 +513,20 @@ function playCommonRoute({
   openGift: boolean;
   reproduceRitual: boolean;
 }): ScenarioRuntimeState {
+  let state = playCommonRouteBeforeMakabe({ openGift });
+  state = applySuccess(state, "check_defeat_makabe");
+
+  if (reproduceRitual) {
+    state = applyAction(state, "realize_return_ritual_reproduction");
+    state = applyAction(state, "take_stopped_pocket_watch");
+    state = applyAction(state, "take_wedding_rings");
+    state = applyAction(state, "return_artifacts_for_ritual");
+  }
+
+  return state;
+}
+
+function playCommonRouteBeforeMakabe({ openGift }: { openGift: boolean }): ScenarioRuntimeState {
   let state = createInitialState(pack);
 
   state = applyAction(state, "say_not_replacement");
@@ -496,10 +542,6 @@ function playCommonRoute({
   state = applyAction(state, "recover_stolen_keyholder");
   state = applyAction(state, "recover_birthday_gift");
   state = applySuccess(state, "check_understand_cult_goal");
-  state = applySuccess(state, "check_survive_relative_attack");
-  state = applyAction(state, "share_guilt_truthfully");
-  state = applyAction(state, "take_wedding_rings");
-  state = applySuccess(state, "check_hold_together_after_crime");
 
   if (openGift) {
     state = applyAction(state, "open_birthday_gift");
@@ -508,12 +550,9 @@ function playCommonRoute({
   state = applyAction(state, "take_boundary_ember");
   state = applyAction(state, "take_empty_nameplate");
   state = applyAction(state, "disrupt_ritual");
-  state = applySuccess(state, "check_defeat_makabe");
-
-  if (reproduceRitual) {
-    state = applyAction(state, "take_stopped_pocket_watch");
-    state = applyAction(state, "return_artifacts_for_ritual");
-  }
+  state = applySuccess(state, "check_survive_relative_attack");
+  state = applyAction(state, "share_guilt_truthfully");
+  state = applySuccess(state, "check_hold_together_after_crime");
 
   return state;
 }
@@ -535,6 +574,13 @@ function applySuccess(state: ScenarioRuntimeState, checkId: string): ScenarioRun
   assert.ok(check, `${checkId} should exist`);
   assert.equal(canUseRequirements(check.requirements, state, pack), true, `${checkId} requirements should be met`);
   return applyStateChanges(state, check.success as CheckOutcome | StateChanges | undefined, pack);
+}
+
+function applyFailure(state: ScenarioRuntimeState, checkId: string): ScenarioRuntimeState {
+  const check = pack.scenes.flatMap((scene) => scene.checks ?? []).find((candidate) => candidate.id === checkId);
+  assert.ok(check, `${checkId} should exist`);
+  assert.equal(canUseRequirements(check.requirements, state, pack), true, `${checkId} requirements should be met`);
+  return applyStateChanges(state, check.failure as CheckOutcome | StateChanges | undefined, pack);
 }
 
 function findAction(actionId: string): SceneActionDefinition {

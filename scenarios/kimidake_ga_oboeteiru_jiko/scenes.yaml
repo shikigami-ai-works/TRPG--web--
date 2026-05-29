@@ -253,39 +253,6 @@ scenes:
             minase_akari: -10
           set_flags:
             gift_opened: true
-      - id: "confront_relatives_at_cult"
-        label: "教団本拠地で親族夫婦と再び対峙する"
-        type: "check"
-      - id: "share_guilt_truthfully"
-        label: "共犯の罪を灯と共有する"
-        type: "conversation"
-        once_per_run: true
-        state_changes:
-          trust_delta:
-            minase_akari: 15
-          set_flags:
-            shared_guilt: true
-            relatives_killed: true
-      - id: "make_akari_bear_guilt"
-        label: "罪を灯だけに背負わせる"
-        type: "conversation"
-        once_per_run: true
-        state_changes:
-          trust_delta:
-            minase_akari: -20
-          set_flags:
-            shared_guilt: false
-            relatives_killed: true
-          add_flags:
-            - "made_akari_bear_guilt"
-      - id: "take_wedding_rings"
-        label: "結婚指輪を儀式の材料にできると気づき、持つ"
-        type: "story"
-        requirements:
-          - "has_flag:relatives_killed"
-        state_changes:
-          add_items:
-            - "relatives_wedding_rings"
     checks:
       - id: "check_understand_cult_goal"
         label: "教団導師の本当の目的を見抜く"
@@ -299,32 +266,6 @@ scenes:
           reveal_text: "帰還の環は、失った人の帰還を口実に、ヨグ・ソトースの先触れを呼ぶ実験をしている。"
         failure:
           reveal_text: "儀式の全体像までは読めないが、中央の炉と四方の部屋が連動していることは分かる。"
-      - id: "check_survive_relative_attack"
-        label: "教団本拠地で親族の襲撃から生き延びる"
-        ruleset_id: "cthulhu_like"
-        related_stat: "dexterity"
-        skill_or_art: "dodge"
-        target_number: 13
-        success:
-          add_flags:
-            - "survived_relative_attack"
-          reveal_text: "親族は探索者を殺せば、次こそ息子が呼ばれると信じている。"
-        failure:
-          add_flags:
-            - "wounded_by_relatives"
-          reveal_text: "探索者は傷を負う。灯は限界の表情で刃物へ手を伸ばす。"
-      - id: "check_hold_together_after_crime"
-        label: "逃避ではなく生存のために現実を受け止める"
-        ruleset_id: "cthulhu_like"
-        related_stat: "willpower"
-        skill_or_art: "sanity"
-        target_number: 12
-        success:
-          add_flags:
-            - "crime_processed_together"
-          reveal_text: "二人は被害者であると同時に、もう無傷では帰れない共犯になった。結婚指輪は、帰還儀式をこちら側から組み直す焦点になる。"
-        failure:
-          reveal_text: "言葉は出ない。それでも指輪だけが、儀式へ戻る道を示している。"
     next_scene_rules:
       - condition: "always"
         next_scene_id: "scene_006_four_rooms_ritual"
@@ -336,6 +277,8 @@ scenes:
     npc_ids:
       - "minase_akari"
       - "makabe_touichiro"
+      - "relative_mother"
+      - "relative_father"
     available_actions:
       - id: "take_boundary_ember"
         label: "前の部屋から境界の火種を持ち去る"
@@ -402,12 +345,64 @@ scenes:
         state_changes:
           set_flags:
             ritual_disrupted: true
+      - id: "confront_relatives_at_cult"
+        label: "儀式を乱したことで止めに来た親族夫婦と対峙する"
+        type: "check"
+        requirements:
+          - "has_flag:ritual_disrupted"
+      - id: "share_guilt_truthfully"
+        label: "共犯の罪を灯と共有する"
+        type: "conversation"
+        once_per_run: true
+        requirements:
+          - "has_flag:survived_relative_attack"
+        state_changes:
+          trust_delta:
+            minase_akari: 15
+          set_flags:
+            shared_guilt: true
+            relatives_killed: true
+      - id: "make_akari_bear_guilt"
+        label: "罪を灯だけに背負わせる"
+        type: "conversation"
+        once_per_run: true
+        requirements:
+          - "has_flag:survived_relative_attack"
+        state_changes:
+          trust_delta:
+            minase_akari: -20
+          set_flags:
+            shared_guilt: false
+            relatives_killed: true
+          add_flags:
+            - "made_akari_bear_guilt"
+      - id: "realize_return_ritual_reproduction"
+        label: "二人だけで帰還儀式を再現できると気づく"
+        type: "story"
+        once_per_run: true
+        requirements:
+          - "has_flag:makabe_gone"
+          - "has_flag:relatives_killed"
+        state_changes:
+          set_flags:
+            ritual_reproduction_realized: true
+      - id: "take_wedding_rings"
+        label: "儀式再現の焦点として親族夫婦の結婚指輪を取りに戻る"
+        type: "story"
+        requirements:
+          - "has_flag:ritual_reproduction_realized"
+          - "has_flag:makabe_gone"
+          - "has_flag:relatives_killed"
+        state_changes:
+          add_items:
+            - "relatives_wedding_rings"
       - id: "return_artifacts_for_ritual"
         label: "3つ以上の四方アーティファクトを戻し、帰還儀式を再現する"
         type: "story"
         once_per_run: true
         requirements:
-          - "has_flag:cult_leader_defeated"
+          - "has_flag:makabe_gone"
+          - "has_flag:ritual_reproduction_realized"
           - "has_item:relatives_wedding_rings"
           - "counter:four_room_artifacts_taken>=3"
           - "owned_items_in_group:four_room_artifact>=3"
@@ -421,11 +416,42 @@ scenes:
             group: "four_room_artifact"
             max_count: 1
       - id: "fight_makabe"
-        label: "導師・真壁透一郎を倒す"
+        label: "導師・真壁透一郎と戦う"
         type: "check"
     checks:
+      - id: "check_survive_relative_attack"
+        label: "儀式を止めようとする親族の襲撃から生き延びる"
+        ruleset_id: "cthulhu_like"
+        related_stat: "dexterity"
+        skill_or_art: "dodge"
+        target_number: 13
+        requirements:
+          - "has_flag:ritual_disrupted"
+        success:
+          add_flags:
+            - "survived_relative_attack"
+          reveal_text: "親族は儀式の乱れを止めるために襲いかかる。探索者と灯はここで親族夫婦と決定的に衝突する。"
+        failure:
+          add_flags:
+            - "wounded_by_relatives"
+            - "survived_relative_attack"
+          reveal_text: "探索者は傷を負う。それでも灯は限界の表情で立ち、親族夫婦との衝突は避けられなくなる。"
+      - id: "check_hold_together_after_crime"
+        label: "逃避ではなく生存のために現実を受け止める"
+        ruleset_id: "cthulhu_like"
+        related_stat: "willpower"
+        skill_or_art: "sanity"
+        target_number: 12
+        requirements:
+          - "has_flag:relatives_killed"
+        success:
+          add_flags:
+            - "crime_processed_together"
+          reveal_text: "二人は被害者であると同時に、もう無傷では帰れない共犯になった。中央の炉では、真壁が乱れた儀式を立て直そうとしている。"
+        failure:
+          reveal_text: "言葉は出ない。それでも真壁を止めなければ、親族の願いも灯の未練も炉に呑まれる。"
       - id: "check_defeat_makabe"
-        label: "儀式場の歪みを越えて導師を倒す"
+        label: "儀式場の歪みを越えて真壁との戦闘を終える"
         ruleset_id: "cthulhu_like"
         related_stat: "combat"
         skill_or_art: "melee_or_firearm"
@@ -436,15 +462,17 @@ scenes:
         success:
           set_flags:
             cult_leader_defeated: true
-          reveal_text: "導師の儀式制御が崩れ、中央の炉だけが帰還の焦点として残る。"
+            makabe_gone: true
+          reveal_text: "導師の儀式制御が崩れ、真壁は儀式の歪みに紛れて姿を消す。中央の炉だけが、二人の前に帰還の焦点として残る。"
         failure:
           add_flags:
             - "boundary_contamination_rises"
+            - "makabe_gone"
           counter_delta:
             boundary_contamination: 1
-          reveal_text: "時間が巻き戻るようにぶれ、死者の声が炉から漏れる。"
+          reveal_text: "時間が巻き戻るようにぶれ、死者の声が炉から漏れる。真壁は倒れず、しかし境界の揺らぎに身を隠し、そこからいなくなる。"
     next_scene_rules:
-      - condition: "has_flag:cult_leader_defeated"
+      - condition: "has_flag:makabe_gone"
         next_scene_id: "scene_007_return_fire"
       - condition: "default"
         ending_id: "boundary_collapse"

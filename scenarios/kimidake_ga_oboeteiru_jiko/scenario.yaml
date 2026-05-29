@@ -130,7 +130,9 @@ scenario:
       shared_guilt: false
       ritual_disrupted: false
       cult_leader_defeated: false
+      makabe_gone: false
       relatives_killed: false
+      ritual_reproduction_realized: false
       ritual_reproduced: false
       player_attempts_return: false
       requested_akari_return: false
@@ -172,10 +174,12 @@ scenario:
 
   clear_conditions:
     - id: "clear_return_possible"
-      description: "教団儀式を妨害し、導師を倒し、帰還儀式を再現する。"
+      description: "教団儀式を妨害し、親族夫婦と真壁との戦闘を終え、二人だけで帰還儀式を再現する。"
       required_flags:
         - "ritual_disrupted"
-        - "cult_leader_defeated"
+        - "relatives_killed"
+        - "makabe_gone"
+        - "ritual_reproduction_realized"
         - "ritual_reproduced"
     - id: "clear_akari_return"
       description: "灯の信頼度を70以上にし、未練と共犯の罪を共有したうえで、誕生日プレゼントを開けずに帰還する。"
