@@ -47,8 +47,8 @@ items:
   - id: "relatives_wedding_rings"
     name: "親族夫婦の結婚指輪"
     type: "key_item"
-    description: "灯と探索者が殺めた親族夫婦の指輪。罪の正当化ではなく、生き延びるために境界現象を逆利用する媒介。"
-    found_in_scene_id: "scene_004_accomplice_night"
+    description: "教団本拠地で灯と探索者が殺めた親族夫婦の指輪。殺害したその場で、帰還儀式をこちら側から組み直す媒介にできると気づく。"
+    found_in_scene_id: "scene_005_cult_facility"
     effects:
       - id: "reproduce_return_ritual"
         type: "flag_unlock"
@@ -61,8 +61,8 @@ items:
   - id: "son_tournament_medal"
     name: "親族の息子の大会メダル"
     type: "story_item"
-    description: "親族が亡くした息子の中学生時代の大会メダル。親族はこれを儀式に差し出していた。"
-    found_in_scene_id: "scene_003_relative_house"
+    description: "親族が亡くした息子の中学生時代の大会メダル。帰還の環へ差し出され、親族が儀式に取り込まれている証拠になる。"
+    found_in_scene_id: "scene_005_cult_facility"
     effects:
       - id: "explain_relative_motive"
         type: "story"

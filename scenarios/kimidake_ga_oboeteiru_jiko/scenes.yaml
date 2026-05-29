@@ -94,13 +94,58 @@ scenes:
           reveal_text: "事故の記録は断片的だが、遺留品の扱いに空白がある。"
     next_scene_rules:
       - condition: "has_flag:found_cult_recovery_trace"
-        next_scene_id: "scene_003_relative_house"
+        next_scene_id: "scene_003_empty_house"
       - condition: "default"
-        next_scene_id: "scene_003_relative_house"
+        next_scene_id: "scene_003_empty_house"
 
-  - id: "scene_003_relative_house"
+  - id: "scene_003_empty_house"
     title: "空き家に帰る子"
-    description: "灯を引き取った親族宅を訪れる。そこは避難先ではなく、灯を追い詰めた場所だった。"
+    description: "灯は探索者を、平行世界側で死んだ探索者本人の空き家へ案内する。そこは安全地帯ではなく、喪失が止まったままの一時休憩場所だった。"
+    scene_type: "exploration"
+    npc_ids:
+      - "minase_akari"
+    available_actions:
+      - id: "let_akari_rest_in_empty_house"
+        label: "空き家で灯が休む時間を作る"
+        type: "story"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: 10
+          add_flags:
+            - "akari_rested_in_empty_house"
+      - id: "respect_dead_friend_home"
+        label: "死んだ親友の家を詮索しすぎない"
+        type: "story"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: 10
+          add_flags:
+            - "dead_friend_home_respected"
+      - id: "inspect_empty_house_trace"
+        label: "事故の日から止まった家の痕跡を調べる"
+        type: "check"
+    checks:
+      - id: "check_empty_house_context"
+        label: "空き家が探索者の平行世界側の家だと確かめる"
+        ruleset_id: "cthulhu_like"
+        related_stat: "intelligence"
+        skill_or_art: "observe"
+        target_number: 12
+        success:
+          add_flags:
+            - "confirmed_empty_house_identity"
+          reveal_text: "表札、間取り、事故の日で止まったカレンダーが、この家が平行世界側の探索者本人の家だと示している。"
+        failure:
+          reveal_text: "家は探索者の記憶に似ているが、細部がずれている。灯の沈黙だけが、ここが死んだ親友の家だと告げている。"
+    next_scene_rules:
+      - condition: "always"
+        next_scene_id: "scene_004_returning_family"
+
+  - id: "scene_004_returning_family"
+    title: "迎えに来る家"
+    description: "帰還の環の見守り情報網により空き家の居場所が割れ、灯の伯母と伯父が迎えに来る。灯は帰らないと選び、探索者は灯の前ではなく横に立つ。"
     scene_type: "danger"
     npc_ids:
       - "minase_akari"
@@ -108,7 +153,7 @@ scenes:
       - "relative_father"
     available_actions:
       - id: "protect_akari_without_possessing"
-        label: "灯の意思を残したまま守る"
+        label: "灯の前に立たず、横に立つ"
         type: "story"
         once_per_run: true
         state_changes:
@@ -116,6 +161,26 @@ scenes:
             minase_akari: 10
           add_flags:
             - "protected_akari_without_possessing"
+      - id: "stand_beside_akari_choice"
+        label: "灯の「帰らない」を遮らず横に立つ"
+        type: "conversation"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: 15
+          set_flags:
+            akari_choice_asserted: true
+      - id: "speak_over_akari_to_relatives"
+        label: "灯の代わりに親族へ答える"
+        type: "conversation"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: -20
+          set_flags:
+            akari_choice_asserted: false
+          add_flags:
+            - "overrode_akari_choice"
       - id: "abandon_akari_in_crisis"
         label: "灯を置いて逃げる"
         type: "danger"
@@ -126,77 +191,24 @@ scenes:
           add_flags:
             - "abandoned_akari_in_crisis"
       - id: "confront_relatives"
-        label: "親族夫婦と対峙する"
+        label: "親族夫婦の包囲から抜け出す"
         type: "check"
     checks:
-      - id: "check_survive_relative_attack"
-        label: "親族の襲撃から生き延びる"
+      - id: "check_escape_returning_family"
+        label: "親族夫婦の包囲から抜け出す"
         ruleset_id: "cthulhu_like"
         related_stat: "dexterity"
         skill_or_art: "dodge"
         target_number: 13
         success:
           add_flags:
-            - "survived_relative_attack"
-          reveal_text: "親族は探索者を殺せば、次こそ息子が呼ばれると信じている。"
+            - "escaped_returning_family"
+          reveal_text: "伯父が勝手口へ回る隙を突き、二人は空き家を出る。帰還の環の見守り網は、灯の逃げ場を教団本拠地へ追い込んでいく。"
         failure:
           add_flags:
             - "wounded_by_relatives"
-          reveal_text: "探索者は傷を負う。灯は限界の表情で刃物へ手を伸ばす。"
-    next_scene_rules:
-      - condition: "always"
-        next_scene_id: "scene_004_accomplice_night"
-
-  - id: "scene_004_accomplice_night"
-    title: "結婚指輪の共犯"
-    description: "灯が親族の母親を殺め、探索者が父親を殺める。二人は親族夫婦の結婚指輪を持ち、帰還儀式再現の媒介にする。"
-    scene_type: "conversation"
-    npc_ids:
-      - "minase_akari"
-    available_actions:
-      - id: "share_guilt_truthfully"
-        label: "共犯の罪を灯と共有する"
-        type: "conversation"
-        once_per_run: true
-        state_changes:
-          trust_delta:
-            minase_akari: 15
-          set_flags:
-            shared_guilt: true
-            relatives_killed: true
-      - id: "make_akari_bear_guilt"
-        label: "罪を灯だけに背負わせる"
-        type: "conversation"
-        once_per_run: true
-        state_changes:
-          trust_delta:
-            minase_akari: -20
-          set_flags:
-            shared_guilt: false
-            relatives_killed: true
-          add_flags:
-            - "made_akari_bear_guilt"
-      - id: "take_wedding_rings"
-        label: "親族夫婦の結婚指輪を持つ"
-        type: "story"
-        requirements:
-          - "has_flag:relatives_killed"
-        state_changes:
-          add_items:
-            - "relatives_wedding_rings"
-    checks:
-      - id: "check_hold_together_after_crime"
-        label: "逃避ではなく生存のために現実を受け止める"
-        ruleset_id: "cthulhu_like"
-        related_stat: "willpower"
-        skill_or_art: "sanity"
-        target_number: 12
-        success:
-          add_flags:
-            - "crime_processed_together"
-          reveal_text: "二人は被害者であると同時に、もう無傷では帰れない共犯になった。"
-        failure:
-          reveal_text: "言葉は出ない。それでも指輪だけが、儀式へ戻る道を示している。"
+            - "escaped_returning_family"
+          reveal_text: "探索者は傷を負う。それでも灯は自分の足で家を出る。親族の追跡は、まだ終わっていない。"
     next_scene_rules:
       - condition: "always"
         next_scene_id: "scene_005_cult_facility"
@@ -208,6 +220,8 @@ scenes:
     npc_ids:
       - "minase_akari"
       - "makabe_touichiro"
+      - "relative_mother"
+      - "relative_father"
     available_actions:
       - id: "inspect_cult_records"
         label: "教団の記録を調べる"
@@ -239,6 +253,39 @@ scenes:
             minase_akari: -10
           set_flags:
             gift_opened: true
+      - id: "confront_relatives_at_cult"
+        label: "教団本拠地で親族夫婦と再び対峙する"
+        type: "check"
+      - id: "share_guilt_truthfully"
+        label: "共犯の罪を灯と共有する"
+        type: "conversation"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: 15
+          set_flags:
+            shared_guilt: true
+            relatives_killed: true
+      - id: "make_akari_bear_guilt"
+        label: "罪を灯だけに背負わせる"
+        type: "conversation"
+        once_per_run: true
+        state_changes:
+          trust_delta:
+            minase_akari: -20
+          set_flags:
+            shared_guilt: false
+            relatives_killed: true
+          add_flags:
+            - "made_akari_bear_guilt"
+      - id: "take_wedding_rings"
+        label: "結婚指輪を儀式の材料にできると気づき、持つ"
+        type: "story"
+        requirements:
+          - "has_flag:relatives_killed"
+        state_changes:
+          add_items:
+            - "relatives_wedding_rings"
     checks:
       - id: "check_understand_cult_goal"
         label: "教団導師の本当の目的を見抜く"
@@ -252,6 +299,32 @@ scenes:
           reveal_text: "帰還の環は、失った人の帰還を口実に、ヨグ・ソトースの先触れを呼ぶ実験をしている。"
         failure:
           reveal_text: "儀式の全体像までは読めないが、中央の炉と四方の部屋が連動していることは分かる。"
+      - id: "check_survive_relative_attack"
+        label: "教団本拠地で親族の襲撃から生き延びる"
+        ruleset_id: "cthulhu_like"
+        related_stat: "dexterity"
+        skill_or_art: "dodge"
+        target_number: 13
+        success:
+          add_flags:
+            - "survived_relative_attack"
+          reveal_text: "親族は探索者を殺せば、次こそ息子が呼ばれると信じている。"
+        failure:
+          add_flags:
+            - "wounded_by_relatives"
+          reveal_text: "探索者は傷を負う。灯は限界の表情で刃物へ手を伸ばす。"
+      - id: "check_hold_together_after_crime"
+        label: "逃避ではなく生存のために現実を受け止める"
+        ruleset_id: "cthulhu_like"
+        related_stat: "willpower"
+        skill_or_art: "sanity"
+        target_number: 12
+        success:
+          add_flags:
+            - "crime_processed_together"
+          reveal_text: "二人は被害者であると同時に、もう無傷では帰れない共犯になった。結婚指輪は、帰還儀式をこちら側から組み直す焦点になる。"
+        failure:
+          reveal_text: "言葉は出ない。それでも指輪だけが、儀式へ戻る道を示している。"
     next_scene_rules:
       - condition: "always"
         next_scene_id: "scene_006_four_rooms_ritual"

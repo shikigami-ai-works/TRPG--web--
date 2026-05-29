@@ -8,14 +8,14 @@ npcs:
       - "key_person"
     generated_by_ai: true
     gender: "female"
-    age: 18
-    age_label: "18"
+    age: 15
+    age_label: "15歳くらい"
     status: "active"
     can_be_contact: true
     can_be_companion: true
     can_be_lost: true
     personality_tags:
-      - "same_age"
+      - "teenager"
       - "traumatized"
       - "dependent_under_pressure"
       - "honest_when_safe"
@@ -31,7 +31,7 @@ npcs:
       after_story_threshold: 80
       memory_bonus_empty_nameplate: 10
     scenario_role:
-      relation_to_parallel_player: "同い年の親友。18歳の誕生日旅行に同行していた。"
+      relation_to_parallel_player: "平行世界側で死んだ探索者本人の親友。誕生日と卒業記念の旅行に同行していた。"
       core_regret: "親友だけが自分を助けて死んだと思っていた。"
       current_need: "死んだ親友の代わりではなく、別世界から来た探索者本人として向き合われること。"
       return_requirement: "信頼度70以上、誕生日プレゼント未開封、未練解決、共犯の罪の共有、帰還儀式再現。"
@@ -115,8 +115,8 @@ npcs:
       - "direct_threat"
     scenario_role:
       lost_child: true
-      belief: "主人公探索者を殺せば、次は自分の息子が呼ばれると思い込んでいる。"
-      event: "主人公探索者を殺そうとし、灯に殺められる。"
+      belief: "主人公探索者を、帰還儀式が生んだ余剰または息子の帰還を邪魔する存在だと思い込んでいる。"
+      event: "帰還の環の見守り情報網を通じて灯の居場所を知り、死んだ探索者本人の空き家へ迎えに来る。その後、教団本拠地で再び現れ、衝突の末に灯に殺められる。"
     ai_roleplay:
       speech_style: "追い詰められた遺族の言葉。救済への執着が強い。"
       motivation: "失った息子を取り戻すため、灯と探索者を儀式の材料として扱う。"
@@ -141,8 +141,8 @@ npcs:
       - "violent"
     scenario_role:
       lost_child: true
-      belief: "主人公探索者は儀式が失敗した証であり、殺せば息子が戻ると考えている。"
-      event: "母親を殺めた灯を見て激昂し、主人公探索者に殺められる。"
+      belief: "主人公探索者は儀式が失敗した証、または息子の帰還を邪魔する余剰だと考えている。"
+      event: "伯母と共に空き家へ現れ、玄関や勝手口から灯を連れ戻そうとする。その後、教団本拠地で再び現れ、妻を灯に殺められたあと激昂し、主人公探索者に殺められる。"
     ai_roleplay:
       speech_style: "短く荒い。責任を他者に押しつける。"
       motivation: "息子の帰還と、自分たちの罪の正当化。"

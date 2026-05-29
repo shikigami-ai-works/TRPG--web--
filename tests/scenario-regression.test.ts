@@ -487,19 +487,24 @@ function playCommonRoute({
   state = applyAction(state, "let_akari_speak_regret");
   state = applyAction(state, "respect_gift_unopened");
   state = applySuccess(state, "check_cult_trace");
+  state = applyAction(state, "let_akari_rest_in_empty_house");
+  state = applyAction(state, "respect_dead_friend_home");
+  state = applySuccess(state, "check_empty_house_context");
   state = applyAction(state, "protect_akari_without_possessing");
+  state = applyAction(state, "stand_beside_akari_choice");
+  state = applySuccess(state, "check_escape_returning_family");
+  state = applyAction(state, "recover_stolen_keyholder");
+  state = applyAction(state, "recover_birthday_gift");
+  state = applySuccess(state, "check_understand_cult_goal");
   state = applySuccess(state, "check_survive_relative_attack");
   state = applyAction(state, "share_guilt_truthfully");
   state = applyAction(state, "take_wedding_rings");
   state = applySuccess(state, "check_hold_together_after_crime");
-  state = applyAction(state, "recover_stolen_keyholder");
-  state = applyAction(state, "recover_birthday_gift");
 
   if (openGift) {
     state = applyAction(state, "open_birthday_gift");
   }
 
-  state = applySuccess(state, "check_understand_cult_goal");
   state = applyAction(state, "take_boundary_ember");
   state = applyAction(state, "take_empty_nameplate");
   state = applyAction(state, "disrupt_ritual");

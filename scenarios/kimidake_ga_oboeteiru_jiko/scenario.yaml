@@ -2,7 +2,7 @@ scenario:
   id: "kimidake_ga_oboeteiru_jiko"
   title: "きみだけが覚えている事故"
   ruleset_id: "cthulhu_like"
-  summary: "平行世界に迷い込んだ探索者が、死んだ自分の親友だった水瀬灯と出会い、夜行バス事故と教団儀式の真相を追う短編シナリオ。"
+  summary: "平行世界に迷い込んだ探索者が、死んだもう一人の自分を親友として覚えている水瀬灯と出会い、夜行バス事故と教団儀式の真相を追う短編シナリオ。"
 
   source:
     author: "しき / shiki-ai-works"
@@ -32,8 +32,8 @@ scenario:
   scenes:
     - "scene_001_parallel_arrival"
     - "scene_002_accident_trace"
-    - "scene_003_relative_house"
-    - "scene_004_accomplice_night"
+    - "scene_003_empty_house"
+    - "scene_004_returning_family"
     - "scene_005_cult_facility"
     - "scene_006_four_rooms_ritual"
     - "scene_007_return_fire"
@@ -70,7 +70,7 @@ scenario:
     cult_name: "帰還の環"
     cult_public_face: "喪失や事故の当事者が集まる自助グループ。"
     cult_true_goal: "ヨグ・ソトースの先触れを研究し、交信し、召喚するための境界観測実験。"
-    direct_enemy: "灯を引き取った親族夫婦。"
+    direct_enemy: "灯を引き取った親族夫婦と、その背後で居場所を共有する帰還の環の情報網。"
     ritual_solution: "四方アーティファクトを使って教団儀式を妨害し、親族夫婦の結婚指輪で帰還儀式を再現する。"
 
   mechanics:
@@ -84,8 +84,11 @@ scenario:
       say_not_replacement: 10
       respect_gift_unopened: 15
       protect_akari_without_possessing: 10
+      let_akari_rest_in_empty_house: 10
+      respect_dead_friend_home: 10
       let_akari_speak_regret: 10
       share_guilt_truthfully: 15
+      stand_beside_akari_choice: 15
       promise_return_together: 10
     trust_loss:
       act_as_dead_friend: -15
@@ -93,6 +96,7 @@ scenario:
       dismiss_akari_regret: -10
       abandon_akari_in_crisis: -20
       make_akari_bear_guilt: -20
+      speak_over_akari_to_relatives: -20
 
     initial_flags:
       said_not_replacement: false
@@ -101,8 +105,14 @@ scenario:
       akari_regret_spoken: false
       gift_respected_unopened: false
       found_cult_recovery_trace: false
+      akari_rested_in_empty_house: false
+      dead_friend_home_respected: false
+      confirmed_empty_house_identity: false
       protected_akari_without_possessing: false
       abandoned_akari_in_crisis: false
+      akari_choice_asserted: false
+      overrode_akari_choice: false
+      escaped_returning_family: false
       survived_relative_attack: false
       wounded_by_relatives: false
       made_akari_bear_guilt: false
