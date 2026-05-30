@@ -389,35 +389,6 @@ scenes:
         state_changes:
           set_flags:
             ritual_reproduction_realized: true
-      - id: "take_wedding_rings"
-        label: "二人分のペア媒介として親族夫婦の結婚指輪を取りに戻る"
-        type: "story"
-        requirements:
-          - "has_flag:ritual_reproduction_realized"
-          - "has_flag:makabe_gone"
-          - "has_flag:relatives_killed"
-        state_changes:
-          add_items:
-            - "relatives_wedding_rings"
-      - id: "return_artifacts_for_ritual"
-        label: "3つ以上の四方アーティファクトと結婚指輪で帰還儀式を再現する"
-        type: "story"
-        once_per_run: true
-        requirements:
-          - "has_flag:makabe_gone"
-          - "has_flag:ritual_reproduction_realized"
-          - "has_item:relatives_wedding_rings"
-          - "counter:four_room_artifacts_taken>=3"
-          - "owned_items_in_group:four_room_artifact>=3"
-          - "carry_out_selection_count:four_room_artifact<=1"
-        state_changes:
-          set_flags:
-            ritual_reproduced: true
-          counter_delta:
-            four_room_artifacts_returned: 3
-          enforce_carry_out_limit:
-            group: "four_room_artifact"
-            max_count: 1
     checks:
       - id: "check_survive_relative_attack"
         label: "儀式を止めようとする親族の襲撃から生き延びる"
@@ -484,11 +455,57 @@ scenes:
     npc_ids:
       - "minase_akari"
     available_actions:
+      - id: "refuse_unopened_gift_as_return_fuel"
+        label: "未開封の誕生日プレゼントを帰還燃料にする案を断る"
+        type: "conversation"
+        once_per_run: true
+        requirements:
+          - "has_flag:makabe_gone"
+          - "has_flag:relatives_killed"
+          - "has_flag:ritual_reproduction_realized"
+          - "has_item:unopened_birthday_gift"
+        state_changes:
+          trust_delta:
+            minase_akari: 5
+          set_flags:
+            gift_refused_as_return_fuel: true
+      - id: "take_wedding_rings"
+        label: "プレゼント案を断った後、二人分のペア媒介として親族夫婦の結婚指輪を取りに戻る"
+        type: "story"
+        requirements:
+          - "has_flag:ritual_reproduction_realized"
+          - "has_flag:makabe_gone"
+          - "has_flag:relatives_killed"
+          - "has_flag:gift_refused_as_return_fuel"
+        state_changes:
+          add_items:
+            - "relatives_wedding_rings"
+      - id: "return_artifacts_for_ritual"
+        label: "3つ以上の四方アーティファクトと結婚指輪で帰還儀式を再現する"
+        type: "story"
+        once_per_run: true
+        requirements:
+          - "has_flag:makabe_gone"
+          - "has_flag:ritual_reproduction_realized"
+          - "has_flag:gift_refused_as_return_fuel"
+          - "has_item:relatives_wedding_rings"
+          - "counter:four_room_artifacts_taken>=3"
+          - "owned_items_in_group:four_room_artifact>=3"
+          - "carry_out_selection_count:four_room_artifact<=1"
+        state_changes:
+          set_flags:
+            ritual_reproduced: true
+          counter_delta:
+            four_room_artifacts_returned: 3
+          enforce_carry_out_limit:
+            group: "four_room_artifact"
+            max_count: 1
       - id: "burn_keepsakes_as_farewell"
         label: "遺留品を送り火として炉へ返す"
         type: "story"
         once_per_run: true
         requirements:
+          - "has_flag:ritual_reproduced"
           - "has_item:paired_lion_keyholder_stolen"
           - "has_item:unopened_birthday_gift"
         state_changes:

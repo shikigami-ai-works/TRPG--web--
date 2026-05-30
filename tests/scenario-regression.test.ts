@@ -181,17 +181,23 @@ test("resolveEnding matches true, normal, lost, and good routes from scenario da
   assert.equal(playStayRoute().ending?.id, "stay_with_akari");
 });
 
-test("wedding rings are retrieved only after Makabe is gone and the ritual reproduction is realized", () => {
+test("wedding rings are retrieved only after Makabe is gone, ritual reproduction is realized, and the gift fuel idea is refused", () => {
   let state = playCommonRouteBeforeMakabe({ openGift: false });
+  const refuseGiftFuel = findAction("refuse_unopened_gift_as_return_fuel");
   const takeRings = findAction("take_wedding_rings");
 
   assert.equal(canUseRequirements(takeRings.requirements, state, pack), false);
+  assert.equal(canUseRequirements(refuseGiftFuel.requirements, state, pack), false);
 
   state = applySuccess(state, "check_defeat_makabe");
   assert.equal(state.flags.makabe_gone, true);
   assert.equal(canUseRequirements(takeRings.requirements, state, pack), false);
 
   state = applyAction(state, "realize_return_ritual_reproduction");
+  assert.equal(canUseRequirements(takeRings.requirements, state, pack), false);
+  assert.equal(canUseRequirements(refuseGiftFuel.requirements, state, pack), true);
+
+  state = applyAction(state, "refuse_unopened_gift_as_return_fuel");
   assert.equal(canUseRequirements(takeRings.requirements, state, pack), true);
 
   state = applyAction(state, "take_wedding_rings");
@@ -208,6 +214,7 @@ test("Makabe leaves the ritual scene even when the combat check fails", () => {
 
   state = applyAction(state, "realize_return_ritual_reproduction");
   state = applyAction(state, "take_stopped_pocket_watch");
+  state = applyAction(state, "refuse_unopened_gift_as_return_fuel");
   state = applyAction(state, "take_wedding_rings");
   state = applyAction(state, "return_artifacts_for_ritual");
   assert.equal(state.flags.ritual_reproduced, true);
@@ -519,6 +526,7 @@ function playCommonRoute({
   if (reproduceRitual) {
     state = applyAction(state, "realize_return_ritual_reproduction");
     state = applyAction(state, "take_stopped_pocket_watch");
+    state = applyAction(state, "refuse_unopened_gift_as_return_fuel");
     state = applyAction(state, "take_wedding_rings");
     state = applyAction(state, "return_artifacts_for_ritual");
   }

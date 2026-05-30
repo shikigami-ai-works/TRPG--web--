@@ -71,7 +71,7 @@ scenario:
     cult_public_face: "喪失や事故の当事者が集まる自助グループ。"
     cult_true_goal: "ヨグ・ソトースの先触れを研究し、交信し、召喚するための境界観測実験。"
     direct_enemy: "灯を引き取った親族夫婦。帰還の環の多数構成員は見守り網・記録係・祈り手として儀式を支えるが、直接戦闘の相手ではない。"
-    ritual_solution: "四方アーティファクトで教団儀式を妨害し、親族夫婦との衝突と真壁戦を終えた後、無人の儀式場で二人分の媒介として親族夫婦の結婚指輪を思いつき、取得して帰還儀式を再現する。"
+    ritual_solution: "四方アーティファクトで教団儀式を妨害し、親族夫婦との衝突と真壁戦を終えた後、無人の儀式場で二人分の帰還儀式へ組み替える。灯が未開封の誕生日プレゼントを探索者の帰還燃料にしようとし、探索者がそれを断った後、親族夫婦の結婚指輪を思いつき、取得して帰還儀式を再現する。プレゼントは死んだ平行世界側の探索者宛てなので燃料にはなり得るが、探索者の帰還には使わない。親族夫婦は境界の向こう側へ息子を求めていた二人だから、その対の指輪が二人分の願いを束ねる媒介になる。"
 
   mechanics:
     npc_trust:
@@ -133,6 +133,7 @@ scenario:
       makabe_gone: false
       relatives_killed: false
       ritual_reproduction_realized: false
+      gift_refused_as_return_fuel: false
       ritual_reproduced: false
       player_attempts_return: false
       requested_akari_return: false

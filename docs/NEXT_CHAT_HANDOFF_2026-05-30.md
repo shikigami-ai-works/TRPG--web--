@@ -52,16 +52,17 @@ npm run test
 - `scenarios/kimidake_ga_oboeteiru_jiko/scenes.yaml`
   - 終盤順序の中心。
   - `scene_005_cult_facility` から親族戦・指輪取得を外した。
-  - `scene_006_four_rooms_ritual` に、儀式妨害、親族戦、真壁戦、儀式再現着想、指輪取得、儀式再現を置いた。
+  - 旧メモでは `scene_006_four_rooms_ritual` に指輪取得と儀式再現を置いていたが、最新仕様では `scene_006_four_rooms_ritual` は儀式妨害、親族戦、真壁戦、二人分の帰還儀式へ組み替える必要に気づくところまで。
+  - 最新仕様では `scene_007_return_fire` で、未開封の誕生日プレゼントを探索者の帰還燃料にする案を断った後、親族夫婦の結婚指輪を思いつき、取得して帰還儀式を再現する。
 - `scenarios/kimidake_ga_oboeteiru_jiko/scenario.yaml`
   - `makabe_gone` と `ritual_reproduction_realized` を追加。
   - clear 条件を、導師撃破固定ではなく「親族戦と真壁戦を終えて二人だけで儀式再現」へ変更。
 - `scenarios/kimidake_ga_oboeteiru_jiko/items.yaml`
-  - `relatives_wedding_rings` の取得シーンを `scene_006_four_rooms_ritual` に変更。
+  - `relatives_wedding_rings` は、親族夫婦死亡直後ではなく、送り火シーンでプレゼント案を断った後に取得する。
 - `scenarios/kimidake_ga_oboeteiru_jiko/npcs.yaml`
   - 親族夫婦は、儀式を乱された際に再登場して衝突する説明へ更新。
 - `tests/scenario-regression.test.ts`
-  - 指輪が真壁退場後かつ儀式再現着想後でないと取得できないことを確認。
+  - 指輪が真壁退場後、儀式再現着想後、かつ未開封プレゼントを帰還燃料にする案を断った後でないと取得できないことを確認。
   - 真壁戦に失敗しても `makabe_gone` になり、儀式再現へ進めることを確認。
 - `docs/scenario-body-kimidake_ga_oboeteiru_jiko/06_scene4.md`
   - しき本稿をそのまま反映済み。誤字修正禁止。

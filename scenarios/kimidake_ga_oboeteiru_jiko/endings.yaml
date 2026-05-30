@@ -2,8 +2,8 @@ endings:
   - id: "return_with_akari"
     title: "双つ灯の生還"
     ending_type: "true"
-    description: "探索者と灯は、教団が縛った未練を送り火として返し、二人で元の世界へ帰る。"
-    hidden_description: "灯を親友の代わりではなく別人として受け止め、共犯の罪も共有した場合に到達する。"
+    description: "探索者と灯は、教団が縛った未練を送り火として返す。探索者が空席の椅子に座り、灯がその膝の上で同じ炎を見つめ、二人で元の世界へ帰る。"
+    hidden_description: "灯を親友の代わりではなく別人として受け止め、共犯の罪も共有し、灯が自分で探索者の膝の上に座れるだけの信頼を得た場合に到達する。"
     unlock_conditions:
       all:
         - flag: "player_attempts_return"
@@ -46,8 +46,8 @@ endings:
   - id: "return_without_akari"
     title: "空席に残る灯"
     ending_type: "normal"
-    description: "探索者は帰還するが、灯は炉の前の椅子に座ったまま境界を越えられない。"
-    hidden_description: "探索者の帰還条件は満たしたが、灯の連れ帰り条件が欠けた場合に到達する記憶継承エンド。"
+    description: "探索者は空席の椅子に一人で座り、炉の明かりと灯を見ながら光に包まれて元の世界へ帰る。"
+    hidden_description: "探索者の帰還条件は満たしたが、灯の連れ帰り条件が欠けた場合に到達する記憶継承エンド。灯は膝の上には座らず、境界のこちら側に残る。"
     unlock_conditions:
       all:
         - flag: "player_attempts_return"
