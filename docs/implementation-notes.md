@@ -68,6 +68,12 @@
 
 このファイルは、仕様書に明記されていなかった実装上の判断、変更、妥協点、今後正式仕様へ戻すべき事項を記録する。
 
+## 2026-05-30 Kimidake Current Spec Entry Point
+
+- `きみだけが覚えている事故` は、旧 handoff と長い作業文脈ファイルに途中経過が残っているため、現行仕様の入口として `docs/scenario-current-spec-kimidake_ga_oboeteiru_jiko.md` を新規作成した。
+- 旧 handoff 類を全面改稿せず、現行仕様ドキュメントから参照優先順位と古い文脈の扱いを明示する方針にした。履歴を消すより、どのファイルを正とするかを明確にする判断。
+- 現行仕様の正本は、この新規ドキュメントだけに閉じず、実行データである `scenarios/kimidake_ga_oboeteiru_jiko/*.yaml` と、本文基準である `docs/scenario-body-kimidake_ga_oboeteiru_jiko/01_overview.md`、`08_scene6.md`、`09_scene7.md` を合わせて扱う。
+
 ## 2026-05-27 Scenario MVP Vertical Slice
 
 ### シナリオ読み込み
