@@ -376,8 +376,11 @@ scenes:
             relatives_killed: true
           add_flags:
             - "made_akari_bear_guilt"
+      - id: "fight_makabe"
+        label: "導師・真壁透一郎と戦う"
+        type: "check"
       - id: "realize_return_ritual_reproduction"
-        label: "二人だけで帰還儀式を再現できると気づく"
+        label: "無人の儀式場で二人だけの帰還儀式を再現できると気づく"
         type: "story"
         once_per_run: true
         requirements:
@@ -387,7 +390,7 @@ scenes:
           set_flags:
             ritual_reproduction_realized: true
       - id: "take_wedding_rings"
-        label: "儀式再現の焦点として親族夫婦の結婚指輪を取りに戻る"
+        label: "二人分のペア媒介として親族夫婦の結婚指輪を取りに戻る"
         type: "story"
         requirements:
           - "has_flag:ritual_reproduction_realized"
@@ -397,7 +400,7 @@ scenes:
           add_items:
             - "relatives_wedding_rings"
       - id: "return_artifacts_for_ritual"
-        label: "3つ以上の四方アーティファクトを戻し、帰還儀式を再現する"
+        label: "3つ以上の四方アーティファクトと結婚指輪で帰還儀式を再現する"
         type: "story"
         once_per_run: true
         requirements:
@@ -415,9 +418,6 @@ scenes:
           enforce_carry_out_limit:
             group: "four_room_artifact"
             max_count: 1
-      - id: "fight_makabe"
-        label: "導師・真壁透一郎と戦う"
-        type: "check"
     checks:
       - id: "check_survive_relative_attack"
         label: "儀式を止めようとする親族の襲撃から生き延びる"
@@ -470,7 +470,7 @@ scenes:
             - "makabe_gone"
           counter_delta:
             boundary_contamination: 1
-          reveal_text: "時間が巻き戻るようにぶれ、死者の声が炉から漏れる。真壁は倒れず、しかし境界の揺らぎに身を隠し、そこからいなくなる。"
+          reveal_text: "時間が巻き戻るようにぶれ、死者の声が炉から漏れる。真壁は倒れず、しかし境界の揺らぎに身を隠し、そこからいなくなる。無人になった儀式場に、探索者と灯だけが残される。"
     next_scene_rules:
       - condition: "has_flag:makabe_gone"
         next_scene_id: "scene_007_return_fire"

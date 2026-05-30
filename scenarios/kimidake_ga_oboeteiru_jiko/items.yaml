@@ -47,12 +47,12 @@ items:
   - id: "relatives_wedding_rings"
     name: "親族夫婦の結婚指輪"
     type: "key_item"
-    description: "儀式を乱した後に灯と探索者が殺めた親族夫婦の指輪。真壁戦の後、二人だけで帰還儀式を再現できると気づいてから、焦点として取得しに戻る。"
+    description: "儀式を乱した後に灯と探索者が殺めた親族夫婦の指輪。殺害直後には取得せず、真壁戦の後、無人の儀式場で二人だけの帰還儀式を再現できると気づいてから、ペアの媒介として取得しに戻る。"
     found_in_scene_id: "scene_006_four_rooms_ritual"
     effects:
       - id: "reproduce_return_ritual"
         type: "flag_unlock"
-        description: "真壁戦後、帰還儀式を二人で再現するための焦点になる。"
+        description: "真壁戦後、二人分の帰還儀式を再現するためのペア媒介になる。"
     can_carry_out: false
     can_bring_into_scenario: false
     can_give_to_companion_npc: false
