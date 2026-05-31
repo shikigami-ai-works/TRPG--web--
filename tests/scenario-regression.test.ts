@@ -200,9 +200,18 @@ test("wedding rings are retrieved only after Makabe is gone, ritual reproduction
 
   state = applyAction(state, "refuse_unopened_gift_as_return_fuel");
   assert.equal(canUseRequirements(takeRings.requirements, state, pack), true);
+  assert.equal(canUseAction(takeRings, state), true);
 
   state = applyAction(state, "take_wedding_rings");
+  assert.equal(takeRings.once_per_run, true);
   assert.equal(state.inventory.includes("relatives_wedding_rings"), true);
+  assert.equal(state.inventory.filter((itemId) => itemId === "relatives_wedding_rings").length, 1);
+  assert.equal(state.usedActionIds.includes("take_wedding_rings"), true);
+  assert.equal(canUseRequirements(takeRings.requirements, state, pack), true);
+  assert.equal(canUseAction(takeRings, state), false);
+
+  const repeatedStateChanges = applyStateChanges(state, takeRings.state_changes, pack);
+  assert.equal(repeatedStateChanges.inventory.filter((itemId) => itemId === "relatives_wedding_rings").length, 1);
 });
 
 test("scene 6 advances to return fire only after ritual reproduction is realized", () => {
@@ -583,7 +592,7 @@ function playCommonRouteBeforeMakabe({ openGift }: { openGift: boolean }): Scena
 
 function applyAction(state: ScenarioRuntimeState, actionId: string): ScenarioRuntimeState {
   const action = findAction(actionId);
-  assert.equal(canUseRequirements(action.requirements, state, pack), true, `${actionId} requirements should be met`);
+  assert.equal(canUseAction(action, state), true, `${actionId} should be usable`);
   const changed = applyStateChanges(state, action.state_changes, pack);
 
   return {
@@ -591,6 +600,14 @@ function applyAction(state: ScenarioRuntimeState, actionId: string): ScenarioRun
     lastChoiceId: action.id,
     usedActionIds: action.once_per_run ? [...changed.usedActionIds, action.id] : changed.usedActionIds,
   };
+}
+
+function canUseAction(action: SceneActionDefinition, state: ScenarioRuntimeState): boolean {
+  if (action.once_per_run && state.usedActionIds.includes(action.id)) {
+    return false;
+  }
+
+  return canUseRequirements(action.requirements, state, pack);
 }
 
 function applySuccess(state: ScenarioRuntimeState, checkId: string): ScenarioRuntimeState {

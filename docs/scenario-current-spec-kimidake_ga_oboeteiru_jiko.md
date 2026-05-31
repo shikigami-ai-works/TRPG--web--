@@ -1,6 +1,6 @@
 # きみだけが覚えている事故 現行仕様
 
-最終更新: 2026-05-30
+最終更新: 2026-05-31
 
 このドキュメントは、TRPG/VN シナリオ「きみだけが覚えている事故」の現行仕様を一本化するための入口である。旧 handoff や古い作業文脈には途中経過が残っているため、今後このシナリオを読む、直す、アプリへ載せるときは、まずこのファイルを確認する。
 
@@ -20,7 +20,7 @@
 - 想定プレイ時間: 約90分
 - シーン数: 7
 - 形式: 文章シナリオ + YAML化された進行データ + MVPアプリ用の実行/検証ロジック
-- 直近検証: `npm run validate:scenarios` は 1 pack / 0 errors / 0 warnings、`npm run test` は 17 passed
+- 直近検証: `npm run validate:scenarios` は 1 pack / 0 errors / 0 warnings、`npm run test` は 18 passed
 
 ## 物語の核
 

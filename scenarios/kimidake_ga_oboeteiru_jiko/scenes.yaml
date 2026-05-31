@@ -472,6 +472,7 @@ scenes:
       - id: "take_wedding_rings"
         label: "プレゼント案を断った後、二人分のペア媒介として親族夫婦の結婚指輪を取りに戻る"
         type: "story"
+        once_per_run: true
         requirements:
           - "has_flag:ritual_reproduction_realized"
           - "has_flag:makabe_gone"

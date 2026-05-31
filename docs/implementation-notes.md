@@ -74,6 +74,11 @@
 - 旧 handoff 類を全面改稿せず、現行仕様ドキュメントから参照優先順位と古い文脈の扱いを明示する方針にした。履歴を消すより、どのファイルを正とするかを明確にする判断。
 - 現行仕様の正本は、この新規ドキュメントだけに閉じず、実行データである `scenarios/kimidake_ga_oboeteiru_jiko/*.yaml` と、本文基準である `docs/scenario-body-kimidake_ga_oboeteiru_jiko/01_overview.md`、`08_scene6.md`、`09_scene7.md` を合わせて扱う。
 
+## 2026-05-31 Kimidake Wedding Rings Action Reuse
+
+- `scene_007_return_fire` の `take_wedding_rings` は、取得済み後も requirements 自体は満たされたままになるため、UI上の再使用防止は既存の `once_per_run` / `usedActionIds` ルールに合わせることにした。未所持条件を新設せず、既存の「一度だけ押せる物語アクション」として扱う判断。
+- 所持品重複は `applyStateChanges` 側の `add_items` 重複排除でも守られるが、プレイヤーには取得済みが「使用済み」として見える方が自然なので、YAML側に `once_per_run: true` を追加し、回帰テストで再使用不可と重複なしを確認する形にした。
+
 ## 2026-05-27 Scenario MVP Vertical Slice
 
 ### シナリオ読み込み
