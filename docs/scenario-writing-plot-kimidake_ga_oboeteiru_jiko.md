@@ -1,5 +1,7 @@
 # シナリオ本文執筆用プロット: きみだけが覚えている事故
 
+> 現行仕様案内: このファイルは執筆用の旧プロットです。今後はまず `docs/scenario-current-spec-kimidake_ga_oboeteiru_jiko.md` を確認し、食い違う場合は現行仕様正本、YAML、現行本文を優先してください。特に scene6 では指輪取得まで進めず、scene7 で未開封プレゼント案を断った後に初めて指輪を思いつく順序が固定です。
+
 このファイルは、Claude Code / Opus 4.6 などに TRPG シナリオ本文を書かせるための詳細プロット資料です。
 元データは `scenarios/kimidake_ga_oboeteiru_jiko/` 配下の YAML です。
 

@@ -9,6 +9,8 @@ related_files:
   - scenarios/kimidake_ga_oboeteiru_jiko/*.yaml
 ---
 
+> 現行仕様案内: このファイルは執筆用の旧発注パッケージです。今後はまず `docs/scenario-current-spec-kimidake_ga_oboeteiru_jiko.md` を確認し、食い違う場合は現行仕様正本、YAML、現行本文を優先してください。特に scene6 では指輪取得まで進めず、scene7 で未開封プレゼント案を断った後に初めて指輪を思いつく順序が固定です。
+
 # 執筆セッション渡しパッケージ
 
 このファイルは、執筆作業を別 LLM へ依頼するときにそのままコピペで使うためのプロンプト集です。**元の設計判断と章別プロンプトは `scenario-writing-context-kimidake_ga_oboeteiru_jiko.md` が真実**であり、本ファイルはそれを「発注用」に再パッケージしたものです。設計が変わったら context ファイル側を更新し、本ファイルを同期してください。
