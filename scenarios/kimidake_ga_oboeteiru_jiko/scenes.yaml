@@ -443,7 +443,7 @@ scenes:
             boundary_contamination: 1
           reveal_text: "時間が巻き戻るようにぶれ、死者の声が炉から漏れる。真壁は倒れず、しかし境界の揺らぎに身を隠し、そこからいなくなる。無人になった儀式場に、探索者と灯だけが残される。"
     next_scene_rules:
-      - condition: "has_flag:makabe_gone"
+      - condition: "has_flag:ritual_reproduction_realized"
         next_scene_id: "scene_007_return_fire"
       - condition: "default"
         ending_id: "boundary_collapse"

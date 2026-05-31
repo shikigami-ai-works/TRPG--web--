@@ -13,6 +13,7 @@ import {
   applyStateChanges,
   canUseRequirements,
   createInitialState,
+  evaluateRequirement,
   resolveEnding,
   toggleCarryOutItem,
 } from "../lib/scenarios/runtime";
@@ -202,6 +203,21 @@ test("wedding rings are retrieved only after Makabe is gone, ritual reproduction
 
   state = applyAction(state, "take_wedding_rings");
   assert.equal(state.inventory.includes("relatives_wedding_rings"), true);
+});
+
+test("scene 6 advances to return fire only after ritual reproduction is realized", () => {
+  let state = playCommonRouteBeforeMakabe({ openGift: false });
+  const scene = pack.scenes.find((candidate) => candidate.id === "scene_006_four_rooms_ritual");
+  const returnFireRule = scene?.next_scene_rules?.find((rule) => rule.next_scene_id === "scene_007_return_fire");
+  assert.ok(returnFireRule, "scene 6 should define a return fire transition");
+
+  state = applySuccess(state, "check_defeat_makabe");
+  assert.equal(state.flags.makabe_gone, true);
+  assert.equal(evaluateRequirement(returnFireRule.condition, state, pack), false);
+
+  state = applyAction(state, "realize_return_ritual_reproduction");
+  assert.equal(state.flags.ritual_reproduction_realized, true);
+  assert.equal(evaluateRequirement(returnFireRule.condition, state, pack), true);
 });
 
 test("Makabe leaves the ritual scene even when the combat check fails", () => {
