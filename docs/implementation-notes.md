@@ -79,6 +79,12 @@
 - `scene_007_return_fire` の `take_wedding_rings` は、取得済み後も requirements 自体は満たされたままになるため、UI上の再使用防止は既存の `once_per_run` / `usedActionIds` ルールに合わせることにした。未所持条件を新設せず、既存の「一度だけ押せる物語アクション」として扱う判断。
 - 所持品重複は `applyStateChanges` 側の `add_items` 重複排除でも守られるが、プレイヤーには取得済みが「使用済み」として見える方が自然なので、YAML側に `once_per_run: true` を追加し、回帰テストで再使用不可と重複なしを確認する形にした。
 
+## 2026-06-01 Kimidake Workflow Freeze and Repo Hygiene
+
+- `.runtime/` は app 側確認や CDP fallback の監査証跡を置くために残すが、成果物としては管理しない方針にした。毎回 `git status` に未追跡として出ると誤 stage の危険があるため、repo の `.gitignore` に `.runtime/` を追加した。
+- Kimidake の古い handoff / 執筆用ドキュメントは履歴として保存し、全面改稿しない。現行仕様の入口は `docs/scenario-current-spec-kimidake_ga_oboeteiru_jiko.md` に固定し、2026-06-01 の scene7 app 側確認と最新 handoff への参照をそこへ集約する判断にした。
+- 変更後の検証ゲートは、シナリオ本体に触った場合は `npm run validate:scenarios` と `npm run test`、UIや共有コードに触った場合は `npm run typecheck`、`npm run lint`、`npm run build` まで広げる運用に整理した。
+
 ## 2026-05-27 Scenario MVP Vertical Slice
 
 ### シナリオ読み込み
