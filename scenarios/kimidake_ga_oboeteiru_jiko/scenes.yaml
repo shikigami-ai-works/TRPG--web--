@@ -516,6 +516,8 @@ scenes:
         label: "今度は一緒に帰ろうと約束する"
         type: "conversation"
         once_per_run: true
+        requirements:
+          - "has_flag:regret_resolved"
         state_changes:
           trust_delta:
             minase_akari: 10
@@ -524,6 +526,8 @@ scenes:
       - id: "choose_return_with_akari"
         label: "灯と二人で帰る"
         type: "ending_choice"
+        requirements:
+          - "has_flag:regret_resolved"
         state_changes:
           set_flags:
             player_attempts_return: true
@@ -532,6 +536,8 @@ scenes:
       - id: "choose_return_alone"
         label: "探索者だけが帰る"
         type: "ending_choice"
+        requirements:
+          - "has_flag:regret_resolved"
         state_changes:
           set_flags:
             player_attempts_return: true
@@ -540,6 +546,8 @@ scenes:
       - id: "choose_stay_with_akari"
         label: "灯と共にこちらの世界に残る"
         type: "ending_choice"
+        requirements:
+          - "has_flag:regret_resolved"
         state_changes:
           set_flags:
             player_attempts_return: false

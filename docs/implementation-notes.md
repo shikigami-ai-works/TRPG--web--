@@ -85,6 +85,12 @@
 - Kimidake の古い handoff / 執筆用ドキュメントは履歴として保存し、全面改稿しない。現行仕様の入口は `docs/scenario-current-spec-kimidake_ga_oboeteiru_jiko.md` に固定し、2026-06-01 の scene7 app 側確認と最新 handoff への参照をそこへ集約する判断にした。
 - 変更後の検証ゲートは、シナリオ本体に触った場合は `npm run validate:scenarios` と `npm run test`、UIや共有コードに触った場合は `npm run typecheck`、`npm run lint`、`npm run build` まで広げる運用に整理した。
 
+## 2026-06-01 Kimidake Final Choice UX Gate
+
+- 全編UXレビューのCDP確認で、`scene_007_return_fire` の最終選択肢が `return_artifacts_for_ritual` / `burn_keepsakes_as_farewell` 前から押せる状態だったため、`promise_return_together` と3つの最終選択肢に `has_flag:regret_resolved` を要求するようにした。
+- 現行仕様の固定順序では、未開封プレゼント案を断り、指輪を取り、帰還儀式を再現し、送り火として遺留品を返してから最終分岐に入るため、最終選択肢のUI gate は `regret_resolved` に寄せるのが最小変更と判断した。
+- `stay_with_akari` も「最後の炉で、帰還ではなく灯と残る選択をする」結末なので、帰還しない選択であっても送り火前には出さない方針に揃えた。
+
 ## 2026-05-27 Scenario MVP Vertical Slice
 
 ### シナリオ読み込み

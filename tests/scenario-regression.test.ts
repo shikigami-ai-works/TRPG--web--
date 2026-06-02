@@ -229,6 +229,39 @@ test("scene 6 advances to return fire only after ritual reproduction is realized
   assert.equal(evaluateRequirement(returnFireRule.condition, state, pack), true);
 });
 
+test("scene 7 final choices unlock only after the farewell fire resolves regret", () => {
+  let state = playCommonRouteBeforeMakabe({ openGift: false });
+  state = applySuccess(state, "check_defeat_makabe");
+  state = applyAction(state, "realize_return_ritual_reproduction");
+  state = applyAction(state, "take_stopped_pocket_watch");
+  state = applyAction(state, "refuse_unopened_gift_as_return_fuel");
+  state = applyAction(state, "take_wedding_rings");
+
+  const promiseReturnTogether = findAction("promise_return_together");
+  const returnWithAkari = findAction("choose_return_with_akari");
+  const returnAlone = findAction("choose_return_alone");
+  const stayWithAkari = findAction("choose_stay_with_akari");
+
+  assert.equal(canUseAction(promiseReturnTogether, state), false);
+  assert.equal(canUseAction(returnWithAkari, state), false);
+  assert.equal(canUseAction(returnAlone, state), false);
+  assert.equal(canUseAction(stayWithAkari, state), false);
+
+  state = applyAction(state, "return_artifacts_for_ritual");
+  assert.equal(state.flags.ritual_reproduced, true);
+  assert.equal(canUseAction(promiseReturnTogether, state), false);
+  assert.equal(canUseAction(returnWithAkari, state), false);
+  assert.equal(canUseAction(returnAlone, state), false);
+  assert.equal(canUseAction(stayWithAkari, state), false);
+
+  state = applyAction(state, "burn_keepsakes_as_farewell");
+  assert.equal(state.flags.regret_resolved, true);
+  assert.equal(canUseAction(promiseReturnTogether, state), true);
+  assert.equal(canUseAction(returnWithAkari, state), true);
+  assert.equal(canUseAction(returnAlone, state), true);
+  assert.equal(canUseAction(stayWithAkari, state), true);
+});
+
 test("Makabe leaves the ritual scene even when the combat check fails", () => {
   let state = playCommonRouteBeforeMakabe({ openGift: false });
 
@@ -530,7 +563,9 @@ function playReturnRoute({
 }
 
 function playStayRoute(): { ending: EndingDefinition | undefined; state: ScenarioRuntimeState } {
-  const state = applyAction(playCommonRoute({ openGift: false, reproduceRitual: false }), "choose_stay_with_akari");
+  let state = playCommonRoute({ openGift: false, reproduceRitual: true });
+  state = applyAction(state, "burn_keepsakes_as_farewell");
+  state = applyAction(state, "choose_stay_with_akari");
 
   return {
     ending: resolveEnding(pack, state),
