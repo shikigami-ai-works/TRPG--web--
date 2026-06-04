@@ -50,6 +50,118 @@ interface ScenarioExplorerProps {
   packs: ScenarioPack[];
 }
 
+const STAT_LABELS: Record<string, string> = {
+  strength: "筋力",
+  constitution: "体力",
+  dexterity: "敏捷",
+  appearance: "外見",
+  intelligence: "知性",
+  willpower: "精神力",
+  education: "教養",
+  luck: "幸運",
+  combat: "戦闘",
+};
+
+const SKILL_LABELS: Record<string, string> = {
+  observe: "観察",
+  listen: "聞き耳",
+  search: "探索",
+  persuade: "説得",
+  occult: "オカルト",
+  medicine: "医学",
+  stealth: "隠密",
+  combat: "戦闘",
+  library_use: "資料調査",
+  dodge: "回避",
+  sanity: "正気度",
+  melee_or_firearm: "近接/射撃",
+};
+
+const ACTION_TYPE_LABELS: Record<string, string> = {
+  conversation: "会話",
+  story: "行動",
+  danger: "危険",
+  ending_choice: "最終選択",
+  check: "判定",
+};
+
+const SCENE_TYPE_LABELS: Record<string, string> = {
+  intro: "導入",
+  exploration: "探索",
+  danger: "危機",
+  climax: "クライマックス",
+  ending: "終幕",
+};
+
+const ENDING_TYPE_LABELS: Record<string, string> = {
+  true: "トゥルー",
+  good: "グッド",
+  normal: "ノーマル",
+  bad: "バッド",
+  lost: "ロスト",
+};
+
+const RULESET_LABELS: Record<string, string> = {
+  cthulhu_like: "クトゥルフ風",
+};
+
+const PROFILE_NAME_LABELS: Record<string, string> = {
+  "MVP investigator": "MVP探索者",
+};
+
+const SCENARIO_DIRECTORY_LABELS: Record<string, string> = {
+  KIMIDAKE_GA_OBOETEIRU_JIKO: "きみだけが覚えている事故",
+};
+
+const COUNTER_LABELS: Record<string, string> = {
+  boundary_contamination: "境界侵食",
+  boundary_contamination_limit: "境界侵食上限",
+  four_room_artifacts_taken: "四方アーティファクト取得数",
+  four_room_artifacts_returned: "四方アーティファクト返却数",
+  four_room_artifacts_carried_out: "四方アーティファクト持ち帰り数",
+};
+
+const CARRY_GROUP_LABELS: Record<string, string> = {
+  four_room_artifact: "四方アーティファクト",
+};
+
+const FLAG_LABELS: Record<string, string> = {
+  akari_survives: "灯が生存している",
+  said_not_replacement: "代わりではないと伝えた",
+  acted_as_dead_friend: "親友本人のように振る舞った",
+  noticed_parallel_displacement: "平行世界のズレに気づいた",
+  akari_regret_spoken: "灯の未練を聞いた",
+  gift_respected_unopened: "誕生日プレゼントを開けずに尊重した",
+  found_cult_recovery_trace: "教団の痕跡を見つけた",
+  akari_rested_in_empty_house: "灯を空き家で休ませた",
+  dead_friend_home_respected: "親友の家を尊重した",
+  protected_akari_without_possessing: "灯を所有せず守った",
+  abandoned_akari_in_crisis: "危機で灯を見捨てた",
+  akari_choice_asserted: "灯自身の選択を尊重した",
+  overrode_akari_choice: "灯の選択を上書きした",
+  escaped_returning_family: "親族夫婦から逃げ切った",
+  survived_relative_attack: "親族夫婦の襲撃を生き延びた",
+  made_akari_bear_guilt: "灯に罪を背負わせた",
+  understood_cult_true_goal: "教団の真の目的を理解した",
+  gift_opened: "プレゼントを開けた",
+  relatives_killed: "親族夫婦が死亡した",
+  ritual_disrupted: "儀式を乱した",
+  cult_leader_defeated: "真壁を退けた",
+  makabe_gone: "真壁が退場した",
+  ritual_reproduction_realized: "帰還儀式の再現に気づいた",
+  gift_refused_as_return_fuel: "未開封プレゼント案を断った",
+  ritual_reproduced: "帰還儀式を再現した",
+  regret_resolved: "送り火で未練をほどいた",
+  shared_guilt: "罪を共有した",
+  promised_return_together: "一緒に帰ると約束した",
+  player_attempts_return: "探索者が帰還を試みた",
+  requested_akari_return: "灯の帰還を願った",
+  player_chooses_to_stay: "こちらに残ると選んだ",
+  boundary_stable: "境界が安定した",
+  boundary_unstable: "境界が揺らいだ",
+  boundary_contamination_too_high: "境界侵食が高すぎる",
+};
+
 export default function ScenarioExplorer({ packs }: ScenarioExplorerProps) {
   const initialPack = packs[0];
   const [packId, setPackId] = useState(initialPack?.scenario.id ?? "");
@@ -184,7 +296,7 @@ export default function ScenarioExplorer({ packs }: ScenarioExplorerProps) {
   return (
     <main className="shell">
       <aside className="scenario-list surface">
-        <p className="eyebrow">Scenario Packs</p>
+        <p className="eyebrow">シナリオ</p>
         <h1>TRPG Web MVP</h1>
         <div className="scenario-buttons">
           {packs.map((candidate) => (
@@ -195,7 +307,7 @@ export default function ScenarioExplorer({ packs }: ScenarioExplorerProps) {
               type="button"
             >
               <span>{candidate.scenario.title}</span>
-              <small>{candidate.scenario.ruleset_id}</small>
+              <small>{formatRulesetLabel(candidate.scenario.ruleset_id)}</small>
             </button>
           ))}
         </div>
@@ -349,7 +461,7 @@ function ScenarioWorkspace({
     <section className="workspace" data-ending-id={state.endingId ?? ""} data-scene-id={state.sceneId}>
       <header className="surface scenario-header">
         <div>
-          <p className="eyebrow">{pack.directory}</p>
+          <p className="eyebrow">{formatScenarioDirectoryLabel(pack.directory)}</p>
           <h2>{pack.scenario.title}</h2>
           <p>{pack.scenario.summary}</p>
         </div>
@@ -365,7 +477,7 @@ function ScenarioWorkspace({
             <MetricList title="信頼度" values={formatTrust(state, npcById)} />
             <MetricList title="カウンター" values={formatCounters(state)} />
             <TagList title="所持品" values={state.inventory.map((itemId) => itemById.get(itemId)?.name ?? itemId)} />
-            <TagList title="有効フラグ" values={Object.entries(state.flags).filter(([, value]) => value).map(([flag]) => flag)} />
+            <TagList title="有効フラグ" values={Object.entries(state.flags).filter(([, value]) => value).map(([flag]) => formatFlagLabel(flag))} />
           </section>
 
           <section className="surface player-panel">
@@ -380,7 +492,7 @@ function ScenarioWorkspace({
             <>
               <div className="scene-heading">
                 <div>
-                  <p className="eyebrow">{scene.scene_type}</p>
+                  <p className="eyebrow">{formatSceneTypeLabel(scene.scene_type)}</p>
                   <h3>{scene.title}</h3>
                 </div>
                 <button className="primary-button" data-control="advance-scene" onClick={advanceScene} type="button">
@@ -477,7 +589,7 @@ function SaveHistoryPanel({
               <li key={run.runId}>
                 <strong>{run.endingTitle}</strong>
                 <small>
-                  {run.endingType} / {formatDateTime(run.completedAt)}
+                  {formatEndingTypeLabel(run.endingType)} / {formatDateTime(run.completedAt)}
                 </small>
               </li>
             ))}
@@ -516,7 +628,7 @@ function EndingProgressList({
                     <span className="ending-status">{reachedLabel}</span>
                     <strong>{entry.title}</strong>
                   </div>
-                  <small>{entry.endingType}</small>
+                  <small>{formatEndingTypeLabel(entry.endingType)}</small>
                 </div>
 
                 <p>{entry.description}</p>
@@ -592,7 +704,7 @@ function ActionList({
               type="button"
             >
               <span>{action.label}</span>
-              <small>{used ? "使用済み" : action.type}</small>
+              <small>{used ? "使用済み" : formatActionTypeLabel(action.type)}</small>
             </button>
           );
         })}
@@ -616,7 +728,7 @@ function PlayerProfilePanel({
         <div>
           <h3>探索者</h3>
           <p className="muted">
-            {profile.name} / {profile.rulesetId}
+            {formatProfileNameLabel(profile.name)} / {formatRulesetLabel(profile.rulesetId)}
           </p>
         </div>
         <button className="profile-reset-button" data-control="reset-player-profile" onClick={onReset} type="button">
@@ -660,7 +772,7 @@ function ProfileNumberGrid({
       <div className="profile-number-grid">
         {ids.map((id) => (
           <label className="profile-number-field" key={id}>
-            <span>{id}</span>
+            <span>{formatProfileLabel(group, id)}</span>
             <input
               data-profile-group={group}
               data-profile-id={id}
@@ -709,7 +821,7 @@ function CheckList({
               <div>
                 <strong>{check.label}</strong>
                 <small>
-                  {modifiers.statId} {modifiers.statValue} + {modifiers.skillId} {modifiers.skillValue} + 1d20 / 目標 {modifiers.targetNumber}
+                  {formatProfileLabel("stats", modifiers.statId)} {modifiers.statValue} + {formatProfileLabel("skills", modifiers.skillId)} {modifiers.skillValue} + 1d20 / 目標 {modifiers.targetNumber}
                 </small>
               </div>
               <div className="check-buttons">
@@ -754,7 +866,7 @@ function CarryOutGroups({
         return (
           <div className="carry-group" key={group.id}>
             <div className="carry-group-header">
-              <strong>{group.id}</strong>
+              <strong>{formatCarryGroupLabel(group.id)}</strong>
               <small>
                 {selected.length}/{limit ?? "-"}
               </small>
@@ -819,7 +931,7 @@ function TagList({ title, values }: { title: string; values: string[] }) {
 function EndingView({ ending }: { ending: EndingDefinition }) {
   return (
     <div className="ending-view">
-      <p className="eyebrow">{ending.ending_type}</p>
+      <p className="eyebrow">{formatEndingTypeLabel(ending.ending_type)}</p>
       <h3>{ending.title}</h3>
       <p>{ending.description}</p>
       {ending.unlocks?.length ? (
@@ -837,7 +949,49 @@ function EndingView({ ending }: { ending: EndingDefinition }) {
 }
 
 function formatRollResult(roll: CheckRollResult): string {
-  return `${roll.total} = ${roll.statId} ${roll.statValue} + ${roll.skillId} ${roll.skillValue} + d20 ${roll.dieRoll} / 目標 ${roll.targetNumber}`;
+  return `${roll.total} = ${formatProfileLabel("stats", roll.statId)} ${roll.statValue} + ${formatProfileLabel("skills", roll.skillId)} ${roll.skillValue} + d20 ${roll.dieRoll} / 目標 ${roll.targetNumber}`;
+}
+
+function formatProfileLabel(group: "stats" | "skills", id: string): string {
+  const labels = group === "stats" ? STAT_LABELS : SKILL_LABELS;
+  return labels[id] ?? id;
+}
+
+function formatActionTypeLabel(type: string): string {
+  return ACTION_TYPE_LABELS[type] ?? type;
+}
+
+function formatSceneTypeLabel(type: string): string {
+  return SCENE_TYPE_LABELS[type] ?? type;
+}
+
+function formatEndingTypeLabel(type: string): string {
+  return ENDING_TYPE_LABELS[type] ?? type;
+}
+
+function formatRulesetLabel(rulesetId: string): string {
+  return RULESET_LABELS[rulesetId] ?? rulesetId;
+}
+
+function formatProfileNameLabel(name: string): string {
+  return PROFILE_NAME_LABELS[name] ?? name;
+}
+
+function formatScenarioDirectoryLabel(directory: string): string {
+  const normalizedDirectory = directory.toUpperCase();
+  return SCENARIO_DIRECTORY_LABELS[directory] ?? SCENARIO_DIRECTORY_LABELS[normalizedDirectory] ?? directory;
+}
+
+function formatFlagLabel(flag: string): string {
+  return FLAG_LABELS[flag] ?? flag;
+}
+
+function formatCounterLabel(counter: string): string {
+  return COUNTER_LABELS[counter] ?? counter;
+}
+
+function formatCarryGroupLabel(groupId: string): string {
+  return CARRY_GROUP_LABELS[groupId] ?? groupId;
 }
 
 function resolveBySceneRules(
@@ -858,7 +1012,7 @@ function formatTrust(state: ScenarioRuntimeState, npcById: Map<string, { name: s
 }
 
 function formatCounters(state: ScenarioRuntimeState): string[] {
-  return Object.entries(state.counters).map(([counter, value]) => `${counter}: ${value}`);
+  return Object.entries(state.counters).map(([counter, value]) => `${formatCounterLabel(counter)}: ${value}`);
 }
 
 function formatDateTime(value: string): string {

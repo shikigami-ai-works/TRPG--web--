@@ -91,6 +91,25 @@
 - 現行仕様の固定順序では、未開封プレゼント案を断り、指輪を取り、帰還儀式を再現し、送り火として遺留品を返してから最終分岐に入るため、最終選択肢のUI gate は `regret_resolved` に寄せるのが最小変更と判断した。
 - `stay_with_akari` も「最後の炉で、帰還ではなく灯と残る選択をする」結末なので、帰還しない選択であっても送り火前には出さない方針に揃えた。
 
+## 2026-06-04 Kimidake Current Spec Routing Refresh
+
+- 2026-06-02 の final-choice gate / non-true ending CDP 監査と `f8161ff Document Kimidake Scene 7 UX audit` が最新の repo 保存点になったため、`docs/scenario-current-spec-kimidake_ga_oboeteiru_jiko.md` の参照優先順位と直近検証を更新した。
+- シナリオ本文は今後も改稿され得るため、本文表現だけを根拠に YAML / UI ラベル / 分岐条件を過剰同期しない方針を維持する。固定契約は current-spec と YAML、本文はプレイヤー体験や描写意図の参照レイヤーとして扱う。
+- 今回はドキュメントルーティングの更新のみで、YAML、シナリオ本文、UI 実装、`.runtime/` 証跡には触れない判断にした。
+- 6/2 handoff 群は作成時点の Git 状態や次作業を含むため、現在の再開指示として直接再実行しない方針を current-spec に明記した。古い handoff は改稿せず、現在状態の解釈を current-spec 側で上書きする。
+- Scene 7 の current-spec、本文、YAML、ending 条件、回帰テストを契約レベルで照合し、固定順序、`regret_resolved` gate、持ち帰り制限、true / normal / good / lost の解決条件に実装修正が必要な drift は見つからなかった。本文表現は可変レイヤーなので、ラベルの細部は今回同期対象にしない。
+- ending 解決順の実体は `scenarios/kimidake_ga_oboeteiru_jiko/scenario.yaml` の `ending_resolution_order` にあるため、今後の契約監査で `endings.yaml` だけを見て順序判断しないよう current-spec の作業ルールへ明記した。
+- `.runtime/browser-check-*.cjs` の CDP helper は、現時点ではローカル監査証跡兼 fallback 手順として残し、tracked tooling へ昇格しない判断にした。現在の helper は `D:/Codex/TRPG--web--`、ローカル Chrome / Node パス、固定ポート、`.runtime` 出力、ブラウザ終了処理を前提にしているため、そのまま `scripts/` 配下へ移すと再利用可能な開発ツールではなく環境依存スクリプトになる。正式化する場合は、対象ルート、repo root、Chrome/Node 実行ファイル、ポート、成果物出力先、cleanup 範囲を設定化した小さな runner と `npm` script として別タスクで設計する。
+- しきの「自力で判断して進める」「スキルやエージェントを工程ごとに活用する」という運用指示を、`docs/codex-autonomous-workflow.md` としてプロジェクト内に固定した。Git push、Obsidian Git、nextchat、正史変更、依存追加、`.runtime` helper 正式化は明示指示が必要な境界として残し、docs整理、小さな契約修正、検証、読み専監査は自動進行可能な範囲として整理した。
+- 読み専エージェント監査から、工程報告に CDP 証跡パスと現在の `git status --short --branch` を含める提案を採用した。一方で local handoff は `nextchat` 系の明示指示に結びつく成果物なので、自動進行の通常工程には含めない判断を維持した。
+- Stage 7 として初期 UI の CDP 監査を行い、`docs/ux-audit-kimidake-initial-ui-2026-06-04.md` に結果を残した。Browser plugin / node_repl は Windows sandbox refresh で落ちたため、既存 `.runtime` CDP helper と同系統の一時 helper を使った。確認範囲では主要 enabled 操作に可視アウトカムがあり、console error / network failure は 0 件だった。一方で、能力値・技能・action type の内部寄りラベルがプレイヤー画面に出ているため、次の小さな UX 改善候補として記録した。
+- Stage 8 として、能力値、技能、scene type、action type、主要カウンター、主要フラグ、持ち帰りグループを UI 表示上だけ日本語ラベル化した。YAML の ID、保存形式、`data-*` 監査属性、テスト契約は変えない判断にした。これは本文改稿ではなく、既存 scenario data の player-facing 表示改善として扱う。
+- Stage 9 として、表示ラベル改善後に既存 CDP helper で scene 1 から `return_with_akari` true ending まで代表 happy path を再確認した。`return_artifacts_for_ritual` / `burn_keepsakes_as_farewell` / final choice の gate は維持され、最終状態は `return_with_akari` / `true` / `双つ灯の生還`。console error、network 404、network loading failure は 0 件だった。
+- Stage 10 として、表示ラベル改善後に `return_without_akari`、`stay_with_akari`、`boundary_collapse` も既存 CDP helper で再確認した。normal / good / lost の到達、送り火後の final choice enable、`boundary_collapse` の持ち帰り超過 warning が維持され、console error、network 404、network loading failure は 0 件だった。
+- Stage 11 として、初期 UI 監査に残っていた scenario directory、ruleset、profile name の内部寄り表示を UI 表示上だけ日本語化した。`pack.directory` は小文字実値に CSS uppercase が重なっていたため、表示フォーマッタで uppercase lookup を追加した。YAML ID、保存キー、`data-*` 監査属性は維持し、`.runtime/initial-ui-2026-06-04T08-36-05-160Z.json` で `KIMIDAKE_GA_OBOETEIRU_JIKO` の本文露出が消えたことを確認した。
+- Stage 12 として、ending progress、最近のラン履歴、ending view に残る `lost` / `good` / `true` / `normal` などの ending type を UI 表示上だけ `ロスト` / `グッド` / `トゥルー` / `ノーマル` へ置き換えた。`ending_type` のデータ値、保存履歴、解決順、テスト契約は変えていない。`.runtime/initial-ui-2026-06-04T08-40-32-751Z.json` で初期 UI の ending progress 表示が日本語化されたことを確認した。
+- Stage 12 の non-true CDP 再監査では、local `.runtime` helper が ending view の可視テキストを読んでいるにもかかわらず旧 raw 値 `normal` / `good` / `lost` を期待していたため一度失敗した。helper の期待値を表示ラベル `ノーマル` / `グッド` / `ロスト` に合わせ、`.runtime/scene7-nontrue-endings-2026-06-04T08-44-56-579Z.json` で `return_without_akari` / `stay_with_akari` / `boundary_collapse` の再監査が通った。これは tracked tooling の正式化ではなく、今回のローカル証跡 helper の期待更新として扱う。
+
 ## 2026-05-27 Scenario MVP Vertical Slice
 
 ### シナリオ読み込み
