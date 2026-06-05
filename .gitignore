@@ -5,6 +5,7 @@ node_modules/
 out/
 dist/
 .runtime/
+.context-archive/
 
 *.log
 *.tsbuildinfo
