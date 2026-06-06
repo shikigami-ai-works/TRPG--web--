@@ -200,3 +200,15 @@
 - `npm run typecheck`、`npm run lint`、`npm run build` を通した。
 - ブラウザ操作で `return_with_akari`、`return_without_akari`、`boundary_collapse`、`stay_with_akari` の4エンド到達を確認した。
 - 検証用サーバーは `http://localhost:3001` で起動した。3000番はユーザー環境で使用中のため避けた。
+
+## 2026-06-06 Stage 14R-1 AdventurePlayer Shell
+
+- Stage 14R-1 added a player-facing `AdventurePlayer` beside the existing debug UI instead of rewriting `ScenarioExplorer`. `/` now renders the player ADV shell, while `/debug` keeps the previous scenario inspection surface available.
+- The first slice stops at `scene_003_empty_house` with a slice-complete state instead of advancing into scene 4. This keeps Stage 14R scoped to scenes 1-3 while preserving the existing scenario YAML and runtime rules.
+- Player checks are treated as one-use player-facing choices in the ADV adapter by adding the check id to `usedActionIds` after a roll. This is UI/session behavior only; the base scenario runtime was not changed.
+- Evidence entries are derived from existing flags and inventory in `lib/adventure/evidence.ts`. No new clue YAML was added because the v0.2 spec allowed a temporary adapter for the first slice.
+- Visuals use native CSS placeholders, silhouettes, panels, and generated texture effects only. No paid, unclear-license, local Figma, or AI-assisted visual asset was downloaded or copied into the implementation.
+- Evidence source labels are mapped from scene IDs to scene titles in the adapter so the player-facing drawer does not expose raw scenario IDs.
+- The mobile drawer is mounted only while open. This avoids leaving offscreen close buttons or drawer content reachable by keyboard focus while the drawer is visually closed.
+- The top status strip shows Akari trust as a relationship band and combines evidence/log counts. Raw trust numbers remain in the Status drawer detail rather than the always-visible strip.
+- The text-advance control is hidden after the Stage 14R slice-complete state because the completion text is static and should not leave an enabled control with no visible result.

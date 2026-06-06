@@ -1,0 +1,223 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1508" height="1110" viewBox="0 0 1508 1110">
+  <defs>
+    <style>
+      .bg { fill: #0b0d12; }
+      .title { font-family: "Noto Sans JP", "Yu Gothic", Arial, sans-serif; font-size: 22px; font-weight: 700; fill: #eef3f8; }
+      .label { font-family: "Noto Sans JP", "Yu Gothic", Arial, sans-serif; font-size: 12px; fill: #d5dde8; }
+      .small { font-family: "Noto Sans JP", "Yu Gothic", Arial, sans-serif; font-size: 10px; fill: #aeb9c7; }
+      .tiny { font-family: "Noto Sans JP", "Yu Gothic", Arial, sans-serif; font-size: 8px; fill: #aeb9c7; }
+      .jp { font-family: "Noto Sans JP", "Yu Gothic", Arial, sans-serif; font-size: 14px; fill: #f4f1e7; }
+      .jp-small { font-family: "Noto Sans JP", "Yu Gothic", Arial, sans-serif; font-size: 11px; fill: #e9e1cd; }
+      .phone { fill: #11151c; stroke: #2d3542; stroke-width: 2; rx: 28; }
+      .screen { fill: #10141a; stroke: #455061; stroke-width: 1; rx: 22; }
+      .panel { fill: rgba(14,19,26,.88); stroke: rgba(238,232,198,.32); stroke-width: 1; rx: 10; }
+      .glass { fill: rgba(10,13,19,.68); stroke: rgba(226,214,174,.42); stroke-width: 1; rx: 8; }
+      .choice { fill: rgba(25,30,38,.88); stroke: rgba(218,197,139,.55); stroke-width: 1; rx: 8; }
+      .choice-danger { fill: rgba(42,22,27,.9); stroke: rgba(231,119,91,.7); stroke-width: 1; rx: 8; }
+      .nav { fill: rgba(8,11,15,.94); stroke: rgba(169,183,202,.26); stroke-width: 1; }
+      .gold { fill: #d9b765; }
+      .cyan { fill: #85d7d4; }
+      .rose { fill: #d67d81; }
+      .green { fill: #9ccf8a; }
+      .ink { fill: #141821; }
+      .stage-stroke { stroke: rgba(241,226,180,.25); stroke-width: 1; }
+      .gridline { stroke: rgba(255,255,255,.055); stroke-width: 1; }
+    </style>
+    <linearGradient id="classicSky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#172236"/>
+      <stop offset=".55" stop-color="#263448"/>
+      <stop offset="1" stop-color="#101318"/>
+    </linearGradient>
+    <linearGradient id="drawerSky" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#10252a"/>
+      <stop offset=".55" stop-color="#182230"/>
+      <stop offset="1" stop-color="#080b10"/>
+    </linearGradient>
+    <linearGradient id="horrorSky" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#191018"/>
+      <stop offset=".45" stop-color="#29202c"/>
+      <stop offset="1" stop-color="#050609"/>
+    </linearGradient>
+    <pattern id="pixelNoise" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect width="16" height="16" fill="transparent"/>
+      <rect x="2" y="2" width="2" height="2" fill="rgba(255,255,255,.08)"/>
+      <rect x="10" y="6" width="2" height="2" fill="rgba(255,255,255,.055)"/>
+      <rect x="5" y="12" width="2" height="2" fill="rgba(0,0,0,.18)"/>
+    </pattern>
+  </defs>
+
+  <rect class="bg" width="1508" height="1110"/>
+  <text class="title" x="64" y="54">Stage 13S / Web ADV v0.2 mobile-first UI mock</text>
+  <text class="label" x="64" y="80">Editable low-to-mid fidelity SVG for Figma import. All primary frames are 390x844 CSS px.</text>
+
+  <!-- Frame A: Classic ADV -->
+  <g id="frame-classic-adv" transform="translate(64,126)">
+    <text class="title" x="0" y="-34">A. Classic ADV</text>
+    <text class="small" x="0" y="-14">読書没入を優先。Stage 14Rの安全な実装 seed。</text>
+    <rect class="phone" x="0" y="0" width="390" height="844"/>
+    <rect class="screen" x="10" y="10" width="370" height="824"/>
+
+    <rect class="glass" x="22" y="24" width="346" height="46"/>
+    <circle class="gold" cx="42" cy="47" r="5"/>
+    <text class="tiny" x="54" y="43">境界侵食</text>
+    <text class="small" x="54" y="58">揺らぎ</text>
+    <circle class="cyan" cx="153" cy="47" r="5"/>
+    <text class="tiny" x="165" y="43">記憶</text>
+    <text class="small" x="165" y="58">安定</text>
+    <circle class="rose" cx="244" cy="47" r="5"/>
+    <text class="tiny" x="256" y="43">灯</text>
+    <text class="small" x="256" y="58">警戒</text>
+
+    <rect x="22" y="82" width="346" height="384" rx="12" fill="url(#classicSky)" class="stage-stroke"/>
+    <rect x="22" y="82" width="346" height="384" rx="12" fill="url(#pixelNoise)" opacity=".55"/>
+    <rect x="50" y="270" width="260" height="76" fill="#171b22" opacity=".86"/>
+    <rect x="70" y="242" width="72" height="104" fill="#202837"/>
+    <rect x="80" y="224" width="52" height="28" fill="#293449"/>
+    <rect x="204" y="218" width="38" height="128" fill="#1f2634"/>
+    <rect x="252" y="190" width="50" height="156" fill="#252d3d"/>
+    <rect x="270" y="168" width="22" height="26" fill="#374258"/>
+    <rect x="44" y="358" width="288" height="38" fill="#0e1117" opacity=".75"/>
+    <path d="M224 414 C210 382 218 334 246 312 C271 331 278 382 262 414 Z" fill="#242033"/>
+    <rect x="238" y="304" width="28" height="38" fill="#e5d2aa" opacity=".35"/>
+    <rect x="232" y="341" width="38" height="92" fill="#2c2940"/>
+    <rect x="198" y="382" width="104" height="6" fill="#bfa36c" opacity=".22"/>
+    <text class="tiny" x="34" y="103">scene_001_parallel_arrival / smartphone portrait bg slot</text>
+
+    <rect class="panel" x="22" y="478" width="346" height="188"/>
+    <rect x="38" y="494" width="78" height="24" rx="4" fill="#221e24" stroke="#c4a76a" stroke-width="1"/>
+    <text class="jp-small" x="50" y="511">水瀬 灯</text>
+    <text class="jp" x="38" y="540">雨のにおいだけが、事故の夜と同じだった。</text>
+    <text class="jp" x="38" y="565">隣を歩く灯は、まだこちらを見ない。</text>
+    <text class="small" x="332" y="642">tap</text>
+
+    <rect class="choice" x="22" y="678" width="346" height="34"/>
+    <text class="jp-small" x="42" y="700">灯に声をかける</text>
+    <rect class="choice" x="22" y="718" width="346" height="34"/>
+    <text class="jp-small" x="42" y="740">事故現場の方を見る</text>
+    <rect class="choice" x="22" y="758" width="346" height="28"/>
+    <text class="jp-small" x="42" y="777">この場を離れる</text>
+
+    <rect class="nav" x="10" y="794" width="370" height="40" rx="0"/>
+    <text class="small" x="53" y="818">Evidence</text>
+    <text class="small" x="171" y="818">Log</text>
+    <text class="small" x="275" y="818">Status</text>
+    <circle cx="38" cy="813" r="7" fill="#d9b765"/>
+    <rect x="150" y="806" width="14" height="14" rx="2" fill="#85d7d4"/>
+    <path d="M257 819 l8 -14 l8 14 Z" fill="#d67d81"/>
+  </g>
+
+  <!-- Frame B: Drawer heavy -->
+  <g id="frame-investigation-drawer-heavy" transform="translate(560,126)">
+    <text class="title" x="0" y="-34">B. Investigation Drawer-Heavy</text>
+    <text class="small" x="0" y="-14">調査の手触りを強める。証拠/log/statusを下部sheetで比較しやすい。</text>
+    <rect class="phone" x="0" y="0" width="390" height="844"/>
+    <rect class="screen" x="10" y="10" width="370" height="824"/>
+
+    <rect class="glass" x="22" y="24" width="346" height="42"/>
+    <text class="small" x="36" y="43">境界: 安定</text>
+    <text class="small" x="146" y="43">記憶: 違和感</text>
+    <text class="small" x="270" y="43">証拠: 2</text>
+    <rect x="34" y="52" width="300" height="4" rx="2" fill="#273441"/>
+    <rect x="34" y="52" width="116" height="4" rx="2" fill="#9ccf8a"/>
+
+    <rect x="22" y="78" width="346" height="282" rx="12" fill="url(#drawerSky)" class="stage-stroke"/>
+    <rect x="22" y="78" width="346" height="282" rx="12" fill="url(#pixelNoise)" opacity=".5"/>
+    <rect x="52" y="226" width="266" height="62" fill="#142026" opacity=".9"/>
+    <rect x="74" y="194" width="74" height="94" fill="#1a2a2d"/>
+    <rect x="198" y="164" width="86" height="124" fill="#1e252f"/>
+    <rect x="218" y="140" width="42" height="30" fill="#2e3847"/>
+    <path d="M166 330 C154 304 160 266 184 248 C206 265 214 304 202 330 Z" fill="#232133"/>
+    <rect x="176" y="242" width="20" height="34" fill="#d8d1b8" opacity=".35"/>
+    <rect x="24" y="330" width="342" height="30" fill="#0b0f13" opacity=".78"/>
+    <text class="tiny" x="34" y="100">stage is shorter; drawer state is part of the mock</text>
+
+    <rect class="panel" x="22" y="372" width="346" height="146"/>
+    <rect x="38" y="388" width="82" height="22" rx="4" fill="#182424" stroke="#8fc7bd" stroke-width="1"/>
+    <text class="jp-small" x="50" y="404">調査記録</text>
+    <text class="jp" x="38" y="431">壁の奥で、水を踏むような音がした。</text>
+    <text class="jp" x="38" y="456">灯はその音に気づいていないふりをする。</text>
+    <rect class="choice" x="38" y="474" width="294" height="28"/>
+    <text class="jp-small" x="54" y="493">壁際を調べる</text>
+
+    <rect x="10" y="534" width="370" height="260" rx="18" fill="rgba(9,14,18,.97)" stroke="rgba(143,199,189,.52)" stroke-width="1.4"/>
+    <rect x="158" y="546" width="74" height="4" rx="2" fill="#52606a"/>
+    <text class="label" x="30" y="574">Evidence drawer</text>
+    <text class="small" x="274" y="574">半画面sheet</text>
+    <rect x="30" y="592" width="152" height="64" rx="8" fill="#17252a" stroke="#8fc7bd" stroke-width="1"/>
+    <text class="jp-small" x="42" y="616">確定情報</text>
+    <text class="tiny" x="42" y="636">橋の欄干に新しい傷</text>
+    <rect x="196" y="592" width="152" height="64" rx="8" fill="#211f28" stroke="#d9b765" stroke-width="1"/>
+    <text class="jp-small" x="208" y="616">証言</text>
+    <text class="tiny" x="208" y="636">灯は雨の時刻を覚えている</text>
+    <rect x="30" y="668" width="318" height="48" rx="8" fill="#161b22" stroke="#4a5564" stroke-width="1"/>
+    <text class="jp-small" x="42" y="690">Log: 壁際を調べる候補が開いた</text>
+    <text class="tiny" x="42" y="706">unmet choices stay hidden; locked is rare and intentional</text>
+    <rect x="30" y="728" width="318" height="44" rx="8" fill="#12181f" stroke="#4a5564" stroke-width="1"/>
+    <text class="jp-small" x="42" y="755">Status: 記憶は揺れているが、必須文は読める</text>
+
+    <rect class="nav" x="10" y="794" width="370" height="40" rx="0"/>
+    <rect x="32" y="804" width="92" height="24" rx="6" fill="#1d312f" stroke="#8fc7bd" stroke-width="1"/>
+    <text class="small" x="48" y="820">Evidence</text>
+    <text class="small" x="174" y="818">Log</text>
+    <text class="small" x="276" y="818">Status</text>
+  </g>
+
+  <!-- Frame C: Immersive horror -->
+  <g id="frame-immersive-horror" transform="translate(1056,126)">
+    <text class="title" x="0" y="-34">C. Immersive Horror</text>
+    <text class="small" x="0" y="-14">境界侵食を前面化。必須情報は壊さず、視界だけを不穏にする。</text>
+    <rect class="phone" x="0" y="0" width="390" height="844"/>
+    <rect class="screen" x="10" y="10" width="370" height="824"/>
+
+    <rect x="22" y="22" width="346" height="36" rx="10" fill="rgba(30,17,24,.78)" stroke="rgba(214,125,129,.45)" stroke-width="1"/>
+    <text class="small" x="36" y="44">境界: 危険</text>
+    <text class="small" x="142" y="44">記憶: 欠落あり</text>
+    <text class="small" x="272" y="44">灯: 近い</text>
+
+    <rect x="22" y="66" width="346" height="498" rx="12" fill="url(#horrorSky)" class="stage-stroke"/>
+    <rect x="22" y="66" width="346" height="498" rx="12" fill="url(#pixelNoise)" opacity=".65"/>
+    <rect x="52" y="312" width="270" height="82" fill="#101014" opacity=".92"/>
+    <rect x="74" y="250" width="64" height="144" fill="#221a21"/>
+    <rect x="205" y="208" width="82" height="186" fill="#261e2a"/>
+    <rect x="218" y="182" width="46" height="32" fill="#402f3a"/>
+    <path d="M190 510 C168 456 172 360 218 318 C263 358 270 456 246 510 Z" fill="#211928"/>
+    <rect x="203" y="306" width="32" height="48" fill="#e8d6c0" opacity=".28"/>
+    <rect x="194" y="352" width="52" height="148" fill="#291e31"/>
+    <rect x="44" y="450" width="290" height="4" fill="#7e4d57" opacity=".7"/>
+    <rect x="52" y="474" width="250" height="4" fill="#43323c" opacity=".85"/>
+    <rect x="36" y="108" width="70" height="8" fill="#d67d81" opacity=".34"/>
+    <rect x="282" y="146" width="42" height="8" fill="#85d7d4" opacity=".22"/>
+    <rect x="248" y="408" width="78" height="8" fill="#d9b765" opacity=".18"/>
+    <text class="tiny" x="34" y="88">visual distortion never covers mandatory text/choices</text>
+
+    <rect class="panel" x="22" y="574" width="346" height="166"/>
+    <rect x="38" y="590" width="72" height="22" rx="4" fill="#2a1d25" stroke="#d67d81" stroke-width="1"/>
+    <text class="jp-small" x="50" y="606">灯</text>
+    <text class="jp" x="38" y="632">「ここ、前にも来たよね」</text>
+    <text class="jp" x="38" y="657">覚えている。覚えていない。どちらも正しい。</text>
+    <rect class="choice-danger" x="38" y="678" width="294" height="28"/>
+    <text class="jp-small" x="54" y="697">扉を開けてしまう</text>
+    <rect class="choice" x="38" y="712" width="294" height="20"/>
+    <text class="tiny" x="54" y="726">灯の手を引いて戻る</text>
+
+    <rect x="72" y="748" width="246" height="34" rx="12" fill="rgba(37,27,37,.94)" stroke="rgba(214,125,129,.45)" stroke-width="1"/>
+    <text class="small" x="92" y="769">status drawer peek: 汚染された記憶 x1</text>
+
+    <rect class="nav" x="10" y="794" width="370" height="40" rx="0"/>
+    <text class="small" x="52" y="818">Evidence</text>
+    <text class="small" x="174" y="818">Log</text>
+    <text class="small" x="276" y="818">Status</text>
+    <rect x="26" y="806" width="14" height="14" rx="3" fill="#d9b765"/>
+    <rect x="152" y="806" width="14" height="14" rx="3" fill="#85d7d4"/>
+    <rect x="254" y="806" width="14" height="14" rx="3" fill="#d67d81"/>
+  </g>
+
+  <!-- Comparison notes -->
+  <g id="comparison-notes" transform="translate(64,1014)">
+    <rect x="0" y="0" width="1380" height="64" rx="12" fill="#121820" stroke="#344052" stroke-width="1"/>
+    <text class="label" x="18" y="24">Decision use:</text>
+    <text class="small" x="112" y="24">A is the safest Stage 14R implementation baseline. B best expresses TRPG investigation. C is the strongest visual identity but highest readability risk.</text>
+    <text class="label" x="18" y="48">Desktop rule:</text>
+    <text class="small" x="112" y="48">Do not enlarge the portrait mock into the center. Translate evidence/log/status into a right side panel or right drawer at 1280x720 and 1440x900.</text>
+  </g>
+</svg>
