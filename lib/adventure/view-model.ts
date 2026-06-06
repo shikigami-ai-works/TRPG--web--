@@ -1,5 +1,6 @@
 import { deriveEvidenceEntries, type EvidenceEntry } from "./evidence";
 import {
+  STAGE_14R_SLICE_REQUIRED_FLAG,
   STAGE_14R_SLICE_END_SCENE_ID,
   formatActionTypeLabel,
   formatContaminationBand,
@@ -34,6 +35,7 @@ export interface AdventureStatusView {
   memoryLabel: string;
   trustValue: number;
   trustLabel: string;
+  objectiveLabel: string;
   evidenceCount: number;
   logCount: number;
 }
@@ -51,6 +53,7 @@ export interface AdventureViewModel {
   log: string[];
   status: AdventureStatusView;
   isSliceEndScene: boolean;
+  canCompleteSlice: boolean;
 }
 
 export function buildAdventureViewModel(pack: ScenarioPack, state: ScenarioRuntimeState, textComplete: boolean): AdventureViewModel {
@@ -59,6 +62,9 @@ export function buildAdventureViewModel(pack: ScenarioPack, state: ScenarioRunti
   const evidence = deriveEvidenceEntries(pack, state);
   const trustValue = state.trust.minase_akari ?? 0;
   const contamination = state.counters.boundary_contamination ?? 0;
+
+  const isSliceEndScene = scene.id === STAGE_14R_SLICE_END_SCENE_ID;
+  const canCompleteSlice = isSliceEndScene && Boolean(state.flags[STAGE_14R_SLICE_REQUIRED_FLAG]);
 
   return {
     scenarioTitle: pack.scenario.title,
@@ -79,10 +85,12 @@ export function buildAdventureViewModel(pack: ScenarioPack, state: ScenarioRunti
       memoryLabel: formatMemoryBand(state),
       trustValue,
       trustLabel: formatTrustBand(trustValue),
+      objectiveLabel: formatObjectiveLabel(isSliceEndScene, canCompleteSlice),
       evidenceCount: evidence.length,
       logCount: state.log.length,
     },
-    isSliceEndScene: scene.id === STAGE_14R_SLICE_END_SCENE_ID,
+    isSliceEndScene,
+    canCompleteSlice,
   };
 }
 
@@ -146,6 +154,14 @@ function isActionHidden(action: SceneActionDefinition, state: ScenarioRuntimeSta
   }
 
   return !canUseRequirements(action.requirements, state, pack);
+}
+
+function formatObjectiveLabel(isSliceEndScene: boolean, canCompleteSlice: boolean): string {
+  if (isSliceEndScene) {
+    return canCompleteSlice ? "縦切りを完了できる" : "灯が休める時間を作る";
+  }
+
+  return "灯と事故の違和感を追う";
 }
 
 function findSplitPoint(text: string): number {

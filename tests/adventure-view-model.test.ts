@@ -62,10 +62,75 @@ test("Adventure checks roll once, apply the outcome, and become player log entri
   assert.ok(!view.visibleChoices.some((choice) => choice.id === "check_parallel_displacement"));
 });
 
+test("Adventure evidence follows the existing scene 2 and scene 3 flag contract", () => {
+  const scene2 = pack.scenes.find((candidate) => candidate.id === "scene_002_accident_trace");
+  const speakRegret = scene2?.available_actions?.find((candidate) => candidate.id === "let_akari_speak_regret");
+  const respectGift = scene2?.available_actions?.find((candidate) => candidate.id === "respect_gift_unopened");
+  assert.ok(scene2);
+  assert.ok(speakRegret);
+  assert.ok(respectGift);
+
+  let state = { ...createInitialState(pack), sceneId: scene2.id };
+  state = applyAdventureAction(pack, state, scene2, speakRegret).state;
+  state = applyAdventureAction(pack, state, scene2, respectGift).state;
+
+  const scene2View = buildAdventureViewModel(pack, state, true);
+  assert.ok(scene2View.evidence.some((entry) => entry.id === "flag:akari_regret_spoken"));
+  assert.ok(scene2View.evidence.some((entry) => entry.id === "flag:gift_respected_unopened"));
+
+  const scene3 = pack.scenes.find((candidate) => candidate.id === "scene_003_empty_house");
+  const respectHome = scene3?.available_actions?.find((candidate) => candidate.id === "respect_dead_friend_home");
+  const emptyHouseCheck = scene3?.checks?.find((candidate) => candidate.id === "check_empty_house_context");
+  assert.ok(scene3);
+  assert.ok(respectHome);
+  assert.ok(emptyHouseCheck);
+
+  state = { ...state, sceneId: scene3.id };
+  state = applyAdventureAction(pack, state, scene3, respectHome).state;
+  state = rollAdventureCheck(pack, state, scene3, emptyHouseCheck, undefined, () => 0.999999).state;
+
+  const scene3View = buildAdventureViewModel(pack, state, true);
+  assert.ok(scene3View.evidence.some((entry) => entry.id === "flag:dead_friend_home_respected"));
+  assert.ok(scene3View.evidence.some((entry) => entry.id === "flag:confirmed_empty_house_identity"));
+  assert.equal(scene3View.status.memoryLabel, "違和感を覚えている");
+});
+
+test("Adventure slice completion requires giving Akari rest in scene 3", () => {
+  const scene3 = pack.scenes.find((candidate) => candidate.id === "scene_003_empty_house");
+  const restAction = scene3?.available_actions?.find((candidate) => candidate.id === "let_akari_rest_in_empty_house");
+  assert.ok(scene3);
+  assert.ok(restAction);
+
+  const beforeRest = { ...createInitialState(pack), sceneId: scene3.id };
+  const beforeRestView = buildAdventureViewModel(pack, beforeRest, true);
+  const blocked = advanceAdventureScene(pack, beforeRest);
+
+  assert.equal(beforeRestView.isSliceEndScene, true);
+  assert.equal(beforeRestView.canCompleteSlice, false);
+  assert.equal(beforeRestView.status.objectiveLabel, "灯が休める時間を作る");
+  assert.equal(blocked.sliceComplete, undefined);
+  assert.equal(blocked.state.sceneId, "scene_003_empty_house");
+
+  const afterRest = applyAdventureAction(pack, beforeRest, scene3, restAction).state;
+  const afterRestView = buildAdventureViewModel(pack, afterRest, true);
+  const completed = advanceAdventureScene(pack, afterRest);
+
+  assert.equal(afterRest.flags.akari_rested_in_empty_house, true);
+  assert.equal(afterRestView.canCompleteSlice, true);
+  assert.equal(afterRestView.status.objectiveLabel, "縦切りを完了できる");
+  assert.equal(completed.sliceComplete, true);
+  assert.equal(completed.state.sceneId, "scene_003_empty_house");
+});
+
 test("Adventure scene advance stops Stage 14R at the scene 3 completion gate", () => {
   const scene1 = advanceAdventureScene(pack, createInitialState(pack)).state;
   const scene2 = advanceAdventureScene(pack, scene1).state;
-  const result = advanceAdventureScene(pack, scene2);
+  const scene3 = pack.scenes.find((candidate) => candidate.id === "scene_003_empty_house");
+  const restAction = scene3?.available_actions?.find((candidate) => candidate.id === "let_akari_rest_in_empty_house");
+  assert.ok(scene3);
+  assert.ok(restAction);
+  const rested = applyAdventureAction(pack, scene2, scene3, restAction).state;
+  const result = advanceAdventureScene(pack, rested);
 
   assert.equal(scene1.sceneId, "scene_002_accident_trace");
   assert.equal(scene2.sceneId, "scene_003_empty_house");

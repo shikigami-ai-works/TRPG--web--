@@ -14,7 +14,7 @@ import type {
   SceneCheckDefinition,
   SceneDefinition,
 } from "../scenarios/types";
-import { STAGE_14R_SLICE_END_SCENE_ID, formatRollSummary, formatSkillLabel, formatStatLabel } from "./labels";
+import { STAGE_14R_SLICE_END_SCENE_ID, STAGE_14R_SLICE_REQUIRED_FLAG, formatRollSummary, formatSkillLabel, formatStatLabel } from "./labels";
 
 export interface AdventureSessionResult {
   state: ScenarioRuntimeState;
@@ -98,6 +98,7 @@ export function advanceAdventureScene(
   pack: ScenarioPack,
   state: ScenarioRuntimeState,
   sliceEndSceneId: string = STAGE_14R_SLICE_END_SCENE_ID,
+  sliceRequiredFlag: string = STAGE_14R_SLICE_REQUIRED_FLAG,
 ): AdventureSessionResult {
   const current = pack.scenes.find((candidate) => candidate.id === state.sceneId);
   if (!current) {
@@ -105,6 +106,10 @@ export function advanceAdventureScene(
   }
 
   if (current.id === sliceEndSceneId) {
+    if (!state.flags[sliceRequiredFlag]) {
+      return { state, event: "灯が休める時間を作ってから進む。" };
+    }
+
     return {
       state: {
         ...state,

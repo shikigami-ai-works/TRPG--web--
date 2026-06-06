@@ -108,7 +108,11 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
   }
 
   function handleAdvanceScene() {
-    if (!pack) {
+    if (!pack || !view) {
+      return;
+    }
+    if (view.isSliceEndScene && !view.canCompleteSlice) {
+      setLastEvent("灯が休める時間を作ってから進む。");
       return;
     }
     const result = advanceAdventureScene(pack, state);
@@ -172,9 +176,11 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
                   <small>{choice.typeLabel} / {choice.detail}</small>
                 </button>
               ))}
-              <button className="adv-scene-button" data-control="advance-scene" onClick={handleAdvanceScene} type="button">
-                {view.isSliceEndScene ? "縦切りを完了する" : "次の場面へ"}
-              </button>
+              {!view.isSliceEndScene || view.canCompleteSlice ? (
+                <button className="adv-scene-button" data-control="advance-scene" onClick={handleAdvanceScene} type="button">
+                  {view.isSliceEndScene ? "縦切りを完了する" : "次の場面へ"}
+                </button>
+              ) : null}
             </section>
           ) : null}
 
@@ -370,6 +376,10 @@ function PanelContent({
         <div>
           <dt>灯の信頼</dt>
           <dd>{view.status.trustValue} / {view.status.trustLabel}</dd>
+        </div>
+        <div>
+          <dt>目的</dt>
+          <dd>{view.status.objectiveLabel}</dd>
         </div>
         <div>
           <dt>現在地</dt>

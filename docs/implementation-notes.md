@@ -212,3 +212,9 @@
 - The mobile drawer is mounted only while open. This avoids leaving offscreen close buttons or drawer content reachable by keyboard focus while the drawer is visually closed.
 - The top status strip shows Akari trust as a relationship band and combines evidence/log counts. Raw trust numbers remain in the Status drawer detail rather than the always-visible strip.
 - The text-advance control is hidden after the Stage 14R slice-complete state because the completion text is static and should not leave an enabled control with no visible result.
+
+## 2026-06-06 Stage 14R-1 Post-Push Review
+
+- The AdventurePlayer evidence and memory adapters now use the existing scenario flag IDs (`akari_regret_spoken`, `gift_respected_unopened`, `dead_friend_home_respected`, and `confirmed_empty_house_identity`) rather than introducing alias-style adapter names. This keeps the scenario YAML contract unchanged while restoring player-facing evidence/status updates for scenes 2-3.
+- Stage 14R slice completion now requires the existing `akari_rested_in_empty_house` flag before the player-facing completion control appears. This keeps the first playable outcome aligned with "Scene 3で灯を休ませるところまで" without changing `scene_003_empty_house.next_scene_rules` or any scenario YAML.
+- The Status drawer now includes a story objective line derived from the AdventurePlayer adapter state. This gives the hidden slice-complete gate a player-facing story cue without adding tutorial text or changing scenario data.

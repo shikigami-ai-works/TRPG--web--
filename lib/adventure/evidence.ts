@@ -29,13 +29,13 @@ const FLAG_EVIDENCE: Record<string, Omit<EvidenceEntry, "id">> = {
     description: "灯を落ち着かせるための振る舞いが、境界の認識を濁している。",
     source: "scene_001_parallel_arrival",
   },
-  akari_spoke_regret: {
+  akari_regret_spoken: {
     title: "祝えなかった誕生日",
     category: "testimony",
     description: "灯は事故と、渡せなかった誕生日プレゼントへの未練を話した。",
     source: "scene_002_accident_trace",
   },
-  respected_unopened_gift: {
+  gift_respected_unopened: {
     title: "未開封のまま残す判断",
     category: "confirmed",
     description: "誕生日プレゼントの中身を詮索しない選択が、灯の信頼を保っている。",
@@ -53,13 +53,13 @@ const FLAG_EVIDENCE: Record<string, Omit<EvidenceEntry, "id">> = {
     description: "灯が少しだけ息をつける場所として、空き家が機能している。",
     source: "scene_003_empty_house",
   },
-  respected_dead_friend_home: {
+  dead_friend_home_respected: {
     title: "詮索しない距離",
     category: "confirmed",
     description: "死んだ親友の家を暴かない判断が、探索者と灯の距離を保った。",
     source: "scene_003_empty_house",
   },
-  understood_empty_house_context: {
+  confirmed_empty_house_identity: {
     title: "空き家の正体",
     category: "confirmed",
     description: "表札、間取り、止まったカレンダーが、ここが平行世界側の探索者の家だと示している。",

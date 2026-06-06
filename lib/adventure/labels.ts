@@ -2,6 +2,7 @@ import type { ScenarioRuntimeState } from "../scenarios/types";
 
 export const TARGET_SCENARIO_ID = "kimidake_ga_oboeteiru_jiko";
 export const STAGE_14R_SLICE_END_SCENE_ID = "scene_003_empty_house";
+export const STAGE_14R_SLICE_REQUIRED_FLAG = "akari_rested_in_empty_house";
 
 const ACTION_TYPE_LABELS: Record<string, string> = {
   conversation: "会話",
@@ -109,7 +110,7 @@ export function formatMemoryBand(state: ScenarioRuntimeState): string {
   if ((state.counters.boundary_contamination ?? 0) >= 3) {
     return "記憶にざらつきがある";
   }
-  if (state.flags.noticed_parallel_displacement || state.flags.understood_empty_house_context) {
+  if (state.flags.noticed_parallel_displacement || state.flags.confirmed_empty_house_identity) {
     return "違和感を覚えている";
   }
   return "まだ安定している";
