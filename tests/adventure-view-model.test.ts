@@ -26,6 +26,22 @@ test("Adventure view model gates choices until scene text is read", () => {
   assert.ok(afterText.visibleChoices.some((choice) => choice.id === "check_parallel_displacement"));
 });
 
+test("Adventure log entries classify initial notes and scene transitions", () => {
+  const initialView = buildAdventureViewModel(pack, createInitialState(pack), false);
+
+  assert.equal(initialView.logEntries[0]?.kind, "note");
+  assert.equal(initialView.logEntries[0]?.kindLabel, "記録");
+  assert.equal(initialView.logEntries[0]?.text, "シナリオを開始した。");
+
+  const moved = advanceAdventureScene(pack, createInitialState(pack)).state;
+  const movedView = buildAdventureViewModel(pack, moved, false);
+
+  assert.equal(movedView.logEntries[0]?.kind, "scene");
+  assert.equal(movedView.logEntries[0]?.kindLabel, "場面");
+  assert.doesNotMatch(movedView.logEntries[0]?.text ?? "", /場面移動/);
+  assert.equal(movedView.logEntries[0]?.detail, "次の調査地点へ移動した。");
+});
+
 test("Adventure actions update state, log, and derived evidence without changing scenario data", () => {
   const state = createInitialState(pack);
   const scene = pack.scenes.find((candidate) => candidate.id === "scene_001_parallel_arrival");
@@ -43,6 +59,9 @@ test("Adventure actions update state, log, and derived evidence without changing
   assert.ok(evidence);
   assert.doesNotMatch(evidence.source, /^scene_/);
   assert.match(result.state.log[0], /自分は死んだ親友の代わりではない/);
+  assert.equal(view.logEntries[0]?.kind, "action");
+  assert.equal(view.logEntries[0]?.kindLabel, "行動");
+  assert.match(view.logEntries[0]?.text ?? "", /自分は死んだ親友の代わりではない/);
 });
 
 test("Adventure checks roll once, apply the outcome, and become player log entries", () => {
@@ -60,6 +79,9 @@ test("Adventure checks roll once, apply the outcome, and become player log entri
   assert.ok(result.state.usedActionIds.includes("check_parallel_displacement"));
   assert.match(result.state.log[0], /出目 20/);
   assert.doesNotMatch(result.state.log[0], /d20/);
+  assert.equal(view.logEntries[0]?.kind, "check");
+  assert.equal(view.logEntries[0]?.kindLabel, "判定");
+  assert.match(view.logEntries[0]?.detail ?? "", /出目 20/);
   assert.ok(view.evidence.some((entry) => entry.id === "flag:noticed_parallel_displacement"));
   assert.ok(!view.visibleChoices.some((choice) => choice.id === "check_parallel_displacement"));
 });
@@ -125,6 +147,7 @@ test("Adventure slice completion requires giving Akari rest in scene 3", () => {
   assert.equal(completed.event, "空き家で灯を休ませた。ここまでの調査を記録した。");
   assert.equal(completed.state.log[0], "空き家で灯を休ませ、ここまでの調査記録を閉じた。");
   assert.doesNotMatch(completed.state.log[0], /Stage 14R/);
+  assert.equal(buildAdventureViewModel(pack, completed.state, true).logEntries[0]?.kind, "note");
 });
 
 test("Adventure scene advance stops Stage 14R at the scene 3 completion gate", () => {

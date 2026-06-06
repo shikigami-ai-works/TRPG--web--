@@ -40,6 +40,16 @@ export interface AdventureStatusView {
   logCount: number;
 }
 
+export type AdventureLogKind = "action" | "check" | "scene" | "ending" | "note";
+
+export interface AdventureLogEntry {
+  id: string;
+  kind: AdventureLogKind;
+  kindLabel: string;
+  text: string;
+  detail?: string;
+}
+
 export interface AdventureViewModel {
   scenarioTitle: string;
   scene: SceneDefinition;
@@ -51,6 +61,7 @@ export interface AdventureViewModel {
   visibleChoices: AdventureChoiceView[];
   evidence: EvidenceEntry[];
   log: string[];
+  logEntries: AdventureLogEntry[];
   status: AdventureStatusView;
   isSliceEndScene: boolean;
   canCompleteSlice: boolean;
@@ -62,6 +73,7 @@ export function buildAdventureViewModel(pack: ScenarioPack, state: ScenarioRunti
   const evidence = deriveEvidenceEntries(pack, state);
   const trustValue = state.trust.minase_akari ?? 0;
   const contamination = state.counters.boundary_contamination ?? 0;
+  const log = state.log.slice(0, 12);
 
   const isSliceEndScene = scene.id === STAGE_14R_SLICE_END_SCENE_ID;
   const canCompleteSlice = isSliceEndScene && Boolean(state.flags[STAGE_14R_SLICE_REQUIRED_FLAG]);
@@ -78,7 +90,8 @@ export function buildAdventureViewModel(pack: ScenarioPack, state: ScenarioRunti
     textPages: splitSceneText(scene.description),
     visibleChoices: textComplete ? buildVisibleChoices(pack, state, scene) : [],
     evidence,
-    log: state.log.slice(0, 12),
+    log,
+    logEntries: formatAdventureLogEntries(log),
     status: {
       contamination,
       contaminationLabel: formatContaminationBand(contamination),
@@ -98,6 +111,10 @@ export function findCurrentScene(pack: ScenarioPack, state: ScenarioRuntimeState
   return pack.scenes.find((candidate) => candidate.id === state.sceneId) ?? pack.scenes[0];
 }
 
+export function formatAdventureLogEntries(log: string[]): AdventureLogEntry[] {
+  return log.map((entry, index) => formatAdventureLogEntry(entry, index));
+}
+
 export function splitSceneText(description: string): string[] {
   const sentences = splitJapaneseSentences(description);
 
@@ -112,6 +129,61 @@ export function splitSceneText(description: string): string[] {
 
   const splitAt = findSplitPoint(text);
   return [text.slice(0, splitAt).trim(), text.slice(splitAt).trim()].filter(Boolean);
+}
+
+function formatAdventureLogEntry(entry: string, index: number): AdventureLogEntry {
+  const [primary, ...detailParts] = entry.split(" / ");
+  const detail = detailParts.join(" / ") || undefined;
+
+  if (primary.startsWith("場面移動:")) {
+    return {
+      id: `log:${index}:${entry}`,
+      kind: "scene",
+      kindLabel: "場面",
+      text: primary.replace("場面移動:", "").trim(),
+      detail: detail ?? "次の調査地点へ移動した。",
+    };
+  }
+
+  if (primary.startsWith("エンディング判定:")) {
+    return {
+      id: `log:${index}:${entry}`,
+      kind: "ending",
+      kindLabel: "結末",
+      text: primary.replace("エンディング判定:", "").trim(),
+      detail,
+    };
+  }
+
+  const checkMatch = primary.match(/^(.+):\s*(成功|失敗)$/);
+  if (checkMatch) {
+    return {
+      id: `log:${index}:${entry}`,
+      kind: "check",
+      kindLabel: "判定",
+      text: checkMatch[1],
+      detail: [checkMatch[2], detail].filter(Boolean).join(" / "),
+    };
+  }
+
+  const actionMatch = primary.match(/^(.+):\s*(.+)$/);
+  if (actionMatch) {
+    return {
+      id: `log:${index}:${entry}`,
+      kind: "action",
+      kindLabel: "行動",
+      text: actionMatch[2],
+      detail: actionMatch[1],
+    };
+  }
+
+  return {
+    id: `log:${index}:${entry}`,
+    kind: "note",
+    kindLabel: "記録",
+    text: primary,
+    detail,
+  };
 }
 
 function buildVisibleChoices(pack: ScenarioPack, state: ScenarioRuntimeState, scene: SceneDefinition): AdventureChoiceView[] {

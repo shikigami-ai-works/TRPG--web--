@@ -337,10 +337,12 @@ function PanelContent({
         {view.evidence.length === 0 ? <p className="adv-muted">まだ整理済みの証拠はない。</p> : null}
         {view.evidence.map((entry) => (
           <article className="adv-evidence" key={entry.id}>
-            <span>{formatEvidenceCategory(entry.category)}</span>
+            <div className="adv-evidence-meta">
+              <span>{formatEvidenceCategory(entry.category)}</span>
+              <small>出どころ: {entry.source}</small>
+            </div>
             <strong>{entry.title}</strong>
             <p>{entry.description}</p>
-            <small>{entry.source}</small>
           </article>
         ))}
       </div>
@@ -352,8 +354,12 @@ function PanelContent({
       <p className="adv-muted">ログはまだない。</p>
     ) : (
       <ol className="adv-log-list">
-        {view.log.map((entry, index) => (
-          <li key={`${entry}-${index}`}>{entry}</li>
+        {view.logEntries.map((entry) => (
+          <li className={`adv-log-entry ${entry.kind}`} key={entry.id}>
+            <span className="adv-log-kind">{entry.kindLabel}</span>
+            <strong>{entry.text}</strong>
+            {entry.detail ? <small>{entry.detail}</small> : null}
+          </li>
         ))}
       </ol>
     );
@@ -364,23 +370,35 @@ function PanelContent({
       <dl>
         <div>
           <dt>境界侵食</dt>
-          <dd>{view.status.contamination} / {view.status.contaminationLabel}</dd>
+          <dd>
+            <strong>{view.status.contaminationLabel}</strong>
+            <small>侵食値 {view.status.contamination}</small>
+          </dd>
         </div>
         <div>
           <dt>記憶</dt>
-          <dd>{view.status.memoryLabel}</dd>
+          <dd>
+            <strong>{view.status.memoryLabel}</strong>
+          </dd>
         </div>
         <div>
           <dt>灯の信頼</dt>
-          <dd>{view.status.trustValue} / {view.status.trustLabel}</dd>
+          <dd>
+            <strong>{view.status.trustLabel}</strong>
+            <small>信頼値 {view.status.trustValue}</small>
+          </dd>
         </div>
         <div>
           <dt>目的</dt>
-          <dd>{view.status.objectiveLabel}</dd>
+          <dd>
+            <strong>{view.status.objectiveLabel}</strong>
+          </dd>
         </div>
         <div>
           <dt>現在地</dt>
-          <dd>{view.scene.title}</dd>
+          <dd>
+            <strong>{view.scene.title}</strong>
+          </dd>
         </div>
       </dl>
     </div>

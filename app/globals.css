@@ -973,6 +973,22 @@ button {
   background: rgba(241, 236, 226, 0.06);
 }
 
+.adv-evidence-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.adv-evidence-meta span {
+  border: 1px solid rgba(87, 157, 136, 0.32);
+  border-radius: 999px;
+  padding: 1px 7px;
+  background: rgba(87, 157, 136, 0.12);
+  color: #d7eee1;
+  font-weight: 700;
+}
+
 .adv-evidence strong {
   color: #f7d889;
 }
@@ -985,10 +1001,41 @@ button {
 }
 
 .adv-log-list {
-  padding-left: 20px;
+  list-style: none;
+  padding: 0;
   color: #e3ddd3;
   font-size: 0.86rem;
   line-height: 1.55;
+}
+
+.adv-log-entry {
+  display: grid;
+  gap: 5px;
+  border: 1px solid rgba(241, 236, 226, 0.12);
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(241, 236, 226, 0.055);
+}
+
+.adv-log-kind {
+  width: fit-content;
+  border: 1px solid rgba(247, 216, 137, 0.24);
+  border-radius: 999px;
+  padding: 1px 7px;
+  color: #f7d889;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.adv-log-entry strong {
+  color: #f1ece2;
+  overflow-wrap: anywhere;
+}
+
+.adv-log-entry small {
+  color: #a9b8ad;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .adv-status-detail dl div {
@@ -1000,9 +1047,21 @@ button {
 }
 
 .adv-status-detail dd {
+  display: grid;
+  gap: 2px;
   margin: 0;
   color: #f1ece2;
   overflow-wrap: anywhere;
+}
+
+.adv-status-detail dd strong {
+  color: #f1ece2;
+  font-size: 0.9rem;
+}
+
+.adv-status-detail dd small {
+  color: #a9b8ad;
+  font-size: 0.72rem;
 }
 
 .adv-mobile-drawer {

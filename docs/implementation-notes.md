@@ -225,3 +225,10 @@
 - The visible completion button, completion text, stage caption, status objective, and completion event now avoid the production-facing term `縦切り`. The internal `sliceComplete` implementation naming remains because it describes the adapter boundary and is not exposed to the player.
 - AdventurePlayer check-result logs now say `出目` instead of the raw `d20` token. The dice formula and `rollScenarioCheck` behavior are unchanged; only the player-facing log wording was polished.
 - The completion surface no longer shows a direct `debugを開く` link. `/debug` remains available as the `ScenarioExplorer` route for validation, but the player-facing completion state now keeps development navigation out of the visible choices.
+
+## 2026-06-07 Stage 14R-3 Investigation Log Readability
+
+- The AdventurePlayer adapter now keeps the runtime `state.log` strings intact while deriving structured `logEntries` for the player-facing Log drawer. This avoids changing scenario data or the runtime log contract, but lets the UI show 行動 / 判定 / 場面 / 結末 / 記録 labels and split long roll details away from the main log line.
+- The Log drawer now renders each entry as a compact card instead of a plain ordered text list. This was chosen as the first Stage 14R-3 readability pass because it improves investigation scanability without adding new controls, persistence, assets, or scenario schema.
+- Evidence cards now separate the category pill from the source line and label the source as `出どころ`. This is UI-only scanability polish; the derived evidence mapping, flag contract, and scenario data remain unchanged.
+- Status drawer rows now separate the primary player-facing state label from supporting numeric values such as `侵食値` and `信頼値`. The underlying contamination/trust state and top status strip behavior are unchanged.
