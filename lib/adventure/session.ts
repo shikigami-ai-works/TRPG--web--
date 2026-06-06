@@ -113,9 +113,9 @@ export function advanceAdventureScene(
     return {
       state: {
         ...state,
-        log: ["Stage 14R first playable slice complete", ...state.log].slice(0, 12),
+        log: ["空き家で灯を休ませ、ここまでの調査記録を閉じた。", ...state.log].slice(0, 12),
       },
-      event: "Scene 3までの縦切りを確認した。",
+      event: "空き家で灯を休ませた。ここまでの調査を記録した。",
       sliceComplete: true,
     };
   }
@@ -212,7 +212,7 @@ function resolveBySceneRules(
 function formatCheckRoll(roll: CheckRollResult): string {
   return `${formatRollSummary(roll.total, roll.targetNumber, roll.success)} = ${formatStatLabel(roll.statId)} ${roll.statValue} + ${formatSkillLabel(
     roll.skillId,
-  )} ${roll.skillValue} + d20 ${roll.dieRoll}`;
+  )} ${roll.skillValue} + 出目 ${roll.dieRoll}`;
 }
 
 function addUnique(values: string[], value: string): string[] {

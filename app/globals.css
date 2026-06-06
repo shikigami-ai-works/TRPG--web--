@@ -862,8 +862,7 @@ button {
 .adv-scene-button,
 .adv-bottom-nav button,
 .adv-panel-tabs button,
-.adv-drawer-header button,
-.adv-debug-link {
+.adv-drawer-header button {
   min-height: 40px;
   border-radius: 8px;
   cursor: pointer;
@@ -871,8 +870,7 @@ button {
 }
 
 .adv-advance-button,
-.adv-scene-button,
-.adv-debug-link {
+.adv-scene-button {
   flex-shrink: 0;
   padding: 0 14px;
   background: #f7d889;
@@ -900,8 +898,7 @@ button {
 .adv-advance-button:hover,
 .adv-bottom-nav button:hover,
 .adv-panel-tabs button:hover,
-.adv-drawer-header button:hover,
-.adv-debug-link:hover {
+.adv-drawer-header button:hover {
   transform: translateY(-1px);
 }
 
@@ -910,8 +907,7 @@ button {
   background: rgba(52, 16, 20, 0.92);
 }
 
-.adv-scene-button,
-.adv-debug-link {
+.adv-scene-button {
   display: inline-grid;
   place-items: center;
   width: 100%;

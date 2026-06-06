@@ -218,3 +218,10 @@
 - The AdventurePlayer evidence and memory adapters now use the existing scenario flag IDs (`akari_regret_spoken`, `gift_respected_unopened`, `dead_friend_home_respected`, and `confirmed_empty_house_identity`) rather than introducing alias-style adapter names. This keeps the scenario YAML contract unchanged while restoring player-facing evidence/status updates for scenes 2-3.
 - Stage 14R slice completion now requires the existing `akari_rested_in_empty_house` flag before the player-facing completion control appears. This keeps the first playable outcome aligned with "Scene 3で灯を休ませるところまで" without changing `scene_003_empty_house.next_scene_rules` or any scenario YAML.
 - The Status drawer now includes a story objective line derived from the AdventurePlayer adapter state. This gives the hidden slice-complete gate a player-facing story cue without adding tutorial text or changing scenario data.
+
+## 2026-06-06 Stage 14R-2 Player Log Polish
+
+- The AdventurePlayer slice-completion log now uses a player-facing investigation note instead of the developer-facing `Stage 14R first playable slice complete` marker. This keeps the Log drawer in story language while leaving the adapter-only slice gate, scenario YAML, and route rules unchanged.
+- The visible completion button, completion text, stage caption, status objective, and completion event now avoid the production-facing term `縦切り`. The internal `sliceComplete` implementation naming remains because it describes the adapter boundary and is not exposed to the player.
+- AdventurePlayer check-result logs now say `出目` instead of the raw `d20` token. The dice formula and `rollScenarioCheck` behavior are unchanged; only the player-facing log wording was polished.
+- The completion surface no longer shows a direct `debugを開く` link. `/debug` remains available as the `ScenarioExplorer` route for validation, but the player-facing completion state now keeps development navigation out of the visible choices.

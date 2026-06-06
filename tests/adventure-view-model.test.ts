@@ -58,6 +58,8 @@ test("Adventure checks roll once, apply the outcome, and become player log entri
   assert.equal(result.roll?.success, true);
   assert.equal(result.state.flags.noticed_parallel_displacement, true);
   assert.ok(result.state.usedActionIds.includes("check_parallel_displacement"));
+  assert.match(result.state.log[0], /出目 20/);
+  assert.doesNotMatch(result.state.log[0], /d20/);
   assert.ok(view.evidence.some((entry) => entry.id === "flag:noticed_parallel_displacement"));
   assert.ok(!view.visibleChoices.some((choice) => choice.id === "check_parallel_displacement"));
 });
@@ -117,9 +119,12 @@ test("Adventure slice completion requires giving Akari rest in scene 3", () => {
 
   assert.equal(afterRest.flags.akari_rested_in_empty_house, true);
   assert.equal(afterRestView.canCompleteSlice, true);
-  assert.equal(afterRestView.status.objectiveLabel, "縦切りを完了できる");
+  assert.equal(afterRestView.status.objectiveLabel, "ここまでの記録を閉じる");
   assert.equal(completed.sliceComplete, true);
   assert.equal(completed.state.sceneId, "scene_003_empty_house");
+  assert.equal(completed.event, "空き家で灯を休ませた。ここまでの調査を記録した。");
+  assert.equal(completed.state.log[0], "空き家で灯を休ませ、ここまでの調査記録を閉じた。");
+  assert.doesNotMatch(completed.state.log[0], /Stage 14R/);
 });
 
 test("Adventure scene advance stops Stage 14R at the scene 3 completion gate", () => {

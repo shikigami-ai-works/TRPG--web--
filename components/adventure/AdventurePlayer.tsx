@@ -151,7 +151,7 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
 
           <section className="adv-text-zone" aria-live="polite">
             <div className="adv-nameplate">{view.npcs[0] ?? "探索者"}</div>
-            <p>{sliceComplete ? "Scene 3までの縦切りはここで完了する。" : currentText}</p>
+            <p>{sliceComplete ? "灯はようやく息をついた。ここまでの調査記録を閉じる。" : currentText}</p>
             <div className="adv-event-row">
               <span>{lastEvent}</span>
               {canAdvanceText ? (
@@ -178,17 +178,14 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
               ))}
               {!view.isSliceEndScene || view.canCompleteSlice ? (
                 <button className="adv-scene-button" data-control="advance-scene" onClick={handleAdvanceScene} type="button">
-                  {view.isSliceEndScene ? "縦切りを完了する" : "次の場面へ"}
+                  {view.isSliceEndScene ? "記録を閉じる" : "次の場面へ"}
                 </button>
               ) : null}
             </section>
           ) : null}
 
           {sliceComplete ? (
-            <section className="adv-choice-zone" aria-label="縦切り完了">
-              <a className="adv-debug-link" href="/debug">
-                debugを開く
-              </a>
+            <section className="adv-choice-zone" aria-label="調査記録完了">
               <button className="adv-scene-button" onClick={handleRestart} type="button">
                 最初から
               </button>
@@ -246,7 +243,7 @@ function AdventureStage({
       </div>
       <div className="adv-stage-caption">
         <span>{view.sceneTypeLabel}</span>
-        <strong>{sliceComplete ? "First slice complete" : view.scene.title}</strong>
+        <strong>{sliceComplete ? "調査記録を閉じた" : view.scene.title}</strong>
         <small>
           {Math.min(view.sceneIndex + 1, 3)} / 3
         </small>

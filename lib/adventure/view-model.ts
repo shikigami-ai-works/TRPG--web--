@@ -158,7 +158,7 @@ function isActionHidden(action: SceneActionDefinition, state: ScenarioRuntimeSta
 
 function formatObjectiveLabel(isSliceEndScene: boolean, canCompleteSlice: boolean): string {
   if (isSliceEndScene) {
-    return canCompleteSlice ? "縦切りを完了できる" : "灯が休める時間を作る";
+    return canCompleteSlice ? "ここまでの記録を閉じる" : "灯が休める時間を作る";
   }
 
   return "灯と事故の違和感を追う";
