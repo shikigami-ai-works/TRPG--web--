@@ -197,8 +197,8 @@ Verification:
 
 ### 2026-06-07 - Stage 16-5B Ending Progress Reward Sheet
 
-- Commit: uncommitted working-tree implementation after `b197c4e`.
-- Status: implemented; verification passed.
+- Commit: `59f031a Add stage16-5b ending progress sheet`.
+- Status: committed and pushed; verification passed.
 
 - Added a minimal AdventurePlayer post-ending progress/reward sheet built from completed run history.
 - Shows reached endings, reached count, first/latest reached timestamps, current reached ending status, latest completed-run carry-out/relationship/contamination summary, and reward summary.
@@ -221,8 +221,8 @@ Verification:
 
 ### 2026-06-07 - Stage 16-5C Deterministic Replay Hints
 
-- Commit: uncommitted working-tree implementation after the staged Stage16-5B set.
-- Status: implemented; verification passed.
+- Commit: `c169b3b Add stage16-5c replay hints`.
+- Status: committed and pushed; verification passed.
 
 - Added a passive `次の周回の手がかり` block to the AdventurePlayer post-ending surface.
 - The block is limited to three deterministic hint families: branch, evidence, and carry-out.
@@ -256,7 +256,7 @@ Verification:
 | Status drawer | Committed and pushed in Stage 15 | Player-facing labels first, raw values as supporting detail, plus four-room carry-out selection. |
 | Assets | Gated | Native UI/placeholders only unless later approval opens imports. |
 | Scene 4+ AdventurePlayer support | Committed and pushed in Stage 15 | Uses existing scenario YAML and runtime helpers. |
-| Post-ending save/replay spec | Stage16-5A-5C implemented locally | Stage16-5A implements save/resume/history append; Stage16-5B implements the minimal ending progress/reward sheet; Stage16-5C implements passive deterministic replay hints. |
+| Post-ending save/replay spec | Stage16-5A-5C committed and pushed | Stage16-5A implements save/resume/history append; Stage16-5B implements the minimal ending progress/reward sheet; Stage16-5C implements passive deterministic replay hints. |
 | AI GM / free input | Out of scope | Future layer after deterministic core. |
 | Real player-facing save UX | Stage16-5A implemented and pushed | LocalStorage-backed active-run restore, auto-save, completed history append-once, and restart behavior use existing storage helpers. |
 | Tauri/API integration | Out of scope | No current implementation. |
@@ -269,13 +269,13 @@ Verification:
 - Whether `.runtime/stage14r3-ui-audit.cjs` and `.runtime/stage15-adventureplayer-ui-audit.cjs` should remain local-only evidence or later become tracked reusable tooling under `scripts/`.
 - When to formalize clue/evidence schema instead of deriving evidence from flags/items.
 - Whether `.runtime/stage16-5a-ui-audit.cjs` should remain local-only evidence or later become tracked reusable tooling under `scripts/`.
+- Whether the `origin` URL should be updated to the moved remote reported during push: `https://github.com/shikigami-ai-works/TRPG--web--.git`.
 
 ## Next Safe Stages
 
 1. Stage16-6: harden browser/UI audit coverage and consider a tracked reusable audit runner only if Shiki approves that tooling scope.
 2. Stage16-7: decide whether to formalize clue/evidence schema instead of deriving evidence from flags/items.
-3. Decide separately whether to commit/push the staged Stage16-5B set and unstaged Stage16-5C set together or as separate commits.
-4. Decide separately what to do with historical untracked handoff/ledger/archive docs; do not mix that cleanup into Stage16 specs by default.
+3. Decide separately what to do with historical untracked handoff/ledger/archive docs; do not mix that cleanup into Stage16 specs by default.
 
 ## Update Rule
 
