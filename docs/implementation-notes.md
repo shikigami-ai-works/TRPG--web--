@@ -290,3 +290,13 @@
 - `CompletedRunRecord` は拡張しない判断を維持した。clue schema が入っても、履歴には final flags / evidence ids が保存されていないため、history-wide missing evidence hint を安全に作る根拠にはならない。
 - Stage16-5C replay hints との接続点は、今後も `EvidenceEntry[]` に限定する方針にした。schema-backed adapter が入る場合でも、`branch` / `evidence` / `carry_out` の family と表示文言は変えない。
 - Stage16-7B の最小候補は、既存 `FLAG_EVIDENCE` と同等の定義だけを optional `clues.yaml` へ移す parity adapter とした。広い証拠ボード、推理宣言、未回収 clue checklist、保存履歴拡張は別 stage へ分ける。
+
+## 2026-06-07 Stage 16-7B Clue Schema Parity Adapter
+
+- `scenarios/kimidake_ga_oboeteiru_jiko/clues.yaml` は optional authored data として追加し、loader は file がない scenario では `clues: []` へフォールバックする形にした。複数 scenario へ schema 導入を強制せず、既存 pack loading を壊さないため。
+- `lib/adventure/evidence.ts` では `pack.clues` がある場合だけ schema-backed clues を優先し、ない場合は code-local fallback mapping を残した。これは Stage16-7B の parity 証明中に他 scenario や旧データを壊さないための互換層。
+- single-flag reveal の clue は、生成する `EvidenceEntry.id` を従来どおり `flag:<flag id>` にした。clue id は authoring id として保持するが、現行 tests、React key、replay hint 境界を無意味に揺らさない判断。
+- schema-backed source label は scene/item/action/check の player-facing label へ解決し、未解決なら `出どころ未確認` に落とす。validation で broken source/reveal refs を検出する前提だが、player route に raw ID を漏らしにくくするための二重防御。
+- Stage16-7B では item-derived evidence を `clues.yaml` に移さず、従来どおり `items.yaml` の所持品から導出する形を維持した。item migration は item evidence の authoring 範囲を別 stage で決めてから扱う。
+- reveal predicate は flag/item/action/check に限定し、scene-reached predicate は追加しなかった。現在の runtime state は到達済み scene 履歴を保持しておらず、ここで推測を入れると Stage16-5C の current-run boundary や `CompletedRunRecord` 非拡張の判断を崩すため。
+- verification 中、`npm run build` と `npm run audit:adventure-player` を並列実行した初回だけ Next build が `/_document` PageNotFound で落ちた。audit と build が `.next` を同時に触った競合の可能性が高く、build 単独再実行では PASS したため、今後は Next build と dev-server audit を並列実行しない。

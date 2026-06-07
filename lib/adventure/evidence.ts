@@ -1,6 +1,14 @@
-import type { ScenarioPack, ScenarioRuntimeState } from "../scenarios/types";
+import type {
+  ClueDefinition,
+  ClueRevealCondition,
+  ClueRevealTerm,
+  ClueSourceReference,
+  ScenarioPack,
+  ScenarioRuntimeState,
+  ClueCategory,
+} from "../scenarios/types";
 
-export type EvidenceCategory = "confirmed" | "inference" | "testimony" | "polluted_memory" | "unverified";
+export type EvidenceCategory = ClueCategory;
 
 export interface EvidenceEntry {
   id: string;
@@ -10,7 +18,7 @@ export interface EvidenceEntry {
   source: string;
 }
 
-const FLAG_EVIDENCE: Record<string, Omit<EvidenceEntry, "id">> = {
+const FALLBACK_FLAG_EVIDENCE: Record<string, Omit<EvidenceEntry, "id">> = {
   noticed_parallel_displacement: {
     title: "世界のズレ",
     category: "confirmed",
@@ -70,11 +78,8 @@ const FLAG_EVIDENCE: Record<string, Omit<EvidenceEntry, "id">> = {
 export function deriveEvidenceEntries(pack: ScenarioPack, state: ScenarioRuntimeState): EvidenceEntry[] {
   const entries: EvidenceEntry[] = [];
 
-  Object.entries(FLAG_EVIDENCE).forEach(([flag, entry]) => {
-    if (state.flags[flag]) {
-      entries.push({ ...entry, id: `flag:${flag}`, source: formatEvidenceSource(pack, entry.source) });
-    }
-  });
+  const flagEntries = pack.clues.length ? deriveClueEvidenceEntries(pack, state) : deriveFallbackFlagEvidenceEntries(pack, state);
+  entries.push(...flagEntries);
 
   state.inventory.forEach((itemId) => {
     const item = pack.items.find((candidate) => candidate.id === itemId);
@@ -86,19 +91,157 @@ export function deriveEvidenceEntries(pack: ScenarioPack, state: ScenarioRuntime
       title: item.name,
       category: "confirmed",
       description: item.description,
-      source: formatEvidenceSource(pack, item.found_in_scene_id ?? "inventory"),
+      source: formatLegacyEvidenceSource(pack, item.found_in_scene_id ?? "inventory"),
     });
   });
 
   return entries;
 }
 
-function formatEvidenceSource(pack: ScenarioPack, sourceId: string): string {
+function deriveFallbackFlagEvidenceEntries(pack: ScenarioPack, state: ScenarioRuntimeState): EvidenceEntry[] {
+  const entries: EvidenceEntry[] = [];
+
+  Object.entries(FALLBACK_FLAG_EVIDENCE).forEach(([flag, entry]) => {
+    if (state.flags[flag]) {
+      entries.push({ ...entry, id: `flag:${flag}`, source: formatLegacyEvidenceSource(pack, entry.source) });
+    }
+  });
+
+  return entries;
+}
+
+function deriveClueEvidenceEntries(pack: ScenarioPack, state: ScenarioRuntimeState): EvidenceEntry[] {
+  return pack.clues
+    .filter((clue) => isClueRevealed(clue.reveal, state))
+    .map((clue) => ({
+      id: formatClueEvidenceId(clue),
+      title: clue.title,
+      category: clue.category,
+      description: clue.description,
+      source: formatClueSources(pack, clue.sources),
+    }));
+}
+
+function formatClueEvidenceId(clue: ClueDefinition): string {
+  const revealTerm = getSingleRevealTerm(clue.reveal);
+  if (revealTerm) {
+    const revealId = getRevealTermId(revealTerm);
+    if (revealId) {
+      return `${revealId.kind}:${revealId.id}`;
+    }
+  }
+
+  return `clue:${clue.id}`;
+}
+
+function isClueRevealed(reveal: ClueRevealCondition, state: ScenarioRuntimeState): boolean {
+  if ("any" in reveal) {
+    return reveal.any.some((term) => isRevealTermMet(term, state));
+  }
+  if ("all" in reveal) {
+    return reveal.all.every((term) => isRevealTermMet(term, state));
+  }
+
+  return isRevealTermMet(reveal, state);
+}
+
+function isRevealTermMet(term: ClueRevealTerm, state: ScenarioRuntimeState): boolean {
+  if ("flag" in term) {
+    return state.flags[term.flag] === true;
+  }
+  if ("item" in term) {
+    return state.inventory.includes(term.item);
+  }
+  if ("action" in term) {
+    return state.usedActionIds.includes(term.action);
+  }
+  return state.usedActionIds.includes(term.check);
+}
+
+function getSingleRevealTerm(reveal: ClueRevealCondition): ClueRevealTerm | undefined {
+  if ("any" in reveal) {
+    return reveal.any.length === 1 ? reveal.any[0] : undefined;
+  }
+  if ("all" in reveal) {
+    return reveal.all.length === 1 ? reveal.all[0] : undefined;
+  }
+
+  return reveal;
+}
+
+function getRevealTermId(term: ClueRevealTerm): { kind: "flag" | "item" | "action" | "check"; id: string } | undefined {
+  if ("flag" in term) {
+    return { kind: "flag", id: term.flag };
+  }
+  if ("item" in term) {
+    return { kind: "item", id: term.item };
+  }
+  if ("action" in term) {
+    return { kind: "action", id: term.action };
+  }
+  if ("check" in term) {
+    return { kind: "check", id: term.check };
+  }
+  return undefined;
+}
+
+function formatClueSources(pack: ScenarioPack, sources: ClueSourceReference[]): string {
+  const labels = sources.map((source) => formatClueSource(pack, source)).filter(Boolean);
+  return labels.length ? unique(labels).join(" / ") : "出どころ未確認";
+}
+
+function formatClueSource(pack: ScenarioPack, source: ClueSourceReference): string {
+  switch (source.type) {
+    case "scene":
+      return pack.scenes.find((scene) => scene.id === source.id)?.title ?? "出どころ未確認";
+    case "item":
+      return pack.items.find((item) => item.id === source.id)?.name ?? "出どころ未確認";
+    case "action":
+      return findActionLabel(pack, source.id) ?? "出どころ未確認";
+    case "check":
+      return findCheckLabel(pack, source.id) ?? "出どころ未確認";
+    default:
+      return "出どころ未確認";
+  }
+}
+
+function findActionLabel(pack: ScenarioPack, actionId: string): string | undefined {
+  for (const scene of pack.scenes) {
+    const action = (scene.available_actions ?? []).find((candidate) => candidate.id === actionId);
+    if (action) {
+      return action.label;
+    }
+  }
+  return undefined;
+}
+
+function findCheckLabel(pack: ScenarioPack, checkId: string): string | undefined {
+  for (const scene of pack.scenes) {
+    const check = (scene.checks ?? []).find((candidate) => candidate.id === checkId);
+    if (check) {
+      return check.label;
+    }
+  }
+  return undefined;
+}
+
+function formatLegacyEvidenceSource(pack: ScenarioPack, sourceId: string): string {
   if (sourceId === "inventory") {
     return "所持品";
   }
 
   return pack.scenes.find((scene) => scene.id === sourceId)?.title ?? sourceId;
+}
+
+function unique(values: string[]): string[] {
+  const seen: Record<string, true> = {};
+  return values.filter((value) => {
+    if (seen[value]) {
+      return false;
+    }
+    seen[value] = true;
+    return true;
+  });
 }
 
 export function formatEvidenceCategory(category: EvidenceCategory): string {

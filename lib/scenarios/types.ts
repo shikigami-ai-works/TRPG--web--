@@ -1,5 +1,7 @@
 export type Scalar = string | number | boolean | null;
 export type ComparisonOperator = ">" | ">=" | "<" | "<=" | "==" | "!=";
+export type ClueCategory = "confirmed" | "inference" | "testimony" | "polluted_memory" | "unverified";
+export type ClueSourceType = "scene" | "item" | "action" | "check";
 
 export interface ScenarioPack {
   directory: string;
@@ -8,6 +10,7 @@ export interface ScenarioPack {
   scenes: SceneDefinition[];
   items: ItemDefinition[];
   endings: EndingDefinition[];
+  clues: ClueDefinition[];
 }
 
 export interface ScenarioDefinition {
@@ -254,6 +257,24 @@ export interface RewardDefinition {
   amount?: number;
   max_count?: number;
 }
+
+export interface ClueDefinition {
+  id: string;
+  title: string;
+  category: ClueCategory;
+  description: string;
+  sources: ClueSourceReference[];
+  reveal: ClueRevealCondition;
+}
+
+export interface ClueSourceReference {
+  type: ClueSourceType;
+  id: string;
+}
+
+export type ClueRevealCondition = ClueRevealTerm | { any: ClueRevealTerm[] } | { all: ClueRevealTerm[] };
+
+export type ClueRevealTerm = { flag: string } | { item: string } | { action: string } | { check: string };
 
 export interface ScenarioRuntimeState {
   sceneId: string;

@@ -3,6 +3,7 @@ import path from "path";
 
 import { parseYaml } from "./simple-yaml";
 import type {
+  ClueDefinition,
   EndingDefinition,
   ItemDefinition,
   NpcDefinition,
@@ -31,6 +32,7 @@ export async function loadScenarioPack(directory: string): Promise<ScenarioPack>
   const scenesFile = await readYamlFile<{ scenes: SceneDefinition[] }>(base, "scenes.yaml");
   const itemsFile = await readYamlFile<{ items: ItemDefinition[] }>(base, "items.yaml");
   const endingsFile = await readYamlFile<{ endings: EndingDefinition[] }>(base, "endings.yaml");
+  const cluesFile = await readOptionalYamlFile<{ clues?: ClueDefinition[] }>(base, "clues.yaml");
 
   return {
     directory,
@@ -39,10 +41,26 @@ export async function loadScenarioPack(directory: string): Promise<ScenarioPack>
     scenes: scenesFile.scenes,
     items: itemsFile.items,
     endings: endingsFile.endings,
+    clues: cluesFile?.clues ?? [],
   };
 }
 
 async function readYamlFile<T>(base: string, fileName: string): Promise<T> {
   const raw = await fs.readFile(path.join(base, fileName), "utf8");
   return parseYaml(raw) as T;
+}
+
+async function readOptionalYamlFile<T>(base: string, fileName: string): Promise<T | null> {
+  try {
+    return await readYamlFile<T>(base, fileName);
+  } catch (error) {
+    if (isNodeError(error) && error.code === "ENOENT") {
+      return null;
+    }
+    throw error;
+  }
+}
+
+function isNodeError(error: unknown): error is NodeJS.ErrnoException {
+  return typeof error === "object" && error !== null && "code" in error;
 }

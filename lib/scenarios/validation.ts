@@ -1,5 +1,8 @@
 import type {
   CheckOutcome,
+  ClueRevealCondition,
+  ClueRevealTerm,
+  ClueSourceReference,
   ConditionExpr,
   EndingDefinition,
   Requirement,
@@ -42,6 +45,7 @@ interface ValidationContext {
   endingIds: Set<string>;
   actionIds: Set<string>;
   checkIds: Set<string>;
+  clueIds: Set<string>;
   flagIds: Set<string>;
   counterIds: Set<string>;
   carryOutGroupIds: Set<string>;
@@ -54,11 +58,15 @@ type ReferenceKind =
   | "ending"
   | "action"
   | "check"
+  | "clue"
   | "flag"
   | "counter"
   | "carry-out group";
 
 const CONDITION_KEYS = ["all", "any", "any_missing", "flag", "counter", "trust", "item", "choice"];
+const CLUE_CATEGORY_VALUES = ["confirmed", "inference", "testimony", "polluted_memory", "unverified"];
+const CLUE_SOURCE_TYPES = ["scene", "item", "action", "check"];
+const CLUE_REVEAL_KEYS = ["all", "any", "flag", "item", "action", "check"];
 
 export function validateScenarioPacks(packs: ScenarioPack[]): ScenarioValidationResult[] {
   return packs.map((pack) => validateScenarioPack(pack));
@@ -71,6 +79,7 @@ export function validateScenarioPack(pack: ScenarioPack): ScenarioValidationResu
   validateSceneReferences(ctx);
   validateEndingReferences(ctx);
   validateCarryOutGroups(ctx);
+  validateClueReferences(ctx);
   validateReachability(ctx);
 
   return {
@@ -121,6 +130,7 @@ function createValidationContext(pack: ScenarioPack): ValidationContext {
     ),
     actionIds: collectUniqueIds(issues, "action", collectActionRefs(pack.scenes)),
     checkIds: collectUniqueIds(issues, "check", collectCheckRefs(pack.scenes)),
+    clueIds: collectUniqueIds(issues, "clue", pack.clues.map((clue, index) => ({ id: clue.id, path: `clues[${index}].id` }))),
     flagIds: new Set(Object.keys(pack.scenario.mechanics?.initial_flags ?? {})),
     counterIds: new Set(Object.keys(pack.scenario.mechanics?.counters ?? {})),
     carryOutGroupIds: collectUniqueIds(
@@ -407,6 +417,130 @@ function validateCarryOutGroups(ctx: ValidationContext): void {
   });
 }
 
+function validateClueReferences(ctx: ValidationContext): void {
+  ctx.pack.clues.forEach((clue, clueIndex) => {
+    const basePath = `clues[${clueIndex}]`;
+
+    if (CLUE_CATEGORY_VALUES.indexOf(clue.category) === -1) {
+      addIssue(ctx.issues, "error", "INVALID_CLUE_CATEGORY", `${basePath}.category`, `Unsupported clue category "${clue.category}".`);
+    }
+
+    if (!Array.isArray(clue.sources) || clue.sources.length === 0) {
+      addIssue(ctx.issues, "error", "EMPTY_CLUE_SOURCES", `${basePath}.sources`, `Clue "${clue.id}" must have at least one source.`);
+    } else {
+      clue.sources.forEach((source, sourceIndex) => {
+        validateClueSource(ctx, source, `${basePath}.sources[${sourceIndex}]`);
+      });
+    }
+
+    validateClueReveal(ctx, clue.reveal, `${basePath}.reveal`);
+  });
+}
+
+function validateClueSource(ctx: ValidationContext, source: ClueSourceReference, path: string): void {
+  if (CLUE_SOURCE_TYPES.indexOf(source.type) === -1) {
+    addIssue(ctx.issues, "error", "INVALID_CLUE_SOURCE_TYPE", `${path}.type`, `Unsupported clue source type "${source.type}".`);
+    return;
+  }
+
+  switch (source.type) {
+    case "scene":
+      assertKnownId(ctx, "scene", source.id, ctx.sceneIds, `${path}.id`);
+      return;
+    case "item":
+      assertKnownId(ctx, "item", source.id, ctx.itemIds, `${path}.id`);
+      return;
+    case "action":
+      assertKnownId(ctx, "action", source.id, ctx.actionIds, `${path}.id`);
+      return;
+    case "check":
+      assertKnownId(ctx, "check", source.id, ctx.checkIds, `${path}.id`);
+      return;
+    default:
+      return;
+  }
+}
+
+function validateClueReveal(ctx: ValidationContext, reveal: ClueRevealCondition | undefined, path: string): void {
+  if (!isPlainRecord(reveal)) {
+    addIssue(ctx.issues, "error", "INVALID_CLUE_REVEAL_SHAPE", path, "Clue reveal must be an object.");
+    return;
+  }
+
+  const revealRecord = reveal;
+  const keys = CLUE_REVEAL_KEYS.filter((key) => key in revealRecord);
+
+  if (keys.length !== 1) {
+    addIssue(
+      ctx.issues,
+      "error",
+      "INVALID_CLUE_REVEAL_SHAPE",
+      path,
+      `Clue reveal must contain exactly one operator key, but found ${keys.length === 0 ? "none" : keys.join(", ")}.`,
+    );
+    return;
+  }
+
+  if ("any" in reveal) {
+    validateClueRevealList(ctx, reveal.any, `${path}.any`);
+    return;
+  }
+  if ("all" in reveal) {
+    validateClueRevealList(ctx, reveal.all, `${path}.all`);
+    return;
+  }
+
+  validateClueRevealTerm(ctx, reveal, path);
+}
+
+function validateClueRevealList(ctx: ValidationContext, terms: ClueRevealTerm[], path: string): void {
+  if (!Array.isArray(terms) || terms.length === 0) {
+    addIssue(ctx.issues, "warning", "EMPTY_CLUE_REVEAL_LIST", path, "Clue reveal list is empty.");
+    return;
+  }
+
+  terms.forEach((term, index) => {
+    validateClueRevealTerm(ctx, term, `${path}[${index}]`);
+  });
+}
+
+function validateClueRevealTerm(ctx: ValidationContext, term: ClueRevealTerm | undefined, path: string): void {
+  if (!isPlainRecord(term)) {
+    addIssue(ctx.issues, "error", "INVALID_CLUE_REVEAL_TERM", path, "Clue reveal term must be an object.");
+    return;
+  }
+
+  const termRecord = term;
+  const keys = CLUE_REVEAL_KEYS.filter((key) => key in termRecord);
+
+  if (keys.length !== 1 || keys[0] === "all" || keys[0] === "any") {
+    addIssue(
+      ctx.issues,
+      "error",
+      "INVALID_CLUE_REVEAL_TERM",
+      path,
+      `Clue reveal term must contain exactly one reference key, but found ${keys.length === 0 ? "none" : keys.join(", ")}.`,
+    );
+    return;
+  }
+
+  if ("flag" in term) {
+    assertKnownId(ctx, "flag", term.flag, ctx.flagIds, `${path}.flag`);
+    return;
+  }
+  if ("item" in term) {
+    assertKnownId(ctx, "item", term.item, ctx.itemIds, `${path}.item`);
+    return;
+  }
+  if ("action" in term) {
+    assertKnownId(ctx, "action", term.action, ctx.actionIds, `${path}.action`);
+    return;
+  }
+  if ("check" in term) {
+    assertKnownId(ctx, "check", term.check, ctx.checkIds, `${path}.check`);
+  }
+}
+
 function validateReachability(ctx: ValidationContext): void {
   const startSceneId = ctx.pack.scenario.scenes[0];
   if (!startSceneId || !ctx.sceneIds.has(startSceneId)) {
@@ -691,4 +825,8 @@ function stableRuleTargetKey(rule: { next_scene_id?: string; ending_id?: string;
 
 function isString(value: string | undefined): value is string {
   return typeof value === "string";
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

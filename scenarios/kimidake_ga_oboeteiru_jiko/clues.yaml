@@ -1,0 +1,91 @@
+clues:
+  - id: "clue_parallel_displacement"
+    title: "世界のズレ"
+    category: "confirmed"
+    description: "店名、掲示、ニュースの日付が探索者の世界と食い違っている。"
+    sources:
+      - type: "scene"
+        id: "scene_001_parallel_arrival"
+    reveal:
+      any:
+        - flag: "noticed_parallel_displacement"
+  - id: "clue_not_replacement"
+    title: "代わりではないという宣言"
+    category: "testimony"
+    description: "探索者は灯に、死んだ親友の代わりではないと伝えた。"
+    sources:
+      - type: "scene"
+        id: "scene_001_parallel_arrival"
+    reveal:
+      any:
+        - flag: "said_not_replacement"
+  - id: "clue_acted_as_dead_friend"
+    title: "親友本人としての振る舞い"
+    category: "polluted_memory"
+    description: "灯を落ち着かせるための振る舞いが、境界の認識を濁している。"
+    sources:
+      - type: "scene"
+        id: "scene_001_parallel_arrival"
+    reveal:
+      any:
+        - flag: "acted_as_dead_friend"
+  - id: "clue_akari_regret_spoken"
+    title: "祝えなかった誕生日"
+    category: "testimony"
+    description: "灯は事故と、渡せなかった誕生日プレゼントへの未練を話した。"
+    sources:
+      - type: "scene"
+        id: "scene_002_accident_trace"
+    reveal:
+      any:
+        - flag: "akari_regret_spoken"
+  - id: "clue_gift_respected_unopened"
+    title: "未開封のまま残す判断"
+    category: "confirmed"
+    description: "誕生日プレゼントの中身を詮索しない選択が、灯の信頼を保っている。"
+    sources:
+      - type: "scene"
+        id: "scene_002_accident_trace"
+    reveal:
+      any:
+        - flag: "gift_respected_unopened"
+  - id: "clue_cult_recovery_trace"
+    title: "帰還の環の痕跡"
+    category: "inference"
+    description: "事故現場から一部の遺留品が不自然に消え、支援団体の名が浮かんだ。"
+    sources:
+      - type: "scene"
+        id: "scene_002_accident_trace"
+    reveal:
+      any:
+        - flag: "found_cult_recovery_trace"
+  - id: "clue_akari_rest_empty_house"
+    title: "空き家での休息"
+    category: "testimony"
+    description: "灯が少しだけ息をつける場所として、空き家が機能している。"
+    sources:
+      - type: "scene"
+        id: "scene_003_empty_house"
+    reveal:
+      any:
+        - flag: "akari_rested_in_empty_house"
+  - id: "clue_dead_friend_home_respected"
+    title: "詮索しない距離"
+    category: "confirmed"
+    description: "死んだ親友の家を暴かない判断が、探索者と灯の距離を保った。"
+    sources:
+      - type: "scene"
+        id: "scene_003_empty_house"
+    reveal:
+      any:
+        - flag: "dead_friend_home_respected"
+  - id: "clue_empty_house_identity"
+    title: "空き家の正体"
+    category: "confirmed"
+    description: "表札、間取り、止まったカレンダーが、ここが平行世界側の探索者の家だと示している。"
+    sources:
+      - type: "scene"
+        id: "scene_003_empty_house"
+    reveal:
+      any:
+        - flag: "confirmed_empty_house_identity"

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { before, test } from "node:test";
 
 import { rollAdventureCheck, advanceAdventureScene, applyAdventureAction } from "../lib/adventure/session";
+import { deriveEvidenceEntries } from "../lib/adventure/evidence";
 import { buildAdventureViewModel } from "../lib/adventure/view-model";
 import { loadScenarioPack } from "../lib/scenarios/loader";
 import { createInitialState, toggleCarryOutItem } from "../lib/scenarios/runtime";
@@ -118,6 +119,57 @@ test("Adventure evidence follows the existing scene 2 and scene 3 flag contract"
   assert.ok(scene3View.evidence.some((entry) => entry.id === "flag:dead_friend_home_respected"));
   assert.ok(scene3View.evidence.some((entry) => entry.id === "flag:confirmed_empty_house_identity"));
   assert.equal(scene3View.status.memoryLabel, "違和感を覚えている");
+});
+
+test("Adventure evidence uses loaded clue schema while preserving current flag evidence parity", () => {
+  const state = {
+    ...createInitialState(pack),
+    flags: {
+      ...createInitialState(pack).flags,
+      noticed_parallel_displacement: true,
+      said_not_replacement: true,
+      acted_as_dead_friend: true,
+      akari_regret_spoken: true,
+      gift_respected_unopened: true,
+      found_cult_recovery_trace: true,
+      akari_rested_in_empty_house: true,
+      dead_friend_home_respected: true,
+      confirmed_empty_house_identity: true,
+    },
+  };
+
+  const evidence = deriveEvidenceEntries(pack, state);
+
+  assert.equal(pack.clues.length, 9);
+  assert.deepEqual(
+    evidence.map((entry) => [entry.id, entry.title, entry.category, entry.source]),
+    [
+      ["flag:noticed_parallel_displacement", "世界のズレ", "confirmed", "死んだきみの顔"],
+      ["flag:said_not_replacement", "代わりではないという宣言", "testimony", "死んだきみの顔"],
+      ["flag:acted_as_dead_friend", "親友本人としての振る舞い", "polluted_memory", "死んだきみの顔"],
+      ["flag:akari_regret_spoken", "祝えなかった誕生日", "testimony", "祝えなかった誕生日"],
+      ["flag:gift_respected_unopened", "未開封のまま残す判断", "confirmed", "祝えなかった誕生日"],
+      ["flag:found_cult_recovery_trace", "帰還の環の痕跡", "inference", "祝えなかった誕生日"],
+      ["flag:akari_rested_in_empty_house", "空き家での休息", "testimony", "空き家に帰る子"],
+      ["flag:dead_friend_home_respected", "詮索しない距離", "confirmed", "空き家に帰る子"],
+      ["flag:confirmed_empty_house_identity", "空き家の正体", "confirmed", "空き家に帰る子"],
+    ],
+  );
+});
+
+test("Adventure evidence keeps inventory-derived entries outside the clue parity slice", () => {
+  const state = {
+    ...createInitialState(pack),
+    inventory: ["unopened_birthday_gift"],
+  };
+
+  const evidence = deriveEvidenceEntries(pack, state);
+  const itemEvidence = evidence.find((entry) => entry.id === "item:unopened_birthday_gift");
+
+  assert.ok(itemEvidence);
+  assert.equal(itemEvidence.title, "未開封の誕生日プレゼント");
+  assert.equal(itemEvidence.category, "confirmed");
+  assert.doesNotMatch(itemEvidence.source, /^scene_/);
 });
 
 test("Adventure scene advance follows existing YAML from scene 3 into scene 4", () => {

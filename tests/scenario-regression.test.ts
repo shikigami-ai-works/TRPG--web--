@@ -332,6 +332,48 @@ test("validateScenarioPack reports broken references, invalid conditions, and un
       any: [],
     } as unknown as ConditionExpr,
   };
+  broken.clues = [
+    ...broken.clues,
+    {
+      id: "broken_clue",
+      title: "Broken clue",
+      category: "contradiction",
+      description: "Broken clue should fail validation.",
+      sources: [
+        {
+          type: "scene",
+          id: "missing_scene",
+        },
+        {
+          type: "npc",
+          id: "minase_akari",
+        },
+      ],
+      reveal: {
+        any: [
+          { flag: "missing_flag" },
+          { item: "missing_item" },
+          { action: "missing_action" },
+          { check: "missing_check" },
+        ],
+      },
+    } as unknown as (typeof broken.clues)[number],
+    {
+      id: "broken_clue",
+      title: "Duplicate clue",
+      category: "confirmed",
+      description: "Duplicate clue id should fail validation.",
+      sources: [
+        {
+          type: "scene",
+          id: "scene_001_parallel_arrival",
+        },
+      ],
+      reveal: {
+        flag: "noticed_parallel_displacement",
+      },
+    },
+  ];
 
   const result = validateScenarioPack(broken);
   const codes = new Set(result.issues.map((issue) => issue.code));
@@ -346,6 +388,11 @@ test("validateScenarioPack reports broken references, invalid conditions, and un
   assert.equal(codes.has("INVALID_NEXT_SCENE_RULE_TARGET"), true);
   assert.equal(codes.has("RETURN_REQUIREMENT_EXCEEDS_GROUP_SIZE"), true);
   assert.equal(codes.has("UNREACHABLE_ENDING"), true);
+  assert.equal(codes.has("DUPLICATE_ID"), true);
+  assert.equal(codes.has("INVALID_CLUE_CATEGORY"), true);
+  assert.equal(codes.has("INVALID_CLUE_SOURCE_TYPE"), true);
+  assert.equal(codes.has("UNKNOWN_FLAG_ID"), true);
+  assert.equal(codes.has("UNKNOWN_CHECK_ID"), true);
 });
 
 test("save/load restores active run state and rejects corrupt or mismatched saves", () => {
