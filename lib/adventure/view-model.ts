@@ -57,6 +57,12 @@ export interface AdventureCarryOutGroupView {
   items: AdventureCarryOutItemView[];
 }
 
+export interface AdventureEndingSummaryView {
+  outcomeLabel: string;
+  carryOutLabel: string;
+  inspectionLabel: string;
+}
+
 export type AdventureLogKind = "action" | "check" | "scene" | "ending" | "note";
 
 export interface AdventureLogEntry {
@@ -82,6 +88,7 @@ export interface AdventureViewModel {
   log: string[];
   logEntries: AdventureLogEntry[];
   status: AdventureStatusView;
+  endingSummary?: AdventureEndingSummaryView;
   carryOutGroups: AdventureCarryOutGroupView[];
   canAdvanceScene: boolean;
 }
@@ -94,6 +101,7 @@ export function buildAdventureViewModel(pack: ScenarioPack, state: ScenarioRunti
   const contamination = state.counters.boundary_contamination ?? 0;
   const log = state.log.slice(0, 12);
   const ending = state.endingId ? pack.endings.find((candidate) => candidate.id === state.endingId) : undefined;
+  const carryOutGroups = buildCarryOutGroups(pack, state, Boolean(ending));
 
   return {
     scenarioTitle: pack.scenario.title,
@@ -121,7 +129,8 @@ export function buildAdventureViewModel(pack: ScenarioPack, state: ScenarioRunti
       evidenceCount: evidence.length,
       logCount: state.log.length,
     },
-    carryOutGroups: buildCarryOutGroups(pack, state, Boolean(ending)),
+    endingSummary: ending ? buildEndingSummary(ending, carryOutGroups) : undefined,
+    carryOutGroups,
     canAdvanceScene: !ending && Boolean((scene.next_scene_rules ?? []).length),
   };
 }
@@ -265,6 +274,45 @@ function buildCarryOutGroups(pack: ScenarioPack, state: ScenarioRuntimeState, di
       };
     })
     .filter((group) => group.items.length > 0);
+}
+
+function buildEndingSummary(ending: EndingDefinition, carryOutGroups: AdventureCarryOutGroupView[]): AdventureEndingSummaryView {
+  return {
+    outcomeLabel: formatEndingOutcomeLabel(ending.id),
+    carryOutLabel: formatCarryOutSummary(carryOutGroups),
+    inspectionLabel: "証拠 / ログ / 状態の調査は終了後も確認できます",
+  };
+}
+
+function formatEndingOutcomeLabel(endingId: string): string {
+  switch (endingId) {
+    case "return_with_akari":
+      return "ふたりは同じ灯を見て、境界を越えた。";
+    case "return_without_akari":
+      return "帰路は照らされたが、灯は向こう側に残った。";
+    case "stay_with_akari":
+      return "帰路よりも、灯のいる境界を選んだ。";
+    case "boundary_collapse":
+      return "持ち帰ろうとした願いが、帰路を崩した。";
+    default:
+      return "このランは結末に到達した。";
+  }
+}
+
+function formatCarryOutSummary(carryOutGroups: AdventureCarryOutGroupView[]): string {
+  if (!carryOutGroups.length) {
+    return "持ち帰りの痕跡はまだ見つかっていない。";
+  }
+
+  const summaries = carryOutGroups.flatMap((group) => {
+    const selectedItems = group.items.filter((item) => item.selected).map((item) => item.label);
+    if (!selectedItems.length) {
+      return [];
+    }
+    return [`${group.label}: ${selectedItems.join(" / ")} (${group.selectedCount}/${group.limit ?? "-"})`];
+  });
+
+  return summaries.length ? summaries.join(" / ") : "今回は境界の向こうへ持ち出したものはない。";
 }
 
 function isActionHidden(action: SceneActionDefinition, state: ScenarioRuntimeState, pack: ScenarioPack): boolean {

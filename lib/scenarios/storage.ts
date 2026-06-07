@@ -51,6 +51,11 @@ export interface ReachedEndingSummary {
   count: number;
 }
 
+export interface CompletedRunAppendResult {
+  state: ScenarioRuntimeState;
+  record: CompletedRunRecord | null;
+}
+
 export interface SavedCheckProfile {
   version: number;
   scenarioId: string;
@@ -231,6 +236,26 @@ export function appendCompletedRun(pack: ScenarioPack, state: ScenarioRuntimeSta
   } catch {
     return null;
   }
+}
+
+export function appendCompletedRunOnce(pack: ScenarioPack, state: ScenarioRuntimeState): CompletedRunAppendResult {
+  if (!state.endingId || state.completedRunId) {
+    return { state, record: null };
+  }
+
+  const ending = pack.endings.find((candidate) => candidate.id === state.endingId);
+  if (!ending) {
+    return { state, record: null };
+  }
+
+  const record = appendCompletedRun(pack, state, ending);
+  return {
+    state: {
+      ...state,
+      completedRunId: record?.runId ?? `${pack.scenario.id}:${ending.id}:unpersisted`,
+    },
+    record,
+  };
 }
 
 export function loadRunHistory(scenarioId?: string): CompletedRunRecord[] {

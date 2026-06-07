@@ -8,6 +8,14 @@ import { advanceAdventureScene, applyAdventureAction, rollAdventureCheck } from 
 import { buildAdventureViewModel } from "@/lib/adventure/view-model";
 import { createInitialState } from "@/lib/scenarios/runtime";
 import { toggleCarryOutItem } from "@/lib/scenarios/runtime";
+import {
+  appendCompletedRunOnce,
+  clearActiveRun,
+  hasMeaningfulProgress,
+  loadActiveRun,
+  restoreRuntimeState,
+  saveActiveRun,
+} from "@/lib/scenarios/storage";
 import type { ScenarioPack, ScenarioRuntimeState } from "@/lib/scenarios/types";
 
 interface AdventurePlayerProps {
@@ -15,6 +23,8 @@ interface AdventurePlayerProps {
 }
 
 type PanelId = "evidence" | "log" | "status";
+type SaveStatus = "idle" | "restored" | "saved" | "unavailable";
+type EndingRecordStatus = "pending" | "recorded" | "unavailable";
 
 const PANEL_LABELS: Record<PanelId, string> = {
   evidence: "証拠",
@@ -27,19 +37,29 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
     () => packs.find((candidate) => candidate.scenario.id === TARGET_SCENARIO_ID) ?? packs[0],
     [packs],
   );
-  const [state, setState] = useState<ScenarioRuntimeState>(() => (pack ? createInitialState(pack) : createEmptyState()));
+  const initialState = useMemo(() => (pack ? createInitialState(pack) : createEmptyState()), [pack]);
+  const [state, setState] = useState<ScenarioRuntimeState>(() => initialState);
   const [pageIndex, setPageIndex] = useState(0);
   const [activePanel, setActivePanel] = useState<PanelId>("evidence");
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [storageReady, setStorageReady] = useState(false);
   const [lastEvent, setLastEvent] = useState("境界の向こう側で目を覚ました。");
 
   useEffect(() => {
     if (!pack) {
+      setStorageReady(false);
       return;
     }
-    setState(createInitialState(pack));
+    setStorageReady(false);
+    const freshState = createInitialState(pack);
+    const savedRun = loadActiveRun(pack.scenario.id);
+    setState(savedRun ? restoreRuntimeState(savedRun, freshState) : freshState);
     setPageIndex(0);
+    setActivePanel("evidence");
     setDrawerOpen(false);
+    setSaveStatus(savedRun ? "restored" : "idle");
+    setStorageReady(true);
     setLastEvent("境界の向こう側で目を覚ました。");
   }, [pack]);
 
@@ -67,6 +87,25 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [canAdvanceText, drawerOpen, view]);
+
+  useEffect(() => {
+    if (!pack || !storageReady || !state.endingId || state.completedRunId) {
+      return;
+    }
+
+    const completed = appendCompletedRunOnce(pack, state);
+    setState(completed.state);
+    setSaveStatus(completed.record ? "saved" : "unavailable");
+  }, [pack, state, storageReady]);
+
+  useEffect(() => {
+    if (!pack || !storageReady || !hasMeaningfulProgress(state, initialState)) {
+      return;
+    }
+
+    const saved = saveActiveRun(pack.scenario.id, state);
+    setSaveStatus((current) => (current === "restored" ? "restored" : saved ? "saved" : "unavailable"));
+  }, [initialState, pack, state, storageReady]);
 
   if (!pack || !view) {
     return (
@@ -102,6 +141,7 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
       return;
     }
 
+    markRuntimeChangeStarted();
     setState(result.state);
     setLastEvent(result.event);
     if (result.ending) {
@@ -115,6 +155,7 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
       return;
     }
     const result = advanceAdventureScene(pack, state);
+    markRuntimeChangeStarted();
     setState(result.state);
     setLastEvent(result.event);
     setPageIndex(0);
@@ -132,10 +173,12 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
     if (!pack) {
       return;
     }
+    clearActiveRun(pack.scenario.id);
     setState(createInitialState(pack));
     setPageIndex(0);
     setActivePanel("evidence");
     setDrawerOpen(false);
+    setSaveStatus("idle");
     setLastEvent("境界の向こう側で目を覚ました。");
   }
 
@@ -143,19 +186,28 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
     if (state.endingId) {
       return;
     }
+    markRuntimeChangeStarted();
     setState(toggleCarryOutItem(state, groupId, itemId));
   }
 
+  function markRuntimeChangeStarted() {
+    setSaveStatus((current) => (current === "restored" ? "idle" : current));
+  }
+
+  const hasRuntimeProgress = hasMeaningfulProgress(state, initialState);
+  const endingRecordStatus = getEndingRecordStatus(state.completedRunId);
+
   return (
-    <main className="adv-shell" data-scene-id={view.scene.id}>
+    <main className="adv-shell" data-ending-id={state.endingId ?? ""} data-save-status={saveStatus} data-scene-id={view.scene.id}>
       <div className="adv-layout">
         <section className="adv-main" aria-label="Adventure player">
           <StatusStrip view={view} />
+          <SaveStatusNotice saveStatus={saveStatus} showRestart={hasRuntimeProgress && !view.ending} onRestart={handleRestart} />
 
           <AdventureStage view={view} />
 
           {view.ending ? (
-            <EndingView view={view} onRestart={handleRestart} />
+            <EndingView onPanel={handlePanel} onRestart={handleRestart} recordStatus={endingRecordStatus} view={view} />
           ) : (
             <section className="adv-text-zone" aria-live="polite">
               <div className="adv-nameplate">{view.npcs[0] ?? "探索者"}</div>
@@ -255,11 +307,40 @@ function AdventureStage({ view }: { view: NonNullable<ReturnType<typeof buildAdv
   );
 }
 
-function EndingView({
+function SaveStatusNotice({
   onRestart,
-  view,
+  saveStatus,
+  showRestart,
 }: {
   onRestart: () => void;
+  saveStatus: SaveStatus;
+  showRestart: boolean;
+}) {
+  if (saveStatus === "idle") {
+    return null;
+  }
+
+  return (
+    <section className="adv-save-notice" data-save-notice={saveStatus} aria-live="polite">
+      <span>{formatSaveStatusLabel(saveStatus)}</span>
+      {showRestart ? (
+        <button onClick={onRestart} type="button">
+          最初から
+        </button>
+      ) : null}
+    </section>
+  );
+}
+
+function EndingView({
+  onPanel,
+  onRestart,
+  recordStatus,
+  view,
+}: {
+  onPanel: (panel: PanelId) => void;
+  onRestart: () => void;
+  recordStatus: EndingRecordStatus;
   view: NonNullable<ReturnType<typeof buildAdventureViewModel>>;
 }) {
   const ending = view.ending;
@@ -272,9 +353,30 @@ function EndingView({
       <p className="adv-ending-type">{view.endingTypeLabel}</p>
       <h1>{ending.title}</h1>
       <p>{ending.description}</p>
-      <button className="adv-scene-button" onClick={onRestart} type="button">
-        最初から
-      </button>
+      {view.endingSummary ? (
+        <div className="adv-ending-summary">
+          <p>{view.endingSummary.outcomeLabel}</p>
+          <p>{view.endingSummary.carryOutLabel}</p>
+          <p>{view.endingSummary.inspectionLabel}</p>
+        </div>
+      ) : null}
+      <p className="adv-ending-record" data-ending-record-status={recordStatus}>
+        {formatEndingRecordStatusLabel(recordStatus)}
+      </p>
+      <div className="adv-ending-actions">
+        <button className="adv-scene-button" onClick={onRestart} type="button">
+          もう一度たどる
+        </button>
+        <button className="adv-scene-button secondary" onClick={() => onPanel("log")} type="button">
+          記録を見る
+        </button>
+        <button className="adv-scene-button secondary" onClick={() => onPanel("evidence")} type="button">
+          手がかりを見る
+        </button>
+        <button className="adv-scene-button secondary" onClick={() => onPanel("status")} type="button">
+          状態を見る
+        </button>
+      </div>
     </section>
   );
 }
@@ -465,6 +567,40 @@ function PanelContent({
       ) : null}
     </div>
   );
+}
+
+function getEndingRecordStatus(completedRunId?: string): EndingRecordStatus {
+  if (!completedRunId) {
+    return "pending";
+  }
+
+  return completedRunId.endsWith(":unpersisted") ? "unavailable" : "recorded";
+}
+
+function formatSaveStatusLabel(saveStatus: SaveStatus): string {
+  switch (saveStatus) {
+    case "restored":
+      return "つづきから再開しました";
+    case "saved":
+      return "保存済み";
+    case "unavailable":
+      return "この端末では保存できない";
+    case "idle":
+    default:
+      return "";
+  }
+}
+
+function formatEndingRecordStatusLabel(recordStatus: EndingRecordStatus): string {
+  switch (recordStatus) {
+    case "recorded":
+      return "到達記録に保存しました";
+    case "unavailable":
+      return "この端末では到達記録を保存できない";
+    case "pending":
+    default:
+      return "到達記録を追加中";
+  }
 }
 
 function createEmptyState(): ScenarioRuntimeState {

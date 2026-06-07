@@ -20,6 +20,7 @@ import {
 import { buildEndingProgressEntries } from "../lib/scenarios/ending-progress";
 import {
   appendCompletedRun,
+  appendCompletedRunOnce,
   clearActiveRun,
   clearCheckProfile,
   getReachedEndings,
@@ -477,6 +478,60 @@ test("run history preserves duplicate completions and reached endings are dedupl
   assert.equal(reached.length, 2);
 });
 
+test("appendCompletedRunOnce records an ended run only once", () => {
+  const route = playReturnRoute({ carryTwoArtifacts: false, openGift: false });
+  assert.ok(route.ending);
+  const endedState = { ...route.state, endingId: route.ending.id };
+
+  const first = appendCompletedRunOnce(pack, endedState);
+  const second = appendCompletedRunOnce(pack, first.state);
+  const history = loadRunHistory(SCENARIO_ID);
+
+  assert.ok(first.record?.runId);
+  assert.equal(first.state.completedRunId, first.record?.runId);
+  assert.equal(second.record, null);
+  assert.equal(second.state.completedRunId, first.state.completedRunId);
+  assert.equal(history.length, 1);
+  assert.equal(history[0].endingId, "return_with_akari");
+});
+
+test("restart clears active run without deleting completed run history", () => {
+  const initial = createInitialState(pack);
+  const progressed = {
+    ...initial,
+    sceneId: "scene_004_returning_family",
+    log: ["checkpoint", ...initial.log],
+  };
+  const route = playStayRoute();
+  assert.ok(route.ending);
+
+  assert.ok(saveActiveRun(SCENARIO_ID, progressed));
+  const completed = appendCompletedRunOnce(pack, { ...route.state, endingId: route.ending.id });
+  assert.ok(completed.record);
+
+  clearActiveRun(SCENARIO_ID);
+
+  assert.equal(loadActiveRun(SCENARIO_ID), null);
+  assert.equal(loadRunHistory(SCENARIO_ID).length, 1);
+  assert.equal(loadRunHistory(SCENARIO_ID)[0].endingId, "stay_with_akari");
+});
+
+test("storage unavailable does not block runtime progress or ended-run marking", () => {
+  installUnavailableStorage();
+  const initial = createInitialState(pack);
+  const progressed = applyAction(initial, "say_not_replacement");
+  const route = playReturnRoute({ carryTwoArtifacts: false, openGift: false });
+  assert.ok(route.ending);
+
+  const completed = appendCompletedRunOnce(pack, { ...route.state, endingId: route.ending.id });
+
+  assert.equal(progressed.flags.said_not_replacement, true);
+  assert.equal(saveActiveRun(SCENARIO_ID, progressed), null);
+  assert.equal(completed.record, null);
+  assert.equal(completed.state.completedRunId, `${SCENARIO_ID}:return_with_akari:unpersisted`);
+  assert.equal(completed.state.endingId, "return_with_akari");
+});
+
 test("ending progress entries show only visible locked endings before unlock", () => {
   const hiddenPack = clonePack(pack);
   hiddenPack.endings = hiddenPack.endings.map((ending) =>
@@ -709,6 +764,17 @@ function installMemoryStorage(): void {
     configurable: true,
     value: {
       localStorage: new MemoryStorage(),
+    },
+  });
+}
+
+function installUnavailableStorage(): void {
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: {
+      get localStorage(): Storage {
+        throw new Error("localStorage blocked");
+      },
     },
   });
 }

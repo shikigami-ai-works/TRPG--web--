@@ -246,6 +246,10 @@ test("Adventure session can play from scene 4 through the true ending", () => {
   assert.equal(state.endingId, "return_with_akari");
   assert.equal(endingView.ending?.title, "双つ灯の生還");
   assert.equal(endingView.endingTypeLabel, "トゥルー");
+  assert.match(endingView.endingSummary?.outcomeLabel ?? "", /同じ灯/);
+  assert.match(endingView.endingSummary?.carryOutLabel ?? "", /境界の火種/);
+  assert.doesNotMatch(endingView.endingSummary?.carryOutLabel ?? "", /boundary_ember/);
+  assert.match(endingView.endingSummary?.inspectionLabel ?? "", /証拠/);
   assert.equal(endingView.visibleChoices.length, 0);
   assert.equal(endingView.carryOutGroups[0]?.items.find((item) => item.id === "boundary_ember")?.disabled, true);
 });
