@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test:build": "tsc -p tsconfig.test.json",
     "test": "npm run test:build && node --test .test-build/tests/scenario-regression.test.js .test-build/tests/adventure-view-model.test.js",
-    "validate:scenarios": "tsc -p tsconfig.test.json && node .test-build/scripts/validate-scenarios.js"
+    "validate:scenarios": "tsc -p tsconfig.test.json && node .test-build/scripts/validate-scenarios.js",
+    "audit:adventure-player": "node scripts/adventure-player-ui-audit.cjs"
   },
   "dependencies": {
     "@types/node": "^20.14.10",

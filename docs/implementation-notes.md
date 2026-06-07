@@ -272,3 +272,13 @@
 - evidence hint は derived evidence の件数、カテゴリ、到達済み source label だけを表示する形にした。raw flag id / action id / scene id は出さず、正式な clue/evidence schema も追加しない。
 - carry-out hint は `state.carryOutSelections` と既存 carry-out group limit だけを見る。選択過多なら帰路の揺らぎ、選択済みなら別選択の余地、未選択なら持ち出しなしを表示する。`four_room_artifacts_carried_out` など raw counter id は表示しない。
 - post-ending surface には受動表示の `次の周回の手がかり` を追加した。新しい enabled control は増やさず、Stage16-5B の「到達記録」sheet と既存の「もう一度たどる」「記録を見る」「手がかりを見る」「状態を見る」を維持するため。
+
+## 2026-06-07 Stage 16-6 AdventurePlayer UI Audit Runner
+
+- Stage16-6 では、過去の一時 `.runtime` CDP 監査を `scripts/adventure-player-ui-audit.cjs` に寄せた。目的は product 挙動の追加ではなく、`/` と `/debug` の最低 UI 契約を再実行できる入口にすること。
+- 新しい product code の test hook は追加しなかった。既存の `data-ending-id`、`data-replay-hint-family`、`data-ending-progress-*`、`data-control`、drawer の class/aria だけで監査できたため、AdventurePlayer 側の表示文言・replay hint 仕様・保存形式は変更していない。
+- 監査 runner は依存を増やさず、Next dev server と headless Edge/Chrome の CDP を Node.js から直接使う。Playwright を入れない判断にしたのは、既存 package に browser automation 依存がなく、Stage16-6 の目的が最小 reusable tooling だったため。
+- audit 用の active-run / run-history seed は browser localStorage にだけ書き込む。`CompletedRunRecord` の型は既存形のまま使い、Stage16-5B/5C の表示確認に必要な最小データだけを注入する。
+- audit evidence は `.runtime/adventure-player-ui-audit-<timestamp>/` に `audit.json`、screenshots、server log として出す。`.runtime/` は引き続き tracking 対象にしない。
+- post-ending controls の監査では、Log/Evidence/Status drawer をそれぞれ開いた後に Escape で閉じてから次の control を押す。これは mobile drawer が画面を覆うためで、product 挙動の変更ではなく監査手順上の調整。
+- Stage16-6 では scenario YAML/body、scene 順序、ending 条件、route gate、CompletedRunRecord の保存形式、replay hint 文言、Stage16-7 相当の clue/evidence schema は変更していない。

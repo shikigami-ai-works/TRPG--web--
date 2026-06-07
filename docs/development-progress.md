@@ -22,12 +22,13 @@ Use this file only as a progress overview and restart map.
 ## Current Snapshot
 
 - Branch: `main`
-- Latest committed revision: Stage16-5A save point, `b197c4e Complete stage16 adventure player save resume`
-- `main` is aligned with `origin/main` after the Stage16-5A push.
+- Latest committed revision: `a59f8f3 Update stage16 progress status`.
+- Stage16-6 is implemented as the current change set and ready to commit/push.
 - Stage 15 AdventurePlayer scene 1-7 flow is committed and pushed.
 - Stage16-5A AdventurePlayer local save/resume and minimal post-ending record entry is committed and pushed.
-- Stage16-5B ending progress/reward sheet is implemented in the working tree and not yet committed.
-- Stage16-5C deterministic replay hints are implemented in the working tree after the staged Stage16-5B set and not yet committed.
+- Stage16-5B ending progress/reward sheet is committed and pushed.
+- Stage16-5C deterministic replay hints are committed and pushed.
+- Stage16-6 reusable AdventurePlayer browser/UI audit runner is implemented and verified.
 - Post-push untracked preservation docs include Stage 14R historical handoff/ledger files, the Stage16 prompt handoff/ledger pair, `docs/archive/`, and `docs/scenario-choice-planning-kimidake_ga_oboeteiru_jiko.md`; keep them out of Stage16 spec commits unless Shiki explicitly chooses otherwise.
 - `.runtime/` and `.context-archive/` are local-only evidence/archive areas and should not be staged by default.
 
@@ -244,6 +245,28 @@ Verification:
 - Browser audit covered `/` mobile `430x932` and desktop `1280x720`, replay hint family visibility (`branch`, `evidence`, `carry_out`), Stage16-5B progress sheet visibility, raw ID / condition-string non-exposure in player text, existing post-ending control outcomes, passive replay hint behavior, and `/debug` render preservation.
 - The audit parent shell timed out after writing `audit.json`, screenshots, and server log; `audit.json` records no console errors, no request failures, and passing interaction results. A follow-up port check found no listeners on 3004 or 9226. Some node worker processes from failed local audit attempts remained visible, but process cleanup by force was not approved; no listening dev server ports remained.
 
+### 2026-06-07 - Stage 16-6 Reusable AdventurePlayer Browser/UI Audit Runner
+
+- Commit: Stage16-6 change set.
+- Status: implemented; verification passed.
+
+- Added `scripts/adventure-player-ui-audit.cjs` as a dependency-free CDP audit runner for the minimum AdventurePlayer browser/UI contract.
+- Added `npm run audit:adventure-player` as the reusable repo entrypoint.
+- The runner starts a random-port Next dev server, launches headless Edge/Chrome through CDP, seeds only browser localStorage with an ended active run and completed history, and writes evidence under `.runtime/adventure-player-ui-audit-<timestamp>/`.
+- Covered `/` as AdventurePlayer, mobile and desktop post-ending surfaces, Stage16-5B progress/reward sheet visibility, Stage16-5C replay hint family visibility (`branch`, `evidence`, `carry_out`), raw player-text leak checks, existing post-ending control outcomes, passive replay hint behavior, and `/debug` as ScenarioExplorer.
+- Did not add product test hooks, product controls, scenario data, storage schema, replay hint copy changes, or Stage16-7 clue/evidence schema work.
+- Preserved `/` as `AdventurePlayer`, `/debug` as `ScenarioExplorer`, and left scenario YAML/body, scene order, ending conditions, route gates, and `CompletedRunRecord` unchanged.
+
+Verification:
+
+- `npm run typecheck`: PASS.
+- `npm run lint`: PASS.
+- `npm run validate:scenarios`: PASS, 1 pack / 0 errors / 0 warnings.
+- `npm run test`: PASS, 32 tests.
+- `npm run build`: PASS.
+- `npm run audit:adventure-player`: PASS; latest output saved under `.runtime/adventure-player-ui-audit-2026-06-07T10-34-36-028Z/`.
+- `git diff --check`: PASS.
+
 ## Area Status
 
 | Area | Status | Notes |
@@ -257,6 +280,7 @@ Verification:
 | Assets | Gated | Native UI/placeholders only unless later approval opens imports. |
 | Scene 4+ AdventurePlayer support | Committed and pushed in Stage 15 | Uses existing scenario YAML and runtime helpers. |
 | Post-ending save/replay spec | Stage16-5A-5C committed and pushed | Stage16-5A implements save/resume/history append; Stage16-5B implements the minimal ending progress/reward sheet; Stage16-5C implements passive deterministic replay hints. |
+| Browser/UI audit tooling | Stage16-6 implemented | `npm run audit:adventure-player` covers `/`, post-ending guarantees, existing post-ending controls, and `/debug`; evidence stays in `.runtime/`. |
 | AI GM / free input | Out of scope | Future layer after deterministic core. |
 | Real player-facing save UX | Stage16-5A implemented and pushed | LocalStorage-backed active-run restore, auto-save, completed history append-once, and restart behavior use existing storage helpers. |
 | Tauri/API integration | Out of scope | No current implementation. |
@@ -266,16 +290,14 @@ Verification:
 - Whether the two untracked Stage 14R-3 post-push handoff/ledger docs should be committed as history, organized, or left local.
 - Whether the six older untracked Stage 14R / Stage 14R-2 preservation docs now under `docs/archive/` should later be moved to Shiki's external storage, committed as history, or deleted.
 - Whether Stage16's later replay UX should remain a minimal localStorage-backed player surface or later expand into a richer persistence/reward layer.
-- Whether `.runtime/stage14r3-ui-audit.cjs` and `.runtime/stage15-adventureplayer-ui-audit.cjs` should remain local-only evidence or later become tracked reusable tooling under `scripts/`.
+- Whether older `.runtime/stage14r3-ui-audit.cjs`, `.runtime/stage15-adventureplayer-ui-audit.cjs`, and `.runtime/stage16-5a-ui-audit.cjs` should remain local-only historical evidence or be deleted after the Stage16-6 runner is committed.
 - When to formalize clue/evidence schema instead of deriving evidence from flags/items.
-- Whether `.runtime/stage16-5a-ui-audit.cjs` should remain local-only evidence or later become tracked reusable tooling under `scripts/`.
-- Whether the `origin` URL should be updated to the moved remote reported during push: `https://github.com/shikigami-ai-works/TRPG--web--.git`.
+- Whether the remaining untracked NextChat/handoff/archive docs should stay local, be archived elsewhere, or be committed separately.
 
 ## Next Safe Stages
 
-1. Stage16-6: harden browser/UI audit coverage and consider a tracked reusable audit runner only if Shiki approves that tooling scope.
-2. Stage16-7: decide whether to formalize clue/evidence schema instead of deriving evidence from flags/items.
-3. Decide separately what to do with historical untracked handoff/ledger/archive docs; do not mix that cleanup into Stage16 specs by default.
+1. Stage16-7: decide whether to formalize clue/evidence schema instead of deriving evidence from flags/items.
+2. Decide separately what to do with historical untracked handoff/ledger/archive docs; do not mix that cleanup into Stage16 specs by default.
 
 ## Update Rule
 
