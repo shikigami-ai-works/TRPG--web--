@@ -14,12 +14,11 @@ import type {
   SceneCheckDefinition,
   SceneDefinition,
 } from "../scenarios/types";
-import { STAGE_14R_SLICE_END_SCENE_ID, STAGE_14R_SLICE_REQUIRED_FLAG, formatRollSummary, formatSkillLabel, formatStatLabel } from "./labels";
+import { formatRollSummary, formatSkillLabel, formatStatLabel } from "./labels";
 
 export interface AdventureSessionResult {
   state: ScenarioRuntimeState;
   event: string;
-  sliceComplete?: boolean;
   roll?: CheckRollResult;
   ending?: EndingDefinition;
 }
@@ -30,6 +29,10 @@ export function applyAdventureAction(
   scene: SceneDefinition,
   action: SceneActionDefinition,
 ): AdventureSessionResult {
+  if (state.endingId) {
+    return { state, event: "結末に到達している。" };
+  }
+
   if (action.once_per_run && state.usedActionIds.includes(action.id)) {
     return { state, event: "その行動はもう選んでいる。" };
   }
@@ -69,6 +72,10 @@ export function rollAdventureCheck(
   profile: PlayerCheckProfile = DEFAULT_MVP_CHECK_PROFILE,
   random: () => number = Math.random,
 ): AdventureSessionResult {
+  if (state.endingId) {
+    return { state, event: "結末に到達している。" };
+  }
+
   if (state.usedActionIds.includes(check.id)) {
     return { state, event: "その判定はもう行っている。" };
   }
@@ -94,30 +101,14 @@ export function rollAdventureCheck(
   return { state: next, event, roll };
 }
 
-export function advanceAdventureScene(
-  pack: ScenarioPack,
-  state: ScenarioRuntimeState,
-  sliceEndSceneId: string = STAGE_14R_SLICE_END_SCENE_ID,
-  sliceRequiredFlag: string = STAGE_14R_SLICE_REQUIRED_FLAG,
-): AdventureSessionResult {
+export function advanceAdventureScene(pack: ScenarioPack, state: ScenarioRuntimeState): AdventureSessionResult {
+  if (state.endingId) {
+    return { state, event: "結末に到達している。" };
+  }
+
   const current = pack.scenes.find((candidate) => candidate.id === state.sceneId);
   if (!current) {
     return { state, event: "現在の場面を見つけられない。" };
-  }
-
-  if (current.id === sliceEndSceneId) {
-    if (!state.flags[sliceRequiredFlag]) {
-      return { state, event: "灯が休める時間を作ってから進む。" };
-    }
-
-    return {
-      state: {
-        ...state,
-        log: ["空き家で灯を休ませ、ここまでの調査記録を閉じた。", ...state.log].slice(0, 12),
-      },
-      event: "空き家で灯を休ませた。ここまでの調査を記録した。",
-      sliceComplete: true,
-    };
   }
 
   const nonDefaultRules = (current.next_scene_rules ?? []).filter((rule) => rule.condition !== "default");

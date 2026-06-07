@@ -22,19 +22,19 @@ Use this file only as a progress overview and restart map.
 ## Current Snapshot
 
 - Branch: `main`
-- Latest committed revision: `3c13090 Polish stage14r player-facing completion`
-- `main` is aligned with `origin/main` at the time this ledger was created.
-- Current worktree includes uncommitted Stage 14R-3 player-facing drawer polish.
-- Remaining untracked handoff/ledger files are historical preservation artifacts unless Shiki explicitly asks to commit or delete them.
+- Latest committed revision: `cc28433 Polish stage14r investigation drawers`
+- `main` is aligned with `origin/main` after the Stage 14R-3 push.
+- Stage 14R-3 investigation drawer polish is committed and pushed.
+- Post-push untracked preservation docs include the current Stage 14R-3 handoff/ledger in `docs/` and six older historical handoff/ledger files temporarily organized under `docs/archive/`.
 - `.runtime/` and `.context-archive/` are local-only evidence/archive areas and should not be staged by default.
 
 ## Current Product Shape
 
 - `/` renders the player-facing `AdventurePlayer`.
 - `/debug` renders the original `ScenarioExplorer` debug/validation surface.
-- The active player-facing slice covers scenes 1-3 of `kimidake_ga_oboeteiru_jiko`.
-- Stage 14R stops at `scene_003_empty_house` after `akari_rested_in_empty_house`.
-- Scene 4+ still exist in the scenario/runtime data but are not yet part of the player-facing `AdventurePlayer` slice.
+- The active player-facing route now covers scenes 1-7 of `kimidake_ga_oboeteiru_jiko` in the uncommitted Stage 15 work.
+- Stage 15 removes the old player-facing stop at `scene_003_empty_house` and follows existing YAML scene transitions through the final scene.
+- Scene 4+ support, ending resolution, and four-room carry-out selection are implemented in the player-facing adapter/UI layer without changing scenario YAML.
 - The player-facing UI is deterministic. No AI GM, free input, AI narration, Tauri/API integration, or real player-facing save integration is in scope yet.
 
 ## Progress Timeline
@@ -97,7 +97,8 @@ Use this file only as a progress overview and restart map.
 
 ### 2026-06-07 - Stage 14R-3 Drawer Readability Polish
 
-Status: uncommitted at the time this ledger was created.
+- Commit: `cc28433 Polish stage14r investigation drawers`
+- Status: committed and pushed to `origin/main`.
 
 - Added structured `logEntries` derived from runtime `state.log`.
 - Kept `state.log` strings intact to preserve the runtime/log contract.
@@ -106,7 +107,7 @@ Status: uncommitted at the time this ledger was created.
 - Separated Status drawer primary labels from supporting numeric values such as `侵食値` and `信頼値`.
 - Added focused regression coverage for initial note, scene transition, action, and check log categories.
 
-Latest verification for this uncommitted Stage 14R-3 work:
+Verification before the Stage 14R-3 commit:
 
 - `npm run test`: PASS, 26 tests
 - `npm run typecheck`: PASS
@@ -118,37 +119,63 @@ Latest verification for this uncommitted Stage 14R-3 work:
 - Request failures: 0
 - `git diff --check`: PASS, LF-to-CRLF warnings only
 
+### 2026-06-07 - Stage 15 AdventurePlayer Scene 4-7 Expansion
+
+- Commit: uncommitted.
+- Status: complete and verified locally; commit still pending.
+
+- Removed the Stage 14R player-route completion stop at `scene_003_empty_house`.
+- Let `AdventurePlayer` follow the existing scenario YAML through scenes 4-7.
+- Added a terminal ending surface for `state.endingId` so final choices do not remain active after resolution.
+- Added player-facing four-room carry-out selection in the Status panel using existing runtime helpers.
+- Added regression coverage for scene 3 to scene 4 advancement, Scene 7 final-choice gating, true-ending playthrough, and carry-out over-limit collapse.
+- Browser/UI audit passed with a local `.runtime/stage15-adventureplayer-ui-audit.cjs` CDP helper: scene 1 through `双つ灯の生還`, carry-out selection, `/debug`, four responsive viewports, no console errors, and no network failures.
+
+Verification:
+
+- `git diff --check`: PASS, LF-to-CRLF warnings only.
+- `npm run typecheck`: PASS.
+- `npm run lint`: PASS.
+- `npm run validate:scenarios`: PASS, 1 pack / 0 errors / 0 warnings.
+- `npm run test`: PASS, 29 tests.
+- `npm run build`: PASS.
+- `node .runtime\stage15-adventureplayer-ui-audit.cjs`: PASS, output saved under `.runtime/stage15-adventureplayer-ui-audit-2026-06-07T05-49-17-034Z.json` and `.runtime/stage15-adventureplayer-screens-2026-06-07T05-49-17-034Z/`.
+
+Verification so far:
+
+- `npm run test`: PASS, 29 tests
+
 ## Area Status
 
 | Area | Status | Notes |
 | --- | --- | --- |
 | Kimidake scenario contract | Stable | Current-spec and YAML are the source of truth. |
 | ScenarioExplorer debug UI | Stable | Preserved under `/debug`. |
-| AdventurePlayer scenes 1-3 | Implemented | Player-facing deterministic first slice. |
-| Evidence drawer | In polish | Derived from existing flags/items; no clue YAML yet. |
-| Log drawer | In polish | Structured UI entries derived from existing runtime log strings. |
-| Status drawer | In polish | Player-facing labels first, raw values as supporting detail. |
+| AdventurePlayer scenes 1-7 | Verified in uncommitted Stage 15 | Browser/UI audit passed through true ending. |
+| Evidence drawer | Polished | Derived from existing flags/items; metadata is easier to scan; no clue YAML yet. |
+| Log drawer | Polished | Structured UI entries derived from existing runtime log strings. |
+| Status drawer | Verified in uncommitted Stage 15 | Player-facing labels first, raw values as supporting detail, plus four-room carry-out selection. |
 | Assets | Gated | Native UI/placeholders only unless later approval opens imports. |
-| Scene 4+ AdventurePlayer support | Not started | Scenario data exists; player route is still scenes 1-3 only. |
+| Scene 4+ AdventurePlayer support | Verified in uncommitted Stage 15 | Uses existing scenario YAML and runtime helpers. |
 | AI GM / free input | Out of scope | Future layer after deterministic core. |
 | Real player-facing save UX | Not started | Debug persistence exists; AdventurePlayer save UX is not integrated. |
 | Tauri/API integration | Out of scope | No current implementation. |
 
 ## Open Decisions
 
-- Whether to commit the current Stage 14R-3 drawer polish.
-- Whether the older untracked 2026-06-06 preservation docs should be deleted, committed as history, or left local.
-- Whether Stage 14R should continue polishing scenes 1-3 or move to a Stage 14R-4 planning pass for scene 4+.
-- Whether `.runtime/stage14r3-ui-audit.cjs` should remain local-only evidence or later become tracked reusable tooling under `scripts/`.
+- Whether the two untracked Stage 14R-3 post-push handoff/ledger docs should be committed as history, organized, or left local.
+- Whether the six older untracked Stage 14R / Stage 14R-2 preservation docs now under `docs/archive/` should later be moved to Shiki's external storage, committed as history, or deleted.
+- Whether Stage 15 should add a fuller post-ending reward/save UX later, beyond the current deterministic ending surface.
+- Whether `.runtime/stage14r3-ui-audit.cjs` and `.runtime/stage15-adventureplayer-ui-audit.cjs` should remain local-only evidence or later become tracked reusable tooling under `scripts/`.
 - When to formalize clue/evidence schema instead of deriving evidence from flags/items.
 
 ## Next Safe Stages
 
-1. Commit current Stage 14R-3 drawer polish if Shiki asks for Git push / commit.
-2. Decide what to do with old untracked handoff/ledger files.
-3. Run a focused manual/playtest review of the player-facing scenes 1-3 flow.
-4. Plan Stage 14R-4: extend AdventurePlayer beyond scene 3 or specify why the next slice should wait.
-5. Turn the local Stage 14R UI audit helper into tracked tooling only if Shiki explicitly approves that tooling stage.
+1. Decide what to do with the current untracked Stage 14R-3 handoff/ledger files.
+2. Move or commit the temporary `docs/archive/` historical preservation files when Shiki chooses their final home.
+3. Review and commit the Stage 15 code/docs with narrow pathspecs, keeping `.runtime/`, `.context-archive/`, and unrelated preservation docs out unless Shiki explicitly chooses otherwise.
+4. Decide whether the current docs-only preservation work should be committed together with Stage 15 or kept separate.
+5. Turn the local UI audit helper into tracked tooling only if Shiki explicitly approves that tooling stage.
 
 ## Update Rule
 

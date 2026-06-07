@@ -7,6 +7,7 @@ import { TARGET_SCENARIO_ID } from "@/lib/adventure/labels";
 import { advanceAdventureScene, applyAdventureAction, rollAdventureCheck } from "@/lib/adventure/session";
 import { buildAdventureViewModel } from "@/lib/adventure/view-model";
 import { createInitialState } from "@/lib/scenarios/runtime";
+import { toggleCarryOutItem } from "@/lib/scenarios/runtime";
 import type { ScenarioPack, ScenarioRuntimeState } from "@/lib/scenarios/types";
 
 interface AdventurePlayerProps {
@@ -31,7 +32,6 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
   const [activePanel, setActivePanel] = useState<PanelId>("evidence");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [lastEvent, setLastEvent] = useState("境界の向こう側で目を覚ました。");
-  const [sliceComplete, setSliceComplete] = useState(false);
 
   useEffect(() => {
     if (!pack) {
@@ -41,14 +41,13 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
     setPageIndex(0);
     setDrawerOpen(false);
     setLastEvent("境界の向こう側で目を覚ました。");
-    setSliceComplete(false);
   }, [pack]);
 
   const baseView = pack ? buildAdventureViewModel(pack, state, false) : undefined;
   const textComplete = baseView ? pageIndex >= baseView.textPages.length - 1 : false;
   const view = pack ? buildAdventureViewModel(pack, state, textComplete) : undefined;
   const currentText = view?.textPages[Math.min(pageIndex, view.textPages.length - 1)] ?? "";
-  const canAdvanceText = view ? !sliceComplete && pageIndex < view.textPages.length - 1 : false;
+  const canAdvanceText = view ? !view.ending && pageIndex < view.textPages.length - 1 : false;
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -105,22 +104,22 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
 
     setState(result.state);
     setLastEvent(result.event);
+    if (result.ending) {
+      setPageIndex(0);
+      setDrawerOpen(false);
+    }
   }
 
   function handleAdvanceScene() {
     if (!pack || !view) {
       return;
     }
-    if (view.isSliceEndScene && !view.canCompleteSlice) {
-      setLastEvent("灯が休める時間を作ってから進む。");
-      return;
-    }
     const result = advanceAdventureScene(pack, state);
     setState(result.state);
     setLastEvent(result.event);
     setPageIndex(0);
-    if (result.sliceComplete) {
-      setSliceComplete(true);
+    if (result.ending) {
+      setDrawerOpen(false);
     }
   }
 
@@ -138,7 +137,13 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
     setActivePanel("evidence");
     setDrawerOpen(false);
     setLastEvent("境界の向こう側で目を覚ました。");
-    setSliceComplete(false);
+  }
+
+  function handleToggleCarryOut(groupId: string, itemId: string) {
+    if (state.endingId) {
+      return;
+    }
+    setState(toggleCarryOutItem(state, groupId, itemId));
   }
 
   return (
@@ -147,22 +152,26 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
         <section className="adv-main" aria-label="Adventure player">
           <StatusStrip view={view} />
 
-          <AdventureStage view={view} sliceComplete={sliceComplete} />
+          <AdventureStage view={view} />
 
-          <section className="adv-text-zone" aria-live="polite">
-            <div className="adv-nameplate">{view.npcs[0] ?? "探索者"}</div>
-            <p>{sliceComplete ? "灯はようやく息をついた。ここまでの調査記録を閉じる。" : currentText}</p>
-            <div className="adv-event-row">
-              <span>{lastEvent}</span>
-              {canAdvanceText ? (
-                <button className="adv-advance-button" onClick={handleAdvanceText} type="button">
-                  読み進める
-                </button>
-              ) : null}
-            </div>
-          </section>
+          {view.ending ? (
+            <EndingView view={view} onRestart={handleRestart} />
+          ) : (
+            <section className="adv-text-zone" aria-live="polite">
+              <div className="adv-nameplate">{view.npcs[0] ?? "探索者"}</div>
+              <p>{currentText}</p>
+              <div className="adv-event-row">
+                <span>{lastEvent}</span>
+                {canAdvanceText ? (
+                  <button className="adv-advance-button" onClick={handleAdvanceText} type="button">
+                    読み進める
+                  </button>
+                ) : null}
+              </div>
+            </section>
+          )}
 
-          {!sliceComplete && textComplete ? (
+          {!view.ending && textComplete ? (
             <section className="adv-choice-zone" aria-label="選択肢">
               {view.visibleChoices.map((choice) => (
                 <button
@@ -176,29 +185,29 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
                   <small>{choice.typeLabel} / {choice.detail}</small>
                 </button>
               ))}
-              {!view.isSliceEndScene || view.canCompleteSlice ? (
+              {view.canAdvanceScene ? (
                 <button className="adv-scene-button" data-control="advance-scene" onClick={handleAdvanceScene} type="button">
-                  {view.isSliceEndScene ? "記録を閉じる" : "次の場面へ"}
+                  次の場面へ
                 </button>
               ) : null}
-            </section>
-          ) : null}
-
-          {sliceComplete ? (
-            <section className="adv-choice-zone" aria-label="調査記録完了">
-              <button className="adv-scene-button" onClick={handleRestart} type="button">
-                最初から
-              </button>
             </section>
           ) : null}
 
           <BottomNav activePanel={activePanel} onPanel={handlePanel} />
         </section>
 
-        <DesktopSidePanel activePanel={activePanel} onPanel={setActivePanel} view={view} />
+        <DesktopSidePanel activePanel={activePanel} onPanel={setActivePanel} onToggleCarryOut={handleToggleCarryOut} view={view} />
       </div>
 
-      {drawerOpen ? <MobileDrawer activePanel={activePanel} open={drawerOpen} onClose={() => setDrawerOpen(false)} view={view} /> : null}
+      {drawerOpen ? (
+        <MobileDrawer
+          activePanel={activePanel}
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          onToggleCarryOut={handleToggleCarryOut}
+          view={view}
+        />
+      ) : null}
     </main>
   );
 }
@@ -226,13 +235,7 @@ function StatusStrip({ view }: { view: NonNullable<ReturnType<typeof buildAdvent
   );
 }
 
-function AdventureStage({
-  sliceComplete,
-  view,
-}: {
-  sliceComplete: boolean;
-  view: NonNullable<ReturnType<typeof buildAdventureViewModel>>;
-}) {
+function AdventureStage({ view }: { view: NonNullable<ReturnType<typeof buildAdventureViewModel>> }) {
   return (
     <section className="adv-stage" data-scene-type={view.scene.scene_type}>
       <div className="adv-stage-bg" />
@@ -243,11 +246,35 @@ function AdventureStage({
       </div>
       <div className="adv-stage-caption">
         <span>{view.sceneTypeLabel}</span>
-        <strong>{sliceComplete ? "調査記録を閉じた" : view.scene.title}</strong>
+        <strong>{view.ending ? view.ending.title : view.scene.title}</strong>
         <small>
-          {Math.min(view.sceneIndex + 1, 3)} / 3
+          {view.sceneIndex + 1} / {view.sceneCount}
         </small>
       </div>
+    </section>
+  );
+}
+
+function EndingView({
+  onRestart,
+  view,
+}: {
+  onRestart: () => void;
+  view: NonNullable<ReturnType<typeof buildAdventureViewModel>>;
+}) {
+  const ending = view.ending;
+  if (!ending) {
+    return null;
+  }
+
+  return (
+    <section className="adv-ending-view" aria-label="結末">
+      <p className="adv-ending-type">{view.endingTypeLabel}</p>
+      <h1>{ending.title}</h1>
+      <p>{ending.description}</p>
+      <button className="adv-scene-button" onClick={onRestart} type="button">
+        最初から
+      </button>
     </section>
   );
 }
@@ -273,10 +300,12 @@ function BottomNav({ activePanel, onPanel }: { activePanel: PanelId; onPanel: (p
 function DesktopSidePanel({
   activePanel,
   onPanel,
+  onToggleCarryOut,
   view,
 }: {
   activePanel: PanelId;
   onPanel: (panel: PanelId) => void;
+  onToggleCarryOut: (groupId: string, itemId: string) => void;
   view: NonNullable<ReturnType<typeof buildAdventureViewModel>>;
 }) {
   return (
@@ -294,7 +323,7 @@ function DesktopSidePanel({
           </button>
         ))}
       </div>
-      <PanelContent activePanel={activePanel} view={view} />
+      <PanelContent activePanel={activePanel} onToggleCarryOut={onToggleCarryOut} view={view} />
     </aside>
   );
 }
@@ -302,11 +331,13 @@ function DesktopSidePanel({
 function MobileDrawer({
   activePanel,
   onClose,
+  onToggleCarryOut,
   open,
   view,
 }: {
   activePanel: PanelId;
   onClose: () => void;
+  onToggleCarryOut: (groupId: string, itemId: string) => void;
   open: boolean;
   view: NonNullable<ReturnType<typeof buildAdventureViewModel>>;
 }) {
@@ -319,16 +350,18 @@ function MobileDrawer({
           閉じる
         </button>
       </div>
-      <PanelContent activePanel={activePanel} view={view} />
+      <PanelContent activePanel={activePanel} onToggleCarryOut={onToggleCarryOut} view={view} />
     </section>
   );
 }
 
 function PanelContent({
   activePanel,
+  onToggleCarryOut,
   view,
 }: {
   activePanel: PanelId;
+  onToggleCarryOut: (groupId: string, itemId: string) => void;
   view: NonNullable<ReturnType<typeof buildAdventureViewModel>>;
 }) {
   if (activePanel === "evidence") {
@@ -401,6 +434,35 @@ function PanelContent({
           </dd>
         </div>
       </dl>
+      {view.carryOutGroups.length ? (
+        <section className="adv-carry-out" aria-label="持ち帰り選択">
+          <h3>持ち帰り選択</h3>
+          {view.carryOutGroups.map((group) => (
+            <div className="adv-carry-group" key={group.id}>
+              <div className="adv-carry-heading">
+                <strong>{group.label}</strong>
+                <small>
+                  {group.selectedCount}/{group.limit ?? "-"}
+                </small>
+              </div>
+              {group.items.map((item) => (
+                <label className="adv-carry-item" key={item.id}>
+                  <input
+                    checked={item.selected}
+                    data-carry-group-id={group.id}
+                    data-carry-item-id={item.id}
+                    disabled={item.disabled}
+                    onChange={() => onToggleCarryOut(group.id, item.id)}
+                    type="checkbox"
+                  />
+                  <span>{item.label}</span>
+                </label>
+              ))}
+              {group.warning ? <p className="adv-warning">{group.warning}</p> : null}
+            </div>
+          ))}
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -1,18 +1,19 @@
 import { deriveEvidenceEntries, type EvidenceEntry } from "./evidence";
 import {
-  STAGE_14R_SLICE_REQUIRED_FLAG,
-  STAGE_14R_SLICE_END_SCENE_ID,
   formatActionTypeLabel,
+  formatCarryGroupLabel,
   formatContaminationBand,
+  formatEndingTypeLabel,
   formatMemoryBand,
   formatSceneTypeLabel,
   formatSkillLabel,
   formatTrustBand,
 } from "./labels";
-import { canUseRequirements } from "../scenarios/runtime";
+import { canUseRequirements, getCarryOutGroups, groupOwnedItems } from "../scenarios/runtime";
 import type {
   ScenarioPack,
   ScenarioRuntimeState,
+  EndingDefinition,
   SceneActionDefinition,
   SceneCheckDefinition,
   SceneDefinition,
@@ -40,6 +41,22 @@ export interface AdventureStatusView {
   logCount: number;
 }
 
+export interface AdventureCarryOutItemView {
+  id: string;
+  label: string;
+  selected: boolean;
+  disabled: boolean;
+}
+
+export interface AdventureCarryOutGroupView {
+  id: string;
+  label: string;
+  selectedCount: number;
+  limit?: number;
+  warning?: string;
+  items: AdventureCarryOutItemView[];
+}
+
 export type AdventureLogKind = "action" | "check" | "scene" | "ending" | "note";
 
 export interface AdventureLogEntry {
@@ -53,6 +70,8 @@ export interface AdventureLogEntry {
 export interface AdventureViewModel {
   scenarioTitle: string;
   scene: SceneDefinition;
+  ending?: EndingDefinition;
+  endingTypeLabel?: string;
   sceneIndex: number;
   sceneCount: number;
   sceneTypeLabel: string;
@@ -63,8 +82,8 @@ export interface AdventureViewModel {
   log: string[];
   logEntries: AdventureLogEntry[];
   status: AdventureStatusView;
-  isSliceEndScene: boolean;
-  canCompleteSlice: boolean;
+  carryOutGroups: AdventureCarryOutGroupView[];
+  canAdvanceScene: boolean;
 }
 
 export function buildAdventureViewModel(pack: ScenarioPack, state: ScenarioRuntimeState, textComplete: boolean): AdventureViewModel {
@@ -74,13 +93,13 @@ export function buildAdventureViewModel(pack: ScenarioPack, state: ScenarioRunti
   const trustValue = state.trust.minase_akari ?? 0;
   const contamination = state.counters.boundary_contamination ?? 0;
   const log = state.log.slice(0, 12);
-
-  const isSliceEndScene = scene.id === STAGE_14R_SLICE_END_SCENE_ID;
-  const canCompleteSlice = isSliceEndScene && Boolean(state.flags[STAGE_14R_SLICE_REQUIRED_FLAG]);
+  const ending = state.endingId ? pack.endings.find((candidate) => candidate.id === state.endingId) : undefined;
 
   return {
     scenarioTitle: pack.scenario.title,
     scene,
+    ending,
+    endingTypeLabel: ending ? formatEndingTypeLabel(ending.ending_type) : undefined,
     sceneIndex,
     sceneCount: pack.scenario.scenes.length,
     sceneTypeLabel: formatSceneTypeLabel(scene.scene_type),
@@ -88,7 +107,7 @@ export function buildAdventureViewModel(pack: ScenarioPack, state: ScenarioRunti
       .map((npcId) => pack.npcs.find((npc) => npc.id === npcId)?.name ?? npcId)
       .filter(Boolean),
     textPages: splitSceneText(scene.description),
-    visibleChoices: textComplete ? buildVisibleChoices(pack, state, scene) : [],
+    visibleChoices: textComplete && !ending ? buildVisibleChoices(pack, state, scene) : [],
     evidence,
     log,
     logEntries: formatAdventureLogEntries(log),
@@ -98,12 +117,12 @@ export function buildAdventureViewModel(pack: ScenarioPack, state: ScenarioRunti
       memoryLabel: formatMemoryBand(state),
       trustValue,
       trustLabel: formatTrustBand(trustValue),
-      objectiveLabel: formatObjectiveLabel(isSliceEndScene, canCompleteSlice),
+      objectiveLabel: formatObjectiveLabel(scene, ending),
       evidenceCount: evidence.length,
       logCount: state.log.length,
     },
-    isSliceEndScene,
-    canCompleteSlice,
+    carryOutGroups: buildCarryOutGroups(pack, state, Boolean(ending)),
+    canAdvanceScene: !ending && Boolean((scene.next_scene_rules ?? []).length),
   };
 }
 
@@ -220,6 +239,34 @@ function buildVisibleChoices(pack: ScenarioPack, state: ScenarioRuntimeState, sc
   return [...actionChoices, ...checkChoices].slice(0, 4);
 }
 
+function buildCarryOutGroups(pack: ScenarioPack, state: ScenarioRuntimeState, disabled: boolean): AdventureCarryOutGroupView[] {
+  return getCarryOutGroups(pack)
+    .map((group): AdventureCarryOutGroupView => {
+      const selected = state.carryOutSelections[group.id] ?? [];
+      const limit = state.carryOutLimits[group.id] ?? group.max_count_at_clear;
+      const owned = groupOwnedItems(pack, state, group.id);
+      const selectedCount = selected.length;
+
+      return {
+        id: group.id,
+        label: formatCarryGroupLabel(group.id),
+        selectedCount,
+        limit,
+        warning: limit !== undefined && selectedCount > limit ? "持ち帰り制限を超えている。" : undefined,
+        items: owned.map((itemId) => {
+          const item = pack.items.find((candidate) => candidate.id === itemId);
+          return {
+            id: itemId,
+            label: item?.name ?? itemId,
+            selected: selected.includes(itemId),
+            disabled,
+          };
+        }),
+      };
+    })
+    .filter((group) => group.items.length > 0);
+}
+
 function isActionHidden(action: SceneActionDefinition, state: ScenarioRuntimeState, pack: ScenarioPack): boolean {
   if (action.once_per_run && state.usedActionIds.includes(action.id)) {
     return true;
@@ -228,12 +275,29 @@ function isActionHidden(action: SceneActionDefinition, state: ScenarioRuntimeSta
   return !canUseRequirements(action.requirements, state, pack);
 }
 
-function formatObjectiveLabel(isSliceEndScene: boolean, canCompleteSlice: boolean): string {
-  if (isSliceEndScene) {
-    return canCompleteSlice ? "ここまでの記録を閉じる" : "灯が休める時間を作る";
+function formatObjectiveLabel(scene: SceneDefinition, ending?: EndingDefinition): string {
+  if (ending) {
+    return "到達した結末を記録する";
   }
 
-  return "灯と事故の違和感を追う";
+  switch (scene.id) {
+    case "scene_001_parallel_arrival":
+      return "灯と事故の違和感を追う";
+    case "scene_002_accident_trace":
+      return "事故現場と遺留品の空白を追う";
+    case "scene_003_empty_house":
+      return "灯が休める時間を作る";
+    case "scene_004_returning_family":
+      return "灯の選択を遮らず危機を抜ける";
+    case "scene_005_cult_facility":
+      return "帰還の環が縛った遺留品を取り戻す";
+    case "scene_006_four_rooms_ritual":
+      return "儀式を乱し、二人分の帰還条件を探す";
+    case "scene_007_return_fire":
+      return "送り火を終えて帰還か残留を選ぶ";
+    default:
+      return "灯と事故の違和感を追う";
+  }
 }
 
 function findSplitPoint(text: string): number {

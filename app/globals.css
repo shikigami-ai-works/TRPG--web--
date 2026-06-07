@@ -683,6 +683,7 @@ button {
 
 .adv-status-strip div,
 .adv-text-zone,
+.adv-ending-view,
 .adv-choice,
 .adv-scene-button,
 .adv-side-panel,
@@ -829,6 +830,42 @@ button {
   padding: 14px;
 }
 
+.adv-ending-view {
+  display: grid;
+  align-content: center;
+  gap: 12px;
+  min-height: 190px;
+  padding: 16px;
+}
+
+.adv-ending-type {
+  width: fit-content;
+  margin: 0;
+  border: 1px solid rgba(247, 216, 137, 0.28);
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: rgba(247, 216, 137, 0.12);
+  color: #f7d889;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.adv-ending-view h1,
+.adv-ending-view p {
+  margin: 0;
+}
+
+.adv-ending-view h1 {
+  color: #f1ece2;
+  font-size: 1.35rem;
+  line-height: 1.25;
+}
+
+.adv-ending-view p:not(.adv-ending-type) {
+  color: #e3ddd3;
+  line-height: 1.75;
+}
+
 .adv-nameplate {
   width: fit-content;
   min-width: 96px;
@@ -951,7 +988,9 @@ button {
 
 .adv-panel-list,
 .adv-log-list,
-.adv-status-detail dl {
+.adv-status-detail dl,
+.adv-carry-out,
+.adv-carry-group {
   display: grid;
   gap: 10px;
   margin: 0;
@@ -1062,6 +1101,63 @@ button {
 .adv-status-detail dd small {
   color: #a9b8ad;
   font-size: 0.72rem;
+}
+
+.adv-carry-out {
+  margin-top: 14px;
+  border-top: 1px solid rgba(241, 236, 226, 0.1);
+  padding-top: 12px;
+}
+
+.adv-carry-out h3 {
+  margin: 0;
+  color: #f7d889;
+  font-size: 0.9rem;
+}
+
+.adv-carry-group {
+  border: 1px solid rgba(241, 236, 226, 0.12);
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(241, 236, 226, 0.055);
+}
+
+.adv-carry-heading,
+.adv-carry-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adv-carry-heading {
+  justify-content: space-between;
+}
+
+.adv-carry-heading strong,
+.adv-carry-item span {
+  overflow-wrap: anywhere;
+}
+
+.adv-carry-heading small {
+  flex-shrink: 0;
+  color: #a9b8ad;
+  font-size: 0.72rem;
+}
+
+.adv-carry-item {
+  color: #e3ddd3;
+  font-size: 0.85rem;
+}
+
+.adv-carry-item input {
+  flex-shrink: 0;
+}
+
+.adv-warning {
+  margin: 0;
+  color: #f0a26c;
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 
 .adv-mobile-drawer {

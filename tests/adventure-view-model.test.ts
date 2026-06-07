@@ -4,8 +4,9 @@ import { before, test } from "node:test";
 import { rollAdventureCheck, advanceAdventureScene, applyAdventureAction } from "../lib/adventure/session";
 import { buildAdventureViewModel } from "../lib/adventure/view-model";
 import { loadScenarioPack } from "../lib/scenarios/loader";
-import { createInitialState } from "../lib/scenarios/runtime";
+import { createInitialState, toggleCarryOutItem } from "../lib/scenarios/runtime";
 import type { ScenarioPack } from "../lib/scenarios/types";
+import type { ScenarioRuntimeState } from "../lib/scenarios/types";
 
 const SCENARIO_DIRECTORY = "kimidake_ga_oboeteiru_jiko";
 
@@ -119,38 +120,28 @@ test("Adventure evidence follows the existing scene 2 and scene 3 flag contract"
   assert.equal(scene3View.status.memoryLabel, "違和感を覚えている");
 });
 
-test("Adventure slice completion requires giving Akari rest in scene 3", () => {
+test("Adventure scene advance follows existing YAML from scene 3 into scene 4", () => {
   const scene3 = pack.scenes.find((candidate) => candidate.id === "scene_003_empty_house");
   const restAction = scene3?.available_actions?.find((candidate) => candidate.id === "let_akari_rest_in_empty_house");
   assert.ok(scene3);
   assert.ok(restAction);
 
-  const beforeRest = { ...createInitialState(pack), sceneId: scene3.id };
-  const beforeRestView = buildAdventureViewModel(pack, beforeRest, true);
-  const blocked = advanceAdventureScene(pack, beforeRest);
+  const state = { ...createInitialState(pack), sceneId: scene3.id };
+  const beforeRestView = buildAdventureViewModel(pack, state, true);
+  const advanced = advanceAdventureScene(pack, state);
 
-  assert.equal(beforeRestView.isSliceEndScene, true);
-  assert.equal(beforeRestView.canCompleteSlice, false);
   assert.equal(beforeRestView.status.objectiveLabel, "灯が休める時間を作る");
-  assert.equal(blocked.sliceComplete, undefined);
-  assert.equal(blocked.state.sceneId, "scene_003_empty_house");
+  assert.equal(advanced.state.sceneId, "scene_004_returning_family");
+  assert.equal(advanced.event, "迎えに来る家");
 
-  const afterRest = applyAdventureAction(pack, beforeRest, scene3, restAction).state;
+  const afterRest = applyAdventureAction(pack, state, scene3, restAction).state;
   const afterRestView = buildAdventureViewModel(pack, afterRest, true);
-  const completed = advanceAdventureScene(pack, afterRest);
 
   assert.equal(afterRest.flags.akari_rested_in_empty_house, true);
-  assert.equal(afterRestView.canCompleteSlice, true);
-  assert.equal(afterRestView.status.objectiveLabel, "ここまでの記録を閉じる");
-  assert.equal(completed.sliceComplete, true);
-  assert.equal(completed.state.sceneId, "scene_003_empty_house");
-  assert.equal(completed.event, "空き家で灯を休ませた。ここまでの調査を記録した。");
-  assert.equal(completed.state.log[0], "空き家で灯を休ませ、ここまでの調査記録を閉じた。");
-  assert.doesNotMatch(completed.state.log[0], /Stage 14R/);
-  assert.equal(buildAdventureViewModel(pack, completed.state, true).logEntries[0]?.kind, "note");
+  assert.equal(afterRestView.status.objectiveLabel, "灯が休める時間を作る");
 });
 
-test("Adventure scene advance stops Stage 14R at the scene 3 completion gate", () => {
+test("Adventure scene advance no longer stops at the scene 3 Stage 14R completion gate", () => {
   const scene1 = advanceAdventureScene(pack, createInitialState(pack)).state;
   const scene2 = advanceAdventureScene(pack, scene1).state;
   const scene3 = pack.scenes.find((candidate) => candidate.id === "scene_003_empty_house");
@@ -162,6 +153,166 @@ test("Adventure scene advance stops Stage 14R at the scene 3 completion gate", (
 
   assert.equal(scene1.sceneId, "scene_002_accident_trace");
   assert.equal(scene2.sceneId, "scene_003_empty_house");
-  assert.equal(result.sliceComplete, true);
-  assert.equal(result.state.sceneId, "scene_003_empty_house");
+  assert.equal(result.state.sceneId, "scene_004_returning_family");
+  assert.equal(result.event, "迎えに来る家");
 });
+
+test("Adventure view model hides final choices until regret is resolved", () => {
+  const scene7 = pack.scenes.find((candidate) => candidate.id === "scene_007_return_fire");
+  assert.ok(scene7);
+
+  const beforeFarewell = { ...createInitialState(pack), sceneId: scene7.id };
+  const beforeView = buildAdventureViewModel(pack, beforeFarewell, true);
+
+  assert.ok(!beforeView.visibleChoices.some((choice) => choice.id === "choose_return_with_akari"));
+  assert.ok(!beforeView.visibleChoices.some((choice) => choice.id === "choose_return_alone"));
+  assert.ok(!beforeView.visibleChoices.some((choice) => choice.id === "choose_stay_with_akari"));
+
+  const afterFarewell = {
+    ...beforeFarewell,
+    flags: {
+      ...beforeFarewell.flags,
+      regret_resolved: true,
+    },
+  };
+  const afterView = buildAdventureViewModel(pack, afterFarewell, true);
+
+  assert.ok(afterView.visibleChoices.some((choice) => choice.id === "choose_return_with_akari"));
+  assert.ok(afterView.visibleChoices.some((choice) => choice.id === "choose_return_alone"));
+  assert.ok(afterView.visibleChoices.some((choice) => choice.id === "choose_stay_with_akari"));
+});
+
+test("Adventure session can play from scene 4 through the true ending", () => {
+  let state = createInitialState(pack);
+
+  state = applyActionById(state, "scene_001_parallel_arrival", "say_not_replacement");
+  state = rollCheckById(state, "scene_001_parallel_arrival", "check_parallel_displacement");
+  state = advanceAdventureScene(pack, state).state;
+
+  state = applyActionById(state, "scene_002_accident_trace", "let_akari_speak_regret");
+  state = applyActionById(state, "scene_002_accident_trace", "respect_gift_unopened");
+  state = rollCheckById(state, "scene_002_accident_trace", "check_cult_trace");
+  state = advanceAdventureScene(pack, state).state;
+
+  state = applyActionById(state, "scene_003_empty_house", "let_akari_rest_in_empty_house");
+  state = applyActionById(state, "scene_003_empty_house", "respect_dead_friend_home");
+  state = rollCheckById(state, "scene_003_empty_house", "check_empty_house_context");
+  state = advanceAdventureScene(pack, state).state;
+
+  assert.equal(state.sceneId, "scene_004_returning_family");
+
+  state = applyActionById(state, "scene_004_returning_family", "protect_akari_without_possessing");
+  state = applyActionById(state, "scene_004_returning_family", "stand_beside_akari_choice");
+  state = rollCheckById(state, "scene_004_returning_family", "check_escape_returning_family");
+  state = advanceAdventureScene(pack, state).state;
+
+  assert.equal(state.sceneId, "scene_005_cult_facility");
+
+  state = applyActionById(state, "scene_005_cult_facility", "recover_stolen_keyholder");
+  state = applyActionById(state, "scene_005_cult_facility", "recover_birthday_gift");
+  state = rollCheckById(state, "scene_005_cult_facility", "check_understand_cult_goal");
+  state = advanceAdventureScene(pack, state).state;
+
+  assert.equal(state.sceneId, "scene_006_four_rooms_ritual");
+
+  state = applyActionById(state, "scene_006_four_rooms_ritual", "take_boundary_ember");
+  state = applyActionById(state, "scene_006_four_rooms_ritual", "take_empty_nameplate");
+  state = applyActionById(state, "scene_006_four_rooms_ritual", "take_stopped_pocket_watch");
+  state = applyActionById(state, "scene_006_four_rooms_ritual", "disrupt_ritual");
+  state = rollCheckById(state, "scene_006_four_rooms_ritual", "check_survive_relative_attack");
+  state = applyActionById(state, "scene_006_four_rooms_ritual", "share_guilt_truthfully");
+  state = rollCheckById(state, "scene_006_four_rooms_ritual", "check_hold_together_after_crime");
+  state = rollCheckById(state, "scene_006_four_rooms_ritual", "check_defeat_makabe");
+  state = applyActionById(state, "scene_006_four_rooms_ritual", "realize_return_ritual_reproduction");
+  state = advanceAdventureScene(pack, state).state;
+
+  assert.equal(state.sceneId, "scene_007_return_fire");
+
+  const beforeRegretView = buildAdventureViewModel(pack, state, true);
+  assert.ok(!beforeRegretView.visibleChoices.some((choice) => choice.id === "choose_return_with_akari"));
+
+  state = applyActionById(state, "scene_007_return_fire", "refuse_unopened_gift_as_return_fuel");
+  state = applyActionById(state, "scene_007_return_fire", "take_wedding_rings");
+  state = applyActionById(state, "scene_007_return_fire", "return_artifacts_for_ritual");
+  state = toggleCarryOutItem(state, "four_room_artifact", "boundary_ember");
+  state = applyActionById(state, "scene_007_return_fire", "burn_keepsakes_as_farewell");
+  state = applyActionById(state, "scene_007_return_fire", "promise_return_together");
+  const endingResult = applyActionResultById(state, "scene_007_return_fire", "choose_return_with_akari");
+  state = endingResult.state;
+
+  const endingView = buildAdventureViewModel(pack, state, true);
+
+  assert.equal(endingResult.ending?.id, "return_with_akari");
+  assert.equal(state.endingId, "return_with_akari");
+  assert.equal(endingView.ending?.title, "双つ灯の生還");
+  assert.equal(endingView.endingTypeLabel, "トゥルー");
+  assert.equal(endingView.visibleChoices.length, 0);
+  assert.equal(endingView.carryOutGroups[0]?.items.find((item) => item.id === "boundary_ember")?.disabled, true);
+});
+
+test("Adventure carry-out selections are visible and can steer over-limit return attempts to collapse", () => {
+  let state = createInitialState(pack);
+
+  state = {
+    ...state,
+    sceneId: "scene_007_return_fire",
+    flags: {
+      ...state.flags,
+      makabe_gone: true,
+      relatives_killed: true,
+      ritual_reproduction_realized: true,
+      gift_refused_as_return_fuel: true,
+      ritual_reproduced: true,
+      regret_resolved: true,
+      shared_guilt: true,
+    },
+    inventory: ["boundary_ember", "empty_nameplate", "stopped_pocket_watch", "unopened_birthday_gift", "paired_lion_keyholder_stolen", "relatives_wedding_rings"],
+    trust: {
+      ...state.trust,
+      minase_akari: 100,
+    },
+  };
+
+  state = toggleCarryOutItem(state, "four_room_artifact", "boundary_ember");
+  state = toggleCarryOutItem(state, "four_room_artifact", "empty_nameplate");
+
+  const view = buildAdventureViewModel(pack, state, true);
+  const group = view.carryOutGroups.find((candidate) => candidate.id === "four_room_artifact");
+
+  assert.ok(group);
+  assert.equal(group.selectedCount, 2);
+  assert.equal(group.limit, 1);
+  assert.match(group.warning ?? "", /制限/);
+  assert.ok(group.items.some((item) => item.id === "boundary_ember" && item.selected));
+  assert.ok(group.items.some((item) => item.id === "empty_nameplate" && item.selected));
+
+  const endingResult = applyActionResultById(state, "scene_007_return_fire", "choose_return_with_akari");
+
+  assert.equal(state.counters.four_room_artifacts_carried_out, 2);
+  assert.equal(endingResult.ending?.id, "boundary_collapse");
+  assert.equal(endingResult.state.endingId, "boundary_collapse");
+});
+
+function applyActionById(state: ScenarioRuntimeState, sceneId: string, actionId: string): ScenarioRuntimeState {
+  return applyActionResultById(state, sceneId, actionId).state;
+}
+
+function applyActionResultById(state: ScenarioRuntimeState, sceneId: string, actionId: string) {
+  const scene = findScene(sceneId);
+  const action = scene.available_actions?.find((candidate) => candidate.id === actionId);
+  assert.ok(action, `Missing action ${actionId}`);
+  return applyAdventureAction(pack, state, scene, action);
+}
+
+function rollCheckById(state: ScenarioRuntimeState, sceneId: string, checkId: string): ScenarioRuntimeState {
+  const scene = findScene(sceneId);
+  const check = scene.checks?.find((candidate) => candidate.id === checkId);
+  assert.ok(check, `Missing check ${checkId}`);
+  return rollAdventureCheck(pack, state, scene, check, undefined, () => 0.999999).state;
+}
+
+function findScene(sceneId: string) {
+  const scene = pack.scenes.find((candidate) => candidate.id === sceneId);
+  assert.ok(scene, `Missing scene ${sceneId}`);
+  return scene;
+}

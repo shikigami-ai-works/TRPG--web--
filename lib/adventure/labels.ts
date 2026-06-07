@@ -1,14 +1,20 @@
 import type { ScenarioRuntimeState } from "../scenarios/types";
 
 export const TARGET_SCENARIO_ID = "kimidake_ga_oboeteiru_jiko";
-export const STAGE_14R_SLICE_END_SCENE_ID = "scene_003_empty_house";
-export const STAGE_14R_SLICE_REQUIRED_FLAG = "akari_rested_in_empty_house";
 
 const ACTION_TYPE_LABELS: Record<string, string> = {
   conversation: "会話",
   story: "行動",
   danger: "危険",
   ending_choice: "最終選択",
+};
+
+const ENDING_TYPE_LABELS: Record<string, string> = {
+  true: "トゥルー",
+  good: "グッド",
+  normal: "ノーマル",
+  bad: "バッド",
+  lost: "ロスト",
 };
 
 const SCENE_TYPE_LABELS: Record<string, string> = {
@@ -51,7 +57,12 @@ const COUNTER_LABELS: Record<string, string> = {
   boundary_contamination: "境界侵食",
   boundary_contamination_limit: "侵食上限",
   four_room_artifacts_taken: "四方遺物取得",
+  four_room_artifacts_returned: "四方遺物返却",
   four_room_artifacts_carried_out: "持ち帰り遺物",
+};
+
+const CARRY_GROUP_LABELS: Record<string, string> = {
+  four_room_artifact: "四方アーティファクト",
 };
 
 export function formatActionTypeLabel(type: string): string {
@@ -72,6 +83,14 @@ export function formatSkillLabel(skillId: string): string {
 
 export function formatCounterLabel(counterId: string): string {
   return COUNTER_LABELS[counterId] ?? counterId;
+}
+
+export function formatCarryGroupLabel(groupId: string): string {
+  return CARRY_GROUP_LABELS[groupId] ?? groupId;
+}
+
+export function formatEndingTypeLabel(type: string): string {
+  return ENDING_TYPE_LABELS[type] ?? type;
 }
 
 export function formatTrustBand(value: number): string {
