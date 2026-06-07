@@ -901,6 +901,24 @@ button {
   padding-top: 10px;
 }
 
+.adv-progress-row {
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid rgba(241, 236, 226, 0.1);
+  padding-top: 10px;
+}
+
+.adv-progress-row:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.adv-progress-row strong {
+  color: #f7d889;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
 .adv-ending-summary p,
 .adv-ending-record {
   font-size: 0.86rem;

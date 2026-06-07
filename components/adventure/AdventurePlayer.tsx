@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { formatEvidenceCategory } from "@/lib/adventure/evidence";
-import { TARGET_SCENARIO_ID } from "@/lib/adventure/labels";
+import { formatEndingTypeLabel, TARGET_SCENARIO_ID } from "@/lib/adventure/labels";
 import { advanceAdventureScene, applyAdventureAction, rollAdventureCheck } from "@/lib/adventure/session";
 import { buildAdventureViewModel } from "@/lib/adventure/view-model";
+import { buildEndingProgressEntries, type EndingProgressEntry } from "@/lib/scenarios/ending-progress";
 import { createInitialState } from "@/lib/scenarios/runtime";
 import { toggleCarryOutItem } from "@/lib/scenarios/runtime";
 import {
@@ -13,8 +14,10 @@ import {
   clearActiveRun,
   hasMeaningfulProgress,
   loadActiveRun,
+  loadRunHistory,
   restoreRuntimeState,
   saveActiveRun,
+  type CompletedRunRecord,
 } from "@/lib/scenarios/storage";
 import type { ScenarioPack, ScenarioRuntimeState } from "@/lib/scenarios/types";
 
@@ -44,6 +47,7 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [storageReady, setStorageReady] = useState(false);
+  const [runHistory, setRunHistory] = useState<CompletedRunRecord[]>([]);
   const [lastEvent, setLastEvent] = useState("境界の向こう側で目を覚ました。");
 
   useEffect(() => {
@@ -55,6 +59,7 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
     const freshState = createInitialState(pack);
     const savedRun = loadActiveRun(pack.scenario.id);
     setState(savedRun ? restoreRuntimeState(savedRun, freshState) : freshState);
+    setRunHistory(loadRunHistory(pack.scenario.id));
     setPageIndex(0);
     setActivePanel("evidence");
     setDrawerOpen(false);
@@ -68,6 +73,7 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
   const view = pack ? buildAdventureViewModel(pack, state, textComplete) : undefined;
   const currentText = view?.textPages[Math.min(pageIndex, view.textPages.length - 1)] ?? "";
   const canAdvanceText = view ? !view.ending && pageIndex < view.textPages.length - 1 : false;
+  const endingProgress = useMemo(() => (pack ? buildEndingProgressEntries(pack, runHistory) : []), [pack, runHistory]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -94,6 +100,10 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
     }
 
     const completed = appendCompletedRunOnce(pack, state);
+    if (completed.record) {
+      const record = completed.record;
+      setRunHistory((current) => [record, ...current.filter((candidate) => candidate.runId !== record.runId)]);
+    }
     setState(completed.state);
     setSaveStatus(completed.record ? "saved" : "unavailable");
   }, [pack, state, storageReady]);
@@ -207,7 +217,13 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
           <AdventureStage view={view} />
 
           {view.ending ? (
-            <EndingView onPanel={handlePanel} onRestart={handleRestart} recordStatus={endingRecordStatus} view={view} />
+            <EndingView
+              endingProgress={endingProgress}
+              onPanel={handlePanel}
+              onRestart={handleRestart}
+              recordStatus={endingRecordStatus}
+              view={view}
+            />
           ) : (
             <section className="adv-text-zone" aria-live="polite">
               <div className="adv-nameplate">{view.npcs[0] ?? "探索者"}</div>
@@ -333,11 +349,13 @@ function SaveStatusNotice({
 }
 
 function EndingView({
+  endingProgress,
   onPanel,
   onRestart,
   recordStatus,
   view,
 }: {
+  endingProgress: EndingProgressEntry[];
   onPanel: (panel: PanelId) => void;
   onRestart: () => void;
   recordStatus: EndingRecordStatus;
@@ -363,6 +381,7 @@ function EndingView({
       <p className="adv-ending-record" data-ending-record-status={recordStatus}>
         {formatEndingRecordStatusLabel(recordStatus)}
       </p>
+      <EndingProgressSheet currentEndingId={ending.id} entries={endingProgress} />
       <div className="adv-ending-actions">
         <button className="adv-scene-button" onClick={onRestart} type="button">
           もう一度たどる
@@ -377,6 +396,69 @@ function EndingView({
           状態を見る
         </button>
       </div>
+    </section>
+  );
+}
+
+function EndingProgressSheet({
+  currentEndingId,
+  entries,
+}: {
+  currentEndingId: string;
+  entries: EndingProgressEntry[];
+}) {
+  const reachedCount = entries.filter((entry) => entry.status === "reached").length;
+
+  return (
+    <section className="adv-ending-summary" aria-label="到達記録">
+      <div className="adv-evidence-meta">
+        <span>到達記録</span>
+        <small>
+          {reachedCount} / {entries.length}
+        </small>
+      </div>
+      {entries.length === 0 ? (
+        <p className="adv-muted">表示できる結末はまだありません。</p>
+      ) : (
+        entries.map((entry) => {
+          const reached = entry.status === "reached";
+          const current = reached && entry.endingId === currentEndingId;
+
+          return (
+            <article
+              className="adv-progress-row"
+              data-current-ending={current ? "true" : "false"}
+              data-ending-progress-id={entry.endingId}
+              data-ending-progress-state={entry.status}
+              key={entry.endingId}
+            >
+              <div className="adv-evidence-meta">
+                <span>{reached ? "到達済み" : "未到達"}</span>
+                <small>{formatEndingTypeLabel(entry.endingType)}</small>
+                {current ? <small>今回到達</small> : null}
+              </div>
+              <strong>{entry.title}</strong>
+              <p>{entry.description}</p>
+              {reached ? (
+                <div className="adv-ending-summary">
+                  <p>
+                    到達 {entry.count}回 / 初回 {formatDateTimeLabel(entry.firstCompletedAt)} / 最新{" "}
+                    {formatDateTimeLabel(entry.latestCompletedAt)}
+                  </p>
+                  {entry.hiddenDescription ? <p>{entry.hiddenDescription}</p> : null}
+                  <p>{entry.latestRunSummary.carryOutLabel}</p>
+                  <p>{entry.latestRunSummary.relationshipLabel}</p>
+                  <p>{entry.latestRunSummary.contaminationLabel}</p>
+                  {entry.unlockedTraceLabel ? <p>{entry.unlockedTraceLabel}</p> : null}
+                  <p>{entry.rewards.length ? `報酬: ${entry.rewards.join(" / ")}` : "報酬は静かに残っていません。"}</p>
+                </div>
+              ) : (
+                <p className="adv-muted">未到達の結末は、ぼかした題名と手がかりだけを表示しています。</p>
+              )}
+            </article>
+          );
+        })
+      )}
     </section>
   );
 }
@@ -567,6 +649,21 @@ function PanelContent({
       ) : null}
     </div>
   );
+}
+
+function formatDateTimeLabel(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  const hour = `${date.getHours()}`.padStart(2, "0");
+  const minute = `${date.getMinutes()}`.padStart(2, "0");
+
+  return `${year}/${month}/${day} ${hour}:${minute}`;
 }
 
 function getEndingRecordStatus(completedRunId?: string): EndingRecordStatus {

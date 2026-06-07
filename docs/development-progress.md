@@ -22,10 +22,11 @@ Use this file only as a progress overview and restart map.
 ## Current Snapshot
 
 - Branch: `main`
-- Latest committed revision: Stage16-5A save point, `Complete stage16 adventure player save resume`
+- Latest committed revision: Stage16-5A save point, `b197c4e Complete stage16 adventure player save resume`
 - `main` is aligned with `origin/main` after the Stage16-5A push.
 - Stage 15 AdventurePlayer scene 1-7 flow is committed and pushed.
 - Stage16-5A AdventurePlayer local save/resume and minimal post-ending record entry is committed and pushed.
+- Stage16-5B ending progress/reward sheet is implemented in the working tree and not yet committed.
 - Post-push untracked preservation docs include Stage 14R historical handoff/ledger files, the Stage16 prompt handoff/ledger pair, `docs/archive/`, and `docs/scenario-choice-planning-kimidake_ga_oboeteiru_jiko.md`; keep them out of Stage16 spec commits unless Shiki explicitly chooses otherwise.
 - `.runtime/` and `.context-archive/` are local-only evidence/archive areas and should not be staged by default.
 
@@ -37,6 +38,7 @@ Use this file only as a progress overview and restart map.
 - Stage 15 removed the old player-facing stop at `scene_003_empty_house` and follows existing YAML scene transitions through the final scene.
 - Scene 4+ support, ending resolution, and four-room carry-out selection are implemented in the player-facing adapter/UI layer without changing scenario YAML.
 - Stage16-5A connects `AdventurePlayer` to the existing localStorage active-run and run-history helpers for minimal resume, completion record, and restart behavior.
+- Stage16-5B shows completed-run-history-derived ending progress and minimal rewards on the AdventurePlayer post-ending surface.
 - The player-facing UI is deterministic. No AI GM, free input, AI narration, Tauri/API integration, cloud save, or external save integration is in scope yet.
 
 ## Progress Timeline
@@ -191,6 +193,30 @@ Verification:
 - Browser/UI audit: PASS via local `.runtime/stage16-5a-ui-audit.cjs`; latest output saved under `.runtime/stage16-5a-ui-audit-2026-06-07T08-15-49-346Z.json` and `.runtime/stage16-5a-screens-2026-06-07T08-15-49-346Z/`.
 - Browser audit covered `/` mobile and desktop layout smoke, active-run reload resume, post-ending completed history, restart preserving history, localStorage failure handling, new post-ending controls, and `/debug`.
 
+### 2026-06-07 - Stage 16-5B Ending Progress Reward Sheet
+
+- Commit: uncommitted working-tree implementation after `b197c4e`.
+- Status: implemented; verification passed.
+
+- Added a minimal AdventurePlayer post-ending progress/reward sheet built from completed run history.
+- Shows reached endings, reached count, first/latest reached timestamps, current reached ending status, latest completed-run carry-out/relationship/contamination summary, and reward summary.
+- Keeps unreached endings limited to the configured blurred title plus route hint; Stage16-5C replay hints remain deferred.
+- Refilters progress by `scenarioId` inside the ending progress helper and did not extend the `CompletedRunRecord` storage schema.
+- Preserved `/` as `AdventurePlayer`, `/debug` as `ScenarioExplorer`, and left scenario YAML/body, scene order, ending conditions, and route gates unchanged.
+- Added focused regression coverage for scenario-filtered progress and player-facing labels instead of raw reward/item/NPC ids.
+
+Verification:
+
+- `npm run typecheck`: PASS.
+- `npm run lint`: PASS.
+- `npm run validate:scenarios`: PASS, 1 pack / 0 errors / 0 warnings.
+- `npm run test`: PASS, 32 tests.
+- `npm run build`: PASS.
+- `git diff --check`: PASS, LF-to-CRLF warnings only.
+- Browser/UI audit: PASS via local `.runtime/stage16-5b-ui-audit.cjs`; latest output saved under `.runtime/stage16-5b-screens-2026-06-07T09-19-14-355Z/`.
+- Browser audit covered `/` mobile and desktop post-ending progress sheet visibility, `/debug` render preservation, no console errors, no request failures, and existing enabled post-ending controls: `もう一度たどる`, `記録を見る`, `手がかりを見る`, `状態を見る`.
+- The audit command printed successful JSON output but the parent shell wait timed out after evidence was written; a follow-up port check found no listeners on 3001 or 9223.
+
 ## Area Status
 
 | Area | Status | Notes |
@@ -203,7 +229,7 @@ Verification:
 | Status drawer | Committed and pushed in Stage 15 | Player-facing labels first, raw values as supporting detail, plus four-room carry-out selection. |
 | Assets | Gated | Native UI/placeholders only unless later approval opens imports. |
 | Scene 4+ AdventurePlayer support | Committed and pushed in Stage 15 | Uses existing scenario YAML and runtime helpers. |
-| Post-ending save/replay spec | Partially implemented | Stage16-5A implements the minimal save/resume and post-ending record entry; Stage16-5B/5C remain deferred. |
+| Post-ending save/replay spec | Partially implemented | Stage16-5A implements save/resume/history append; Stage16-5B implements the minimal ending progress/reward sheet; Stage16-5C replay hints remain deferred. |
 | AI GM / free input | Out of scope | Future layer after deterministic core. |
 | Real player-facing save UX | Stage16-5A implemented and pushed | LocalStorage-backed active-run restore, auto-save, completed history append-once, and restart behavior use existing storage helpers. |
 | Tauri/API integration | Out of scope | No current implementation. |
@@ -212,18 +238,17 @@ Verification:
 
 - Whether the two untracked Stage 14R-3 post-push handoff/ledger docs should be committed as history, organized, or left local.
 - Whether the six older untracked Stage 14R / Stage 14R-2 preservation docs now under `docs/archive/` should later be moved to Shiki's external storage, committed as history, or deleted.
-- Whether Stage16's later post-ending reward/replay UX should remain a minimal localStorage-backed player surface or later expand into a richer persistence/reward layer.
+- Whether Stage16's later replay UX should remain a minimal localStorage-backed player surface or later expand into a richer persistence/reward layer.
 - Whether `.runtime/stage14r3-ui-audit.cjs` and `.runtime/stage15-adventureplayer-ui-audit.cjs` should remain local-only evidence or later become tracked reusable tooling under `scripts/`.
 - When to formalize clue/evidence schema instead of deriving evidence from flags/items.
 - Whether `.runtime/stage16-5a-ui-audit.cjs` should remain local-only evidence or later become tracked reusable tooling under `scripts/`.
 
 ## Next Safe Stages
 
-1. Stage16-5B: add the full ending progress/reward sheet using completed run history, keeping unreached endings appropriately limited.
-2. Stage16-5C: add deterministic replay hints from current ended run evidence/carry-out state.
-3. Stage16-6: harden browser/UI audit coverage and consider a tracked reusable audit runner only if Shiki approves that tooling scope.
-4. Stage16-7: decide whether to formalize clue/evidence schema instead of deriving evidence from flags/items.
-5. Decide separately what to do with historical untracked handoff/ledger/archive docs; do not mix that cleanup into Stage16 specs by default.
+1. Stage16-5C: add deterministic replay hints from current ended run evidence/carry-out state.
+2. Stage16-6: harden browser/UI audit coverage and consider a tracked reusable audit runner only if Shiki approves that tooling scope.
+3. Stage16-7: decide whether to formalize clue/evidence schema instead of deriving evidence from flags/items.
+4. Decide separately what to do with historical untracked handoff/ledger/archive docs; do not mix that cleanup into Stage16 specs by default.
 
 ## Update Rule
 

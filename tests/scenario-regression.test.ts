@@ -564,8 +564,21 @@ test("ending progress entries show only visible locked endings before unlock", (
 test("ending progress entries expose reached details and keep locked endings concealed", () => {
   const normalEnding = findEnding("return_without_akari");
   const history = [
-    createCompletedRunRecord("return_without_akari", "2026-05-27T12:30:00.000Z"),
+    createCompletedRunRecord("return_without_akari", "2026-05-27T12:30:00.000Z", {
+      carryOutSelections: {
+        four_room_artifact: ["empty_nameplate"],
+      },
+      finalCounters: {
+        boundary_contamination: 1,
+      },
+      finalTrust: {
+        minase_akari: 65,
+      },
+    }),
     createCompletedRunRecord("return_without_akari", "2026-05-27T11:00:00.000Z"),
+    createCompletedRunRecord("return_without_akari", "2026-05-27T13:00:00.000Z", {
+      scenarioId: "other_scenario",
+    }),
   ];
 
   const entries = buildEndingProgressEntries(pack, history);
@@ -583,7 +596,14 @@ test("ending progress entries expose reached details and keep locked endings con
   assert.equal(reached.latestCompletedAt, "2026-05-27T12:30:00.000Z");
   assert.equal(reached.hiddenDescription, normalEnding.hidden_description);
   assert.deepEqual(reached.unlocks, normalEnding.unlocks);
-  assert.deepEqual(reached.rewards, ["memory_fragment / minase_akari"]);
+  assert.equal(reached.rewards.length, 1);
+  assert.match(reached.rewards[0], /記憶の断片/);
+  assert.doesNotMatch(reached.rewards[0], /memory_fragment|minase_akari/);
+  assert.match(reached.latestRunSummary.carryOutLabel, /四方のアーティファクト/);
+  assert.doesNotMatch(reached.latestRunSummary.carryOutLabel, /empty_nameplate/);
+  assert.match(reached.latestRunSummary.relationshipLabel, /65|隣/);
+  assert.doesNotMatch(reached.latestRunSummary.relationshipLabel, /minase_akari/);
+  assert.match(reached.latestRunSummary.contaminationLabel, /境界/);
 
   assert.equal(locked.status, "locked");
   assert.equal(locked.title, findEnding("return_with_akari").ending_tree?.blurred_title);
@@ -738,7 +758,7 @@ function findProgressEntry(entries: ReturnType<typeof buildEndingProgressEntries
   return entry;
 }
 
-function createCompletedRunRecord(endingId: string, completedAt: string): CompletedRunRecord {
+function createCompletedRunRecord(endingId: string, completedAt: string, overrides: Partial<CompletedRunRecord> = {}): CompletedRunRecord {
   const ending = findEnding(endingId);
 
   return {
@@ -756,6 +776,7 @@ function createCompletedRunRecord(endingId: string, completedAt: string): Comple
     carryOutSelections: {},
     unlocks: [...(ending.unlocks ?? [])],
     rewards: [...(ending.rewards ?? [])],
+    ...overrides,
   };
 }
 

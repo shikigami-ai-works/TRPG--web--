@@ -258,3 +258,10 @@
 - AdventurePlayer saves only meaningful runtime changes by comparing against `createInitialState(pack)` with `hasMeaningfulProgress`. Drawer open/close, panel switching, and text page advance are intentionally not saved because they are presentation state, not scenario runtime state.
 - The post-ending surface adds only a minimal reached-run record status, story-facing outcome summary, read-only carry-out summary, and buttons that focus/open the existing Log, Evidence, and Status drawers. This intentionally defers the full ending progress/reward sheet and replay hint surface to Stage16-5B/5C so Stage16-5A stays small.
 - `もう一度たどる` clears only the active run and starts a fresh runtime state. Completed run history and check profile storage are preserved because reached endings are replay motivation and should not be erased by normal restart.
+## 2026-06-07 Stage 16-5B Ending Progress Reward Sheet
+
+- `CompletedRunRecord` の保存形式は拡張しなかった。既存の `endingId`, `completedAt`, `finalTrust`, `finalCounters`, `carryOutSelections`, `unlocks`, `rewards` だけで Stage16-5B の最小 sheet を構成できたため。受け入れたトレードオフは、履歴に保存されていない final flags / evidence ids は表示しないこと。これは Stage16-5C の replay hints や将来の clue schema で扱うべき範囲。
+- `buildEndingProgressEntries` 側で `scenarioId` を再フィルタした。呼び出し側が `loadRunHistory(scenarioId)` を使っていても、progress view 自体が completed history の対象 scenario だけを根拠にするため。これにより別 scenario の履歴が混ざっても到達回数や最新到達に入らない。
+- 到達済み ending の latest run summary は、最新 `CompletedRunRecord` から持ち帰り、灯との関係 band、境界状態だけを表示する形にした。raw item id / npc id / reward type は player-facing sheet へ出さず、未到達 ending は `ending_tree.blurred_title` と `route_hint` の範囲に限定した。
+- AdventurePlayer の post-ending sheet は常時表示にした。新しい enabled control を増やすより、既存の「もう一度たどる」「記録を見る」「手がかりを見る」「状態を見る」の挙動を保ったまま、到達記録を読める状態にする方が Stage16-5B の最小実装に合っているため。
+- `app/globals.css` には progress 行の区切りと余白だけを追加した。sheet 内に新しいカード UI を重ねず、既存 ending surface の中で読みやすくするための最小表示調整。正式な sheet layout や replay hint surface は Stage16-5C 以降で別途詰める。
