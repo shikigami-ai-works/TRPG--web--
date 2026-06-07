@@ -282,3 +282,11 @@
 - audit evidence は `.runtime/adventure-player-ui-audit-<timestamp>/` に `audit.json`、screenshots、server log として出す。`.runtime/` は引き続き tracking 対象にしない。
 - post-ending controls の監査では、Log/Evidence/Status drawer をそれぞれ開いた後に Escape で閉じてから次の control を押す。これは mobile drawer が画面を覆うためで、product 挙動の変更ではなく監査手順上の調整。
 - Stage16-6 では scenario YAML/body、scene 順序、ending 条件、route gate、CompletedRunRecord の保存形式、replay hint 文言、Stage16-7 相当の clue/evidence schema は変更していない。
+
+## 2026-06-07 Stage 16-7A Clue/Evidence Schema Design
+
+- Stage16-7A は docs-only に留め、scenario YAML、runtime、AdventurePlayer code、storage schema は変更しなかった。現行 Stage16-5C の replay hints と Stage16-6 audit tooling は、現在の derived evidence で最低保証を満たしているため。
+- schema 化する場合の最小 authored unit は `clue` と判断した。`evidence` は現在ランの runtime/view 出力、`source` と `reveal condition` は clue の内部フィールドとして扱う方が、既存の flags/items/check outcomes と衝突しにくいため。
+- `CompletedRunRecord` は拡張しない判断を維持した。clue schema が入っても、履歴には final flags / evidence ids が保存されていないため、history-wide missing evidence hint を安全に作る根拠にはならない。
+- Stage16-5C replay hints との接続点は、今後も `EvidenceEntry[]` に限定する方針にした。schema-backed adapter が入る場合でも、`branch` / `evidence` / `carry_out` の family と表示文言は変えない。
+- Stage16-7B の最小候補は、既存 `FLAG_EVIDENCE` と同等の定義だけを optional `clues.yaml` へ移す parity adapter とした。広い証拠ボード、推理宣言、未回収 clue checklist、保存履歴拡張は別 stage へ分ける。

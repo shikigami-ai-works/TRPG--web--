@@ -29,6 +29,7 @@ Use this file only as a progress overview and restart map.
 - Stage16-5B ending progress/reward sheet is committed and pushed.
 - Stage16-5C deterministic replay hints are committed and pushed.
 - Stage16-6 reusable AdventurePlayer browser/UI audit runner is committed and pushed.
+- Stage16-7A clue/evidence schema design is docs-only complete in the current working tree and not committed yet.
 - Post-push untracked preservation docs include Stage 14R historical handoff/ledger files, the Stage16 prompt handoff/ledger pair, `docs/archive/`, and `docs/scenario-choice-planning-kimidake_ga_oboeteiru_jiko.md`; keep them out of Stage16 spec commits unless Shiki explicitly chooses otherwise.
 - `.runtime/` and `.context-archive/` are local-only evidence/archive areas and should not be staged by default.
 
@@ -267,6 +268,23 @@ Verification:
 - `npm run audit:adventure-player`: PASS; latest output saved under `.runtime/adventure-player-ui-audit-2026-06-07T10-34-36-028Z/`.
 - `git diff --check`: PASS.
 
+### 2026-06-07 - Stage 16-7A Clue/Evidence Schema Design
+
+- Commit: uncommitted docs-only working tree.
+- Status: docs-only design complete; not pushed.
+
+- Added `docs/stage16-7-clue-evidence-schema-design.md` as the handoff-grade design decision for future clue/evidence schema formalization.
+- Decided that a future schema should use `clue` as the minimum authored unit, while `evidence` remains the current-run runtime/view output consumed by AdventurePlayer and Stage16-5C replay hints.
+- Kept `source` and `reveal condition` as fields inside clue definitions for the first future slice instead of separate top-level schema units.
+- Defined Stage16-7B as one safe minimal candidate: optional `clues.yaml` parity adapter for the existing `FLAG_EVIDENCE` definitions.
+- Preserved Stage16-5A/5B/5C behavior, Stage16-6 audit tooling, scenario YAML/body, scene order, ending conditions, route gates, `CompletedRunRecord`, and replay hint families/copy.
+
+Verification:
+
+- `git diff --check`: PASS for tracked docs diff, LF-to-CRLF warnings only.
+- Stage16-7A changed-files review: docs-only (`docs/stage16-7-clue-evidence-schema-design.md`, `docs/implementation-notes.md`, `docs/development-progress.md`).
+- Runtime verification is intentionally not required for Stage16-7A because no code, scenario data, or storage schema is changed.
+
 ## Area Status
 
 | Area | Status | Notes |
@@ -275,6 +293,7 @@ Verification:
 | ScenarioExplorer debug UI | Stable | Preserved under `/debug`. |
 | AdventurePlayer scenes 1-7 | Committed and pushed in Stage 15 | Browser/UI audit passed through true ending and `/debug` remained available. |
 | Evidence drawer | Polished | Derived from existing flags/items; metadata is easier to scan; no clue YAML yet. |
+| Clue/evidence schema | Stage16-7A docs-only design complete | Future minimum unit is `clue`; `evidence` remains current-run view output. No schema file or code change yet. |
 | Log drawer | Polished | Structured UI entries derived from existing runtime log strings. |
 | Status drawer | Committed and pushed in Stage 15 | Player-facing labels first, raw values as supporting detail, plus four-room carry-out selection. |
 | Assets | Gated | Native UI/placeholders only unless later approval opens imports. |
@@ -291,12 +310,12 @@ Verification:
 - Whether the six older untracked Stage 14R / Stage 14R-2 preservation docs now under `docs/archive/` should later be moved to Shiki's external storage, committed as history, or deleted.
 - Whether Stage16's later replay UX should remain a minimal localStorage-backed player surface or later expand into a richer persistence/reward layer.
 - Whether older `.runtime/stage14r3-ui-audit.cjs`, `.runtime/stage15-adventureplayer-ui-audit.cjs`, and `.runtime/stage16-5a-ui-audit.cjs` should remain local-only historical evidence or be deleted after the Stage16-6 runner is committed.
-- When to formalize clue/evidence schema instead of deriving evidence from flags/items.
+- Whether to implement Stage16-7B as the optional `clues.yaml` parity adapter for the existing `FLAG_EVIDENCE` definitions.
 - Whether the remaining untracked NextChat/handoff/archive docs should stay local, be archived elsewhere, or be committed separately.
 
 ## Next Safe Stages
 
-1. Stage16-7: decide whether to formalize clue/evidence schema instead of deriving evidence from flags/items.
+1. Stage16-7B: optional `clues.yaml` parity adapter for current derived flag evidence, with no replay hint copy/storage/route changes.
 2. Decide separately what to do with historical untracked handoff/ledger/archive docs; do not mix that cleanup into Stage16 specs by default.
 
 ## Update Rule
