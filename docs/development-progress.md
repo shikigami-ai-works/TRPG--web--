@@ -29,7 +29,7 @@ Use this file only as a progress overview and restart map.
 - Stage16-5B ending progress/reward sheet is committed and pushed.
 - Stage16-5C deterministic replay hints are committed and pushed.
 - Stage16-6 reusable AdventurePlayer browser/UI audit runner is committed and pushed.
-- Stage16-7A clue/evidence schema design is docs-only complete in the current working tree and not committed yet.
+- Stage16-7A clue/evidence schema design is committed and pushed.
 - Post-push untracked preservation docs include Stage 14R historical handoff/ledger files, the Stage16 prompt handoff/ledger pair, `docs/archive/`, and `docs/scenario-choice-planning-kimidake_ga_oboeteiru_jiko.md`; keep them out of Stage16 spec commits unless Shiki explicitly chooses otherwise.
 - `.runtime/` and `.context-archive/` are local-only evidence/archive areas and should not be staged by default.
 
@@ -270,8 +270,8 @@ Verification:
 
 ### 2026-06-07 - Stage 16-7A Clue/Evidence Schema Design
 
-- Commit: uncommitted docs-only working tree.
-- Status: docs-only design complete; not pushed.
+- Commit: `cf65b12 Document stage16-7a clue evidence schema design`.
+- Status: committed and pushed.
 
 - Added `docs/stage16-7-clue-evidence-schema-design.md` as the handoff-grade design decision for future clue/evidence schema formalization.
 - Decided that a future schema should use `clue` as the minimum authored unit, while `evidence` remains the current-run runtime/view output consumed by AdventurePlayer and Stage16-5C replay hints.
