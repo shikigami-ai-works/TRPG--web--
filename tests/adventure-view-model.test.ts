@@ -250,6 +250,18 @@ test("Adventure session can play from scene 4 through the true ending", () => {
   assert.match(endingView.endingSummary?.carryOutLabel ?? "", /境界の火種/);
   assert.doesNotMatch(endingView.endingSummary?.carryOutLabel ?? "", /boundary_ember/);
   assert.match(endingView.endingSummary?.inspectionLabel ?? "", /証拠/);
+  assert.deepEqual(
+    endingView.replayHints.map((hint) => hint.family),
+    ["branch", "evidence", "carry_out"],
+  );
+  const replayHintText = endingView.replayHints.map((hint) => [hint.label, hint.text, hint.detail].filter(Boolean).join(" ")).join(" ");
+  assert.match(replayHintText, /別の感情ルート/);
+  assert.match(replayHintText, /整理済みの手がかりは/);
+  assert.match(replayHintText, /持ち帰り/);
+  assert.doesNotMatch(
+    replayHintText,
+    /return_with_akari|return_without_akari|stay_with_akari|boundary_collapse|boundary_ember|empty_nameplate|choose_|check_|flag:|four_room_artifacts_carried_out|minase_akari|>=|<=|==|&&|\|\|/,
+  );
   assert.equal(endingView.visibleChoices.length, 0);
   assert.equal(endingView.carryOutGroups[0]?.items.find((item) => item.id === "boundary_ember")?.disabled, true);
 });

@@ -1,4 +1,4 @@
-import { deriveEvidenceEntries, type EvidenceEntry } from "./evidence";
+import { deriveEvidenceEntries, formatEvidenceCategory, type EvidenceEntry } from "./evidence";
 import {
   formatActionTypeLabel,
   formatCarryGroupLabel,
@@ -63,6 +63,15 @@ export interface AdventureEndingSummaryView {
   inspectionLabel: string;
 }
 
+export type AdventureReplayHintFamily = "branch" | "evidence" | "carry_out";
+
+export interface AdventureReplayHintView {
+  family: AdventureReplayHintFamily;
+  label: string;
+  text: string;
+  detail?: string;
+}
+
 export type AdventureLogKind = "action" | "check" | "scene" | "ending" | "note";
 
 export interface AdventureLogEntry {
@@ -89,6 +98,7 @@ export interface AdventureViewModel {
   logEntries: AdventureLogEntry[];
   status: AdventureStatusView;
   endingSummary?: AdventureEndingSummaryView;
+  replayHints: AdventureReplayHintView[];
   carryOutGroups: AdventureCarryOutGroupView[];
   canAdvanceScene: boolean;
 }
@@ -130,6 +140,7 @@ export function buildAdventureViewModel(pack: ScenarioPack, state: ScenarioRunti
       logCount: state.log.length,
     },
     endingSummary: ending ? buildEndingSummary(ending, carryOutGroups) : undefined,
+    replayHints: ending ? buildReplayHints(pack, state, ending, evidence, carryOutGroups) : [],
     carryOutGroups,
     canAdvanceScene: !ending && Boolean((scene.next_scene_rules ?? []).length),
   };
@@ -282,6 +293,102 @@ function buildEndingSummary(ending: EndingDefinition, carryOutGroups: AdventureC
     carryOutLabel: formatCarryOutSummary(carryOutGroups),
     inspectionLabel: "証拠 / ログ / 状態の調査は終了後も確認できます",
   };
+}
+
+function buildReplayHints(
+  pack: ScenarioPack,
+  state: ScenarioRuntimeState,
+  ending: EndingDefinition,
+  evidence: EvidenceEntry[],
+  carryOutGroups: AdventureCarryOutGroupView[],
+): AdventureReplayHintView[] {
+  return [
+    buildBranchReplayHint(pack, ending),
+    buildEvidenceReplayHint(evidence),
+    buildCarryOutReplayHint(state, carryOutGroups),
+  ].filter((hint): hint is AdventureReplayHintView => Boolean(hint));
+}
+
+function buildBranchReplayHint(pack: ScenarioPack, ending: EndingDefinition): AdventureReplayHintView | undefined {
+  const visibleRouteHints = pack.endings
+    .filter((candidate) => candidate.id !== ending.id)
+    .map((candidate) => candidate.ending_tree?.route_hint)
+    .filter((hint): hint is string => Boolean(hint))
+    .slice(0, 2);
+
+  if (!visibleRouteHints.length) {
+    return undefined;
+  }
+
+  return {
+    family: "branch",
+    label: "別の感情ルート",
+    text: "この結末とは違う感情の行き先が、まだ境界の向こうに残っている。",
+    detail: visibleRouteHints.join(" / "),
+  };
+}
+
+function buildEvidenceReplayHint(evidence: EvidenceEntry[]): AdventureReplayHintView {
+  const categoryLabels = uniqueLabels(evidence.map((entry) => formatEvidenceCategory(entry.category)));
+  const sourceLabels = uniqueLabels(evidence.map((entry) => entry.source)).slice(0, 3);
+
+  return {
+    family: "evidence",
+    label: "この周回で見た手がかり",
+    text: `整理済みの手がかりは${evidence.length}件。分類は${formatHintList(categoryLabels, "まだ整理前")}。`,
+    detail: sourceLabels.length ? `出どころ: ${sourceLabels.join(" / ")}` : undefined,
+  };
+}
+
+function buildCarryOutReplayHint(
+  state: ScenarioRuntimeState,
+  carryOutGroups: AdventureCarryOutGroupView[],
+): AdventureReplayHintView {
+  const selectedCount = Object.values(state.carryOutSelections).reduce((sum, itemIds) => sum + itemIds.length, 0);
+  const overLimitGroups = carryOutGroups.filter(
+    (group) => group.limit !== undefined && group.selectedCount > group.limit,
+  );
+  const selectableGroups = carryOutGroups.filter((group) => group.items.length > 1);
+
+  if (overLimitGroups.length) {
+    return {
+      family: "carry_out",
+      label: "持ち帰りの余白",
+      text: "持ち帰ろうとした数が余白を超えて、帰路を揺らした可能性がある。",
+      detail: overLimitGroups.map((group) => `${group.label}: ${group.selectedCount}/${group.limit}`).join(" / "),
+    };
+  }
+
+  if (selectedCount > 0) {
+    return {
+      family: "carry_out",
+      label: "持ち帰りの余白",
+      text: `この周回で持ち帰ると決めたものは${selectedCount}件。次は別の一つを選ぶ余地がある。`,
+      detail: selectableGroups.length ? selectableGroups.map((group) => group.label).join(" / ") : undefined,
+    };
+  }
+
+  return {
+    family: "carry_out",
+    label: "持ち帰りの余白",
+    text: "この周回では、境界の向こうへ持ち出したものはなかった。",
+    detail: selectableGroups.length ? "別の周回では、持ち帰るものを選び直せる。" : undefined,
+  };
+}
+
+function uniqueLabels(values: string[]): string[] {
+  const seen: Record<string, true> = {};
+  return values.filter((value) => {
+    if (!value || seen[value]) {
+      return false;
+    }
+    seen[value] = true;
+    return true;
+  });
+}
+
+function formatHintList(values: string[], fallback: string): string {
+  return values.length ? values.join(" / ") : fallback;
 }
 
 function formatEndingOutcomeLabel(endingId: string): string {

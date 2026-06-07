@@ -265,3 +265,10 @@
 - 到達済み ending の latest run summary は、最新 `CompletedRunRecord` から持ち帰り、灯との関係 band、境界状態だけを表示する形にした。raw item id / npc id / reward type は player-facing sheet へ出さず、未到達 ending は `ending_tree.blurred_title` と `route_hint` の範囲に限定した。
 - AdventurePlayer の post-ending sheet は常時表示にした。新しい enabled control を増やすより、既存の「もう一度たどる」「記録を見る」「手がかりを見る」「状態を見る」の挙動を保ったまま、到達記録を読める状態にする方が Stage16-5B の最小実装に合っているため。
 - `app/globals.css` には progress 行の区切りと余白だけを追加した。sheet 内に新しいカード UI を重ねず、既存 ending surface の中で読みやすくするための最小表示調整。正式な sheet layout や replay hint surface は Stage16-5C 以降で別途詰める。
+## 2026-06-07 Stage 16-5C Deterministic Replay Hints
+
+- replay hints は `CompletedRunRecord` を拡張せず、現在の ended active-run から作る `AdventureViewModel` に閉じた。理由は、Stage16-5C の evidence hint が final flags / inventory / derived evidence を必要とし、completed history だけでは現在ランの証拠状態を復元できないため。active ended-run がない場面では post-ending surface 自体が成立しないので、history 由来で未回収証拠を推測しない。
+- branch hint は未到達 ending の正確条件ではなく、既存 metadata の `ending_tree.route_hint` から最大2件だけを小さく出す形にした。受け入れたトレードオフは、完全なルート一覧ではなく「別の感情ルートがある」程度の匂わせに留めること。
+- evidence hint は derived evidence の件数、カテゴリ、到達済み source label だけを表示する形にした。raw flag id / action id / scene id は出さず、正式な clue/evidence schema も追加しない。
+- carry-out hint は `state.carryOutSelections` と既存 carry-out group limit だけを見る。選択過多なら帰路の揺らぎ、選択済みなら別選択の余地、未選択なら持ち出しなしを表示する。`four_room_artifacts_carried_out` など raw counter id は表示しない。
+- post-ending surface には受動表示の `次の周回の手がかり` を追加した。新しい enabled control は増やさず、Stage16-5B の「到達記録」sheet と既存の「もう一度たどる」「記録を見る」「手がかりを見る」「状態を見る」を維持するため。

@@ -27,6 +27,7 @@ Use this file only as a progress overview and restart map.
 - Stage 15 AdventurePlayer scene 1-7 flow is committed and pushed.
 - Stage16-5A AdventurePlayer local save/resume and minimal post-ending record entry is committed and pushed.
 - Stage16-5B ending progress/reward sheet is implemented in the working tree and not yet committed.
+- Stage16-5C deterministic replay hints are implemented in the working tree after the staged Stage16-5B set and not yet committed.
 - Post-push untracked preservation docs include Stage 14R historical handoff/ledger files, the Stage16 prompt handoff/ledger pair, `docs/archive/`, and `docs/scenario-choice-planning-kimidake_ga_oboeteiru_jiko.md`; keep them out of Stage16 spec commits unless Shiki explicitly chooses otherwise.
 - `.runtime/` and `.context-archive/` are local-only evidence/archive areas and should not be staged by default.
 
@@ -39,6 +40,7 @@ Use this file only as a progress overview and restart map.
 - Scene 4+ support, ending resolution, and four-room carry-out selection are implemented in the player-facing adapter/UI layer without changing scenario YAML.
 - Stage16-5A connects `AdventurePlayer` to the existing localStorage active-run and run-history helpers for minimal resume, completion record, and restart behavior.
 - Stage16-5B shows completed-run-history-derived ending progress and minimal rewards on the AdventurePlayer post-ending surface.
+- Stage16-5C shows three passive post-ending replay hints from the current ended run: branch, evidence, and carry-out.
 - The player-facing UI is deterministic. No AI GM, free input, AI narration, Tauri/API integration, cloud save, or external save integration is in scope yet.
 
 ## Progress Timeline
@@ -217,6 +219,31 @@ Verification:
 - Browser audit covered `/` mobile and desktop post-ending progress sheet visibility, `/debug` render preservation, no console errors, no request failures, and existing enabled post-ending controls: `もう一度たどる`, `記録を見る`, `手がかりを見る`, `状態を見る`.
 - The audit command printed successful JSON output but the parent shell wait timed out after evidence was written; a follow-up port check found no listeners on 3001 or 9223.
 
+### 2026-06-07 - Stage 16-5C Deterministic Replay Hints
+
+- Commit: uncommitted working-tree implementation after the staged Stage16-5B set.
+- Status: implemented; verification passed.
+
+- Added a passive `次の周回の手がかり` block to the AdventurePlayer post-ending surface.
+- The block is limited to three deterministic hint families: branch, evidence, and carry-out.
+- Branch hints use the current reached ending plus visible `ending_tree.route_hint` metadata without showing raw ending IDs or exact route conditions.
+- Evidence hints use only the current ended active-run state through existing derived evidence entries: count, category labels, and reached source labels.
+- Carry-out hints use current `state.carryOutSelections` and carry-out group limits without changing carry-out logic or exposing raw counter IDs.
+- No `CompletedRunRecord` schema extension was added, and no completed history-derived missing evidence inference was introduced.
+- Preserved `/` as `AdventurePlayer`, `/debug` as `ScenarioExplorer`, existing post-ending controls, Stage16-5B ending progress/reward sheet, scenario YAML/body, scene order, ending conditions, and route gates.
+
+Verification:
+
+- `npm run typecheck`: PASS.
+- `npm run lint`: PASS.
+- `npm run validate:scenarios`: PASS, 1 pack / 0 errors / 0 warnings.
+- `npm run test`: PASS, 32 tests.
+- `npm run build`: PASS.
+- `git diff --check`: PASS, LF-to-CRLF warnings only.
+- Browser/UI audit: PASS via local inline CDP audit; latest output saved under `.runtime/stage16-5c-screens-2026-06-07T09-51-06-174Z/`.
+- Browser audit covered `/` mobile `430x932` and desktop `1280x720`, replay hint family visibility (`branch`, `evidence`, `carry_out`), Stage16-5B progress sheet visibility, raw ID / condition-string non-exposure in player text, existing post-ending control outcomes, passive replay hint behavior, and `/debug` render preservation.
+- The audit parent shell timed out after writing `audit.json`, screenshots, and server log; `audit.json` records no console errors, no request failures, and passing interaction results. A follow-up port check found no listeners on 3004 or 9226. Some node worker processes from failed local audit attempts remained visible, but process cleanup by force was not approved; no listening dev server ports remained.
+
 ## Area Status
 
 | Area | Status | Notes |
@@ -229,7 +256,7 @@ Verification:
 | Status drawer | Committed and pushed in Stage 15 | Player-facing labels first, raw values as supporting detail, plus four-room carry-out selection. |
 | Assets | Gated | Native UI/placeholders only unless later approval opens imports. |
 | Scene 4+ AdventurePlayer support | Committed and pushed in Stage 15 | Uses existing scenario YAML and runtime helpers. |
-| Post-ending save/replay spec | Partially implemented | Stage16-5A implements save/resume/history append; Stage16-5B implements the minimal ending progress/reward sheet; Stage16-5C replay hints remain deferred. |
+| Post-ending save/replay spec | Stage16-5A-5C implemented locally | Stage16-5A implements save/resume/history append; Stage16-5B implements the minimal ending progress/reward sheet; Stage16-5C implements passive deterministic replay hints. |
 | AI GM / free input | Out of scope | Future layer after deterministic core. |
 | Real player-facing save UX | Stage16-5A implemented and pushed | LocalStorage-backed active-run restore, auto-save, completed history append-once, and restart behavior use existing storage helpers. |
 | Tauri/API integration | Out of scope | No current implementation. |
@@ -245,9 +272,9 @@ Verification:
 
 ## Next Safe Stages
 
-1. Stage16-5C: add deterministic replay hints from current ended run evidence/carry-out state.
-2. Stage16-6: harden browser/UI audit coverage and consider a tracked reusable audit runner only if Shiki approves that tooling scope.
-3. Stage16-7: decide whether to formalize clue/evidence schema instead of deriving evidence from flags/items.
+1. Stage16-6: harden browser/UI audit coverage and consider a tracked reusable audit runner only if Shiki approves that tooling scope.
+2. Stage16-7: decide whether to formalize clue/evidence schema instead of deriving evidence from flags/items.
+3. Decide separately whether to commit/push the staged Stage16-5B set and unstaged Stage16-5C set together or as separate commits.
 4. Decide separately what to do with historical untracked handoff/ledger/archive docs; do not mix that cleanup into Stage16 specs by default.
 
 ## Update Rule

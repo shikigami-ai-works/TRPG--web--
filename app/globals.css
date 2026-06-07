@@ -891,14 +891,33 @@ button {
 }
 
 .adv-ending-summary,
+.adv-replay-hints,
 .adv-ending-actions {
   display: grid;
   gap: 8px;
 }
 
-.adv-ending-summary {
+.adv-ending-summary,
+.adv-replay-hints {
   border-top: 1px solid rgba(241, 236, 226, 0.12);
   padding-top: 10px;
+}
+
+.adv-replay-hint {
+  display: grid;
+  gap: 4px;
+  border-left: 2px solid rgba(247, 216, 137, 0.42);
+  padding-left: 10px;
+}
+
+.adv-replay-hint strong {
+  color: #f7d889;
+  font-size: 0.92rem;
+}
+
+.adv-replay-hint small {
+  color: #cfc5b8;
+  line-height: 1.55;
 }
 
 .adv-progress-row {
@@ -920,6 +939,7 @@ button {
 }
 
 .adv-ending-summary p,
+.adv-replay-hint p,
 .adv-ending-record {
   font-size: 0.86rem;
 }

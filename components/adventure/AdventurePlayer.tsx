@@ -381,6 +381,7 @@ function EndingView({
       <p className="adv-ending-record" data-ending-record-status={recordStatus}>
         {formatEndingRecordStatusLabel(recordStatus)}
       </p>
+      <ReplayHintSheet hints={view.replayHints} />
       <EndingProgressSheet currentEndingId={ending.id} entries={endingProgress} />
       <div className="adv-ending-actions">
         <button className="adv-scene-button" onClick={onRestart} type="button">
@@ -396,6 +397,28 @@ function EndingView({
           状態を見る
         </button>
       </div>
+    </section>
+  );
+}
+
+function ReplayHintSheet({ hints }: { hints: NonNullable<ReturnType<typeof buildAdventureViewModel>>["replayHints"] }) {
+  if (!hints.length) {
+    return null;
+  }
+
+  return (
+    <section className="adv-replay-hints" aria-label="次の周回の手がかり">
+      <div className="adv-evidence-meta">
+        <span>次の周回の手がかり</span>
+        <small>{hints.length}件</small>
+      </div>
+      {hints.map((hint) => (
+        <article className="adv-replay-hint" data-replay-hint-family={hint.family} key={hint.family}>
+          <strong>{hint.label}</strong>
+          <p>{hint.text}</p>
+          {hint.detail ? <small>{hint.detail}</small> : null}
+        </article>
+      ))}
     </section>
   );
 }
