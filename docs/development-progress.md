@@ -22,13 +22,13 @@ Use this file only as a progress overview and restart map.
 ## Current Snapshot
 
 - Branch: `main`
-- Latest committed revision: `a59f8f3 Update stage16 progress status`.
-- Stage16-6 is implemented as the current change set and ready to commit/push.
+- Latest Stage16 implementation revision: `76a9425 Add stage16-6 adventure UI audit runner`.
+- Stage16-6 is committed and pushed.
 - Stage 15 AdventurePlayer scene 1-7 flow is committed and pushed.
 - Stage16-5A AdventurePlayer local save/resume and minimal post-ending record entry is committed and pushed.
 - Stage16-5B ending progress/reward sheet is committed and pushed.
 - Stage16-5C deterministic replay hints are committed and pushed.
-- Stage16-6 reusable AdventurePlayer browser/UI audit runner is implemented and verified.
+- Stage16-6 reusable AdventurePlayer browser/UI audit runner is committed and pushed.
 - Post-push untracked preservation docs include Stage 14R historical handoff/ledger files, the Stage16 prompt handoff/ledger pair, `docs/archive/`, and `docs/scenario-choice-planning-kimidake_ga_oboeteiru_jiko.md`; keep them out of Stage16 spec commits unless Shiki explicitly chooses otherwise.
 - `.runtime/` and `.context-archive/` are local-only evidence/archive areas and should not be staged by default.
 
@@ -247,8 +247,8 @@ Verification:
 
 ### 2026-06-07 - Stage 16-6 Reusable AdventurePlayer Browser/UI Audit Runner
 
-- Commit: Stage16-6 change set.
-- Status: implemented; verification passed.
+- Commit: `76a9425 Add stage16-6 adventure UI audit runner`.
+- Status: committed and pushed; verification passed.
 
 - Added `scripts/adventure-player-ui-audit.cjs` as a dependency-free CDP audit runner for the minimum AdventurePlayer browser/UI contract.
 - Added `npm run audit:adventure-player` as the reusable repo entrypoint.
@@ -280,7 +280,7 @@ Verification:
 | Assets | Gated | Native UI/placeholders only unless later approval opens imports. |
 | Scene 4+ AdventurePlayer support | Committed and pushed in Stage 15 | Uses existing scenario YAML and runtime helpers. |
 | Post-ending save/replay spec | Stage16-5A-5C committed and pushed | Stage16-5A implements save/resume/history append; Stage16-5B implements the minimal ending progress/reward sheet; Stage16-5C implements passive deterministic replay hints. |
-| Browser/UI audit tooling | Stage16-6 implemented | `npm run audit:adventure-player` covers `/`, post-ending guarantees, existing post-ending controls, and `/debug`; evidence stays in `.runtime/`. |
+| Browser/UI audit tooling | Stage16-6 committed and pushed | `npm run audit:adventure-player` covers `/`, post-ending guarantees, existing post-ending controls, and `/debug`; evidence stays in `.runtime/`. |
 | AI GM / free input | Out of scope | Future layer after deterministic core. |
 | Real player-facing save UX | Stage16-5A implemented and pushed | LocalStorage-backed active-run restore, auto-save, completed history append-once, and restart behavior use existing storage helpers. |
 | Tauri/API integration | Out of scope | No current implementation. |
