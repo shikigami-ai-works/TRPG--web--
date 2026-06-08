@@ -1,6 +1,6 @@
 # Development Progress
 
-Last updated: 2026-06-07 JST
+Last updated: 2026-06-08 JST
 
 This document is the project progress ledger for `D:\Codex\TRPG--web--`.
 It is not the scenario specification, not the implementation decision log, and
@@ -22,8 +22,7 @@ Use this file only as a progress overview and restart map.
 ## Current Snapshot
 
 - Branch: `main`
-- Latest committed Stage16 revision: `27d1353 Update stage16-7a progress status`.
-- Stage16-7B optional `clues.yaml` parity adapter is implemented locally and uncommitted.
+- Latest committed Stage16 revision: `6558886 Add stage16-7b clue schema parity adapter`.
 - Stage16-6 is committed and pushed.
 - Stage 15 AdventurePlayer scene 1-7 flow is committed and pushed.
 - Stage16-5A AdventurePlayer local save/resume and minimal post-ending record entry is committed and pushed.
@@ -31,8 +30,10 @@ Use this file only as a progress overview and restart map.
 - Stage16-5C deterministic replay hints are committed and pushed.
 - Stage16-6 reusable AdventurePlayer browser/UI audit runner is committed and pushed.
 - Stage16-7A clue/evidence schema design is committed and pushed.
-- Stage16-7B clue schema parity adapter is implemented locally and awaiting Shiki's commit/push instruction.
-- Post-push untracked preservation docs include Stage 14R historical handoff/ledger files, the Stage16 prompt handoff/ledger pair, `docs/archive/`, and `docs/scenario-choice-planning-kimidake_ga_oboeteiru_jiko.md`; keep them out of Stage16 spec commits unless Shiki explicitly chooses otherwise.
+- Stage16-7B clue schema parity adapter is committed and pushed.
+- Stage16-7C clue authoring scope decision is docs-only and included in the current Stage16-7D commit/push bundle.
+- Stage16-7D action/check-backed clue authoring smoke slice is implemented and verified as the current commit/push bundle.
+- Post-push untracked preservation docs include Stage 14R historical handoff/ledger files, Stage16 handoff/ledger files through Stage16-7B, `docs/archive/`, and `docs/scenario-choice-planning-kimidake_ga_oboeteiru_jiko.md`; keep them out of Stage16 spec commits unless Shiki explicitly chooses otherwise.
 - `.runtime/` and `.context-archive/` are local-only evidence/archive areas and should not be staged by default.
 
 ## Current Product Shape
@@ -45,7 +46,9 @@ Use this file only as a progress overview and restart map.
 - Stage16-5A connects `AdventurePlayer` to the existing localStorage active-run and run-history helpers for minimal resume, completion record, and restart behavior.
 - Stage16-5B shows completed-run-history-derived ending progress and minimal rewards on the AdventurePlayer post-ending surface.
 - Stage16-5C shows three passive post-ending replay hints from the current ended run: branch, evidence, and carry-out.
-- Stage16-7B is currently local/uncommitted and keeps AdventurePlayer evidence output as `EvidenceEntry[]` while adding optional `clues.yaml` parity data for the existing flag-derived evidence.
+- Stage16-7B keeps AdventurePlayer evidence output as `EvidenceEntry[]` while adding optional `clues.yaml` parity data for the existing flag-derived evidence.
+- Stage16-7C keeps item-derived evidence in `items.yaml`, allows a future small action/check-backed clue authoring slice, and defers scene-reached predicates plus evidence-board design.
+- Stage16-7D adds one action-backed and one check-backed authored clue while preserving item-derived evidence and the `EvidenceEntry[]` boundary.
 - The player-facing UI is deterministic. No AI GM, free input, AI narration, Tauri/API integration, cloud save, or external save integration is in scope yet.
 
 ## Progress Timeline
@@ -290,8 +293,8 @@ Verification:
 
 ### 2026-06-07 - Stage 16-7B Clue Schema Parity Adapter
 
-- Commit: not committed yet.
-- Status: implemented locally; awaiting explicit `Git push` or commit/push instruction.
+- Commit: `6558886 Add stage16-7b clue schema parity adapter`.
+- Status: committed and pushed to `origin/main`; verification passed.
 
 - Added optional authored `clues.yaml` data for the existing nine `FLAG_EVIDENCE` entries only.
 - Added clue schema types, optional loader support, scenario validation for clue IDs/categories/sources/reveal refs, and schema-backed evidence derivation.
@@ -305,9 +308,47 @@ Verification:
 - `npm run lint`: PASS.
 - `npm run validate:scenarios`: PASS, 1 pack / 0 errors / 0 warnings.
 - `npm run test`: PASS, 34 tests.
-- `npm run build`: PASS when rerun alone. An earlier parallel build with the UI audit hit `/_document` PageNotFound, likely from `.next` contention.
-- `npm run audit:adventure-player`: PASS; latest output saved under `.runtime/adventure-player-ui-audit-2026-06-07T11-41-59-908Z/`.
+- `npm run build`: PASS.
+- `npm run audit:adventure-player`: PASS; latest output saved under `.runtime/adventure-player-ui-audit-2026-06-07T14-54-03-364Z/`.
 - `git diff --check`: PASS, LF-to-CRLF warnings only.
+
+### 2026-06-08 - Stage 16-7C Clue Authoring Scope Decision
+
+- Commit: included in the Stage16-7D action/check clue commit/push bundle; confirm the exact hash with `git log`.
+- Status: docs-only decision completed.
+
+- Added `docs/stage16-7c-clue-authoring-scope-decision.md`.
+- Decided not to blanket-migrate item-derived evidence into `clues.yaml`; item evidence stays derived from `items.yaml` until a specific item needs authored clue copy, category, sources, or reveal behavior.
+- Decided action/check-backed authored clues can become one small Stage16-7D implementation candidate using existing `state.usedActionIds`.
+- Decided not to add a scene-reached reveal predicate now because the runtime does not preserve visited-scene history beyond current `sceneId`.
+- Deferred missing-evidence checklist, evidence board UX, deduction declaration, history-wide missing-evidence inference, `CompletedRunRecord` extension, replay hint copy/family changes, route gate changes, ending condition changes, and scenario prose changes.
+
+Verification:
+
+- `git diff --check`: PASS, LF-to-CRLF warning only.
+- Trailing-whitespace scan for changed docs: PASS.
+
+### 2026-06-08 - Stage 16-7D Action/Check-Backed Clue Authoring Smoke Slice
+
+- Commit: included in the Stage16-7D action/check clue commit/push bundle; confirm the exact hash with `git log`.
+- Status: implemented; verification passed.
+
+- Added two authored clues to `scenarios/kimidake_ga_oboeteiru_jiko/clues.yaml`.
+- Added one action-backed clue revealed by existing `usedActionIds` for `stand_beside_akari_choice`.
+- Added one check-backed clue revealed by existing `usedActionIds` for `check_escape_returning_family`.
+- Kept item-derived evidence from `items.yaml` and did not migrate inventory evidence into `clues.yaml`.
+- Did not change schema types, validation code, evidence adapter code, storage schema, route gates, ending conditions, scene order, scenario prose, UI controls, or Stage16-5C replay hint families/copy.
+- Added focused regression coverage that action/check-backed authored clues derive as `EvidenceEntry[]` with player-facing source labels.
+
+Verification:
+
+- `git diff --check`: PASS, LF-to-CRLF warnings only.
+- `npm run typecheck`: PASS.
+- `npm run lint`: PASS.
+- `npm run validate:scenarios`: PASS, 1 pack / 0 errors / 0 warnings.
+- `npm run test`: PASS, 35 tests.
+- `npm run build`: PASS.
+- `npm run audit:adventure-player`: PASS; latest output saved under `.runtime/adventure-player-ui-audit-2026-06-07T17-28-02-380Z/`.
 
 ## Area Status
 
@@ -316,8 +357,8 @@ Verification:
 | Kimidake scenario contract | Stable | Current-spec and YAML are the source of truth. |
 | ScenarioExplorer debug UI | Stable | Preserved under `/debug`. |
 | AdventurePlayer scenes 1-7 | Committed and pushed in Stage 15 | Browser/UI audit passed through true ending and `/debug` remained available. |
-| Evidence drawer | Polished | Derived from existing flags/items; local Stage16-7B adds optional clue-schema parity for the current flag evidence without changing the view output. |
-| Clue/evidence schema | Stage16-7B implemented locally | Optional `clues.yaml` parity adapter exists for current flag evidence; `evidence` remains current-run view output. |
+| Evidence drawer | Polished | Derived from existing flags/items; Stage16-7B adds optional clue-schema parity for the current flag evidence without changing the view output. |
+| Clue/evidence schema | Stage16-7D implementation verified | Optional `clues.yaml` parity adapter exists for current flag evidence; action/check-backed clues are now covered by a small smoke slice; `evidence` remains current-run view output. |
 | Log drawer | Polished | Structured UI entries derived from existing runtime log strings. |
 | Status drawer | Committed and pushed in Stage 15 | Player-facing labels first, raw values as supporting detail, plus four-room carry-out selection. |
 | Assets | Gated | Native UI/placeholders only unless later approval opens imports. |
@@ -334,15 +375,13 @@ Verification:
 - Whether the six older untracked Stage 14R / Stage 14R-2 preservation docs now under `docs/archive/` should later be moved to Shiki's external storage, committed as history, or deleted.
 - Whether Stage16's later replay UX should remain a minimal localStorage-backed player surface or later expand into a richer persistence/reward layer.
 - Whether older `.runtime/stage14r3-ui-audit.cjs`, `.runtime/stage15-adventureplayer-ui-audit.cjs`, and `.runtime/stage16-5a-ui-audit.cjs` should remain local-only historical evidence or be deleted after the Stage16-6 runner is committed.
-- Whether to commit/push the local Stage16-7B optional `clues.yaml` parity adapter.
-- Whether a later Stage16-7C should expand clue authoring to item/action/check-backed evidence or stay docs-only until a broader evidence-board design is opened.
+- Whether item-backed authored clues should be added only for specific items whose item definition is not enough.
 - Whether the remaining untracked NextChat/handoff/archive docs should stay local, be archived elsewhere, or be committed separately.
 
 ## Next Safe Stages
 
-1. Commit/push Stage16-7B only when Shiki says `Git push` or explicitly requests a commit/push.
-2. Stage16-7C candidate: decide whether item/action/check-backed clues should be authored in schema, without changing replay hint copy, storage, route gates, or missing-evidence behavior.
-3. Decide separately what to do with historical untracked handoff/ledger/archive docs; do not mix that cleanup into Stage16 specs by default.
+1. Stage16-7E candidate: decide whether any specific item-backed authored clue is justified, without blanket-migrating item-derived evidence from `items.yaml`.
+2. Decide separately what to do with historical untracked handoff/ledger/archive docs; do not mix that cleanup into Stage16 specs by default.
 
 ## Update Rule
 

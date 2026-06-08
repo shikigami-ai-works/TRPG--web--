@@ -89,3 +89,23 @@ clues:
     reveal:
       any:
         - flag: "confirmed_empty_house_identity"
+  - id: "clue_akari_choice_not_overridden"
+    title: "遮られなかった「帰らない」"
+    category: "testimony"
+    description: "灯は自分の言葉で帰らないと選び、探索者はその選択を奪わず横に立った。"
+    sources:
+      - type: "action"
+        id: "stand_beside_akari_choice"
+    reveal:
+      any:
+        - action: "stand_beside_akari_choice"
+  - id: "clue_returning_family_net"
+    title: "逃げ場を狭める見守り網"
+    category: "inference"
+    description: "親族夫婦の包囲を抜けても、灯の逃げ場は帰還の環の本拠地へ狭められている。"
+    sources:
+      - type: "check"
+        id: "check_escape_returning_family"
+    reveal:
+      any:
+        - check: "check_escape_returning_family"

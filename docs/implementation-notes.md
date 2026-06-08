@@ -300,3 +300,11 @@
 - Stage16-7B では item-derived evidence を `clues.yaml` に移さず、従来どおり `items.yaml` の所持品から導出する形を維持した。item migration は item evidence の authoring 範囲を別 stage で決めてから扱う。
 - reveal predicate は flag/item/action/check に限定し、scene-reached predicate は追加しなかった。現在の runtime state は到達済み scene 履歴を保持しておらず、ここで推測を入れると Stage16-5C の current-run boundary や `CompletedRunRecord` 非拡張の判断を崩すため。
 - verification 中、`npm run build` と `npm run audit:adventure-player` を並列実行した初回だけ Next build が `/_document` PageNotFound で落ちた。audit と build が `.next` を同時に触った競合の可能性が高く、build 単独再実行では PASS したため、今後は Next build と dev-server audit を並列実行しない。
+
+## 2026-06-08 Stage 16-7D Action/Check-Backed Clue Smoke Slice
+
+- Stage16-7D では、既存 schema/types/validation/evidence adapter を変更せず、`clues.yaml` に action-backed clue と check-backed clue を1件ずつ追加する形にした。Stage16-7B 時点で `action` / `check` reveal と source validation は実装済みだったため、今回の目的は schema capability の小さな authoring 証明に限定する判断。
+- action-backed clue には `stand_beside_akari_choice` を選んだ。これは `once_per_run: true` なので AdventurePlayer が既存どおり `usedActionIds` に保存でき、灯の「帰らない」を遮らないという現行仕様の感情軸を evidence に載せられるため。
+- check-backed clue には `check_escape_returning_family` を選んだ。check は成功/失敗にかかわらず AdventurePlayer が `usedActionIds` に保存するため、clue 文面は成功断定ではなく「包囲を抜けても帰還の環の本拠地へ追い込まれる」という両 outcome に合う情報へ寄せた。
+- item-derived evidence は引き続き `items.yaml` 由来のままにした。今回の slice は action/check-backed clue authoring の証明であり、inventory evidence の authoring 範囲を広げる stage ではないため。
+- Stage16-5C replay hints との境界は `EvidenceEntry[]` のまま維持した。新しい clue は evidence count/category/source の入力にはなるが、hint family、visible copy、`CompletedRunRecord`、history-wide missing-evidence inference は変更していない。

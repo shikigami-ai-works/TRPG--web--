@@ -140,7 +140,7 @@ test("Adventure evidence uses loaded clue schema while preserving current flag e
 
   const evidence = deriveEvidenceEntries(pack, state);
 
-  assert.equal(pack.clues.length, 9);
+  assert.equal(pack.clues.length, 11);
   assert.deepEqual(
     evidence.map((entry) => [entry.id, entry.title, entry.category, entry.source]),
     [
@@ -170,6 +170,23 @@ test("Adventure evidence keeps inventory-derived entries outside the clue parity
   assert.equal(itemEvidence.title, "未開封の誕生日プレゼント");
   assert.equal(itemEvidence.category, "confirmed");
   assert.doesNotMatch(itemEvidence.source, /^scene_/);
+});
+
+test("Adventure evidence supports action and check backed authored clues", () => {
+  const state = {
+    ...createInitialState(pack),
+    usedActionIds: ["stand_beside_akari_choice", "check_escape_returning_family"],
+  };
+
+  const evidence = deriveEvidenceEntries(pack, state);
+
+  assert.deepEqual(
+    evidence.map((entry) => [entry.id, entry.title, entry.category, entry.source]),
+    [
+      ["action:stand_beside_akari_choice", "遮られなかった「帰らない」", "testimony", "灯の「帰らない」を遮らず横に立つ"],
+      ["check:check_escape_returning_family", "逃げ場を狭める見守り網", "inference", "親族夫婦の包囲から抜け出す"],
+    ],
+  );
 });
 
 test("Adventure scene advance follows existing YAML from scene 3 into scene 4", () => {
