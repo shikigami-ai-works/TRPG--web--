@@ -109,3 +109,15 @@ clues:
     reveal:
       any:
         - check: "check_escape_returning_family"
+  - id: "clue_pair_medium_wedding_rings"
+    title: "二人分のペア媒介"
+    category: "confirmed"
+    description: "親族夫婦の対の指輪は、二人分の帰還儀式を束ねる媒介になる。"
+    sources:
+      - type: "item"
+        id: "relatives_wedding_rings"
+      - type: "action"
+        id: "take_wedding_rings"
+    reveal:
+      any:
+        - item: "relatives_wedding_rings"

@@ -75,15 +75,23 @@ const FALLBACK_FLAG_EVIDENCE: Record<string, Omit<EvidenceEntry, "id">> = {
   },
 };
 
+const AUTHORED_ITEM_BACKED_CLUE_PRECEDENCE_ITEMS: Record<string, true> = {
+  relatives_wedding_rings: true,
+};
+
 export function deriveEvidenceEntries(pack: ScenarioPack, state: ScenarioRuntimeState): EvidenceEntry[] {
   const entries: EvidenceEntry[] = [];
 
-  const flagEntries = pack.clues.length ? deriveClueEvidenceEntries(pack, state) : deriveFallbackFlagEvidenceEntries(pack, state);
-  entries.push(...flagEntries);
+  const authoredEntries = pack.clues.length ? deriveClueEvidenceEntries(pack, state) : deriveFallbackFlagEvidenceEntries(pack, state);
+  const suppressedInventoryEvidenceIds = getSuppressedInventoryEvidenceIds(authoredEntries);
+  entries.push(...authoredEntries);
 
   state.inventory.forEach((itemId) => {
     const item = pack.items.find((candidate) => candidate.id === itemId);
     if (!item) {
+      return;
+    }
+    if (suppressedInventoryEvidenceIds[`item:${item.id}`]) {
       return;
     }
     entries.push({
@@ -96,6 +104,24 @@ export function deriveEvidenceEntries(pack: ScenarioPack, state: ScenarioRuntime
   });
 
   return entries;
+}
+
+function getSuppressedInventoryEvidenceIds(authoredEntries: EvidenceEntry[]): Record<string, true> {
+  const suppressed: Record<string, true> = {};
+
+  authoredEntries.forEach((entry) => {
+    const itemId = getItemIdFromEvidenceId(entry.id);
+    if (itemId && AUTHORED_ITEM_BACKED_CLUE_PRECEDENCE_ITEMS[itemId]) {
+      suppressed[entry.id] = true;
+    }
+  });
+
+  return suppressed;
+}
+
+function getItemIdFromEvidenceId(evidenceId: string): string | undefined {
+  const itemPrefix = "item:";
+  return evidenceId.startsWith(itemPrefix) ? evidenceId.slice(itemPrefix.length) : undefined;
 }
 
 function deriveFallbackFlagEvidenceEntries(pack: ScenarioPack, state: ScenarioRuntimeState): EvidenceEntry[] {

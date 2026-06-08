@@ -323,3 +323,11 @@
 - duplicate evidence は許容しない判断にした。現行 `formatClueEvidenceId` は single-item reveal の authored clue を `item:<id>` にし、inventory 由来 evidence も同じ `item:<id>` を出すため、player meaning が重複し、AdventurePlayer の evidence card key も重複し得るため。
 - Stage16-7F を実装するなら、`relatives_wedding_rings` 1件に限って authored item-backed clue precedence を採用する。revealed clue 側を唯一の `EvidenceEntry` とし、同じ item の inventory-derived entry だけを抑制する方針。`EvidenceEntry[]` 境界と item-derived evidence の default 維持は崩さない。
 - Stage16-7F が1件を超える、一般 item migration になる、または route/storage/UI/replay hint 変更を要求する場合は、実装せず Option 3 として inventory-derived evidence を維持して defer する判断。
+
+## 2026-06-08 Stage 16-7F Relatives Wedding Rings Item-Backed Authored Clue
+
+- Stage16-7F では `relatives_wedding_rings` だけを authored item-backed clue にした。Stage16-7E/7F-A で候補と duplicate policy が固定済みだったため、他の item evidence は `items.yaml` 由来のまま維持する判断。
+- `deriveEvidenceEntries` の duplicate suppression は、revealed authored clue が `item:relatives_wedding_rings` を出した場合だけ、同じ inventory-derived `item:relatives_wedding_rings` entry を出さない形にした。一般 item migration ではなく、この1件の precedence を守るための局所処理。
+- authored clue の `EvidenceEntry.id` は既存の single-item reveal 慣習どおり `item:relatives_wedding_rings` のままにした。React key と replay hint 境界を新しい clue id へ揺らさず、重複だけを抑える方が Stage16-7F-A の方針に合うため。
+- source は item と `take_wedding_rings` action の2つにした。item の存在だけでなく、Scene 7 でプレゼント案を断った後に取りに戻る player-facing acquisition context を Evidence drawer へ載せるため。
+- テストは `deriveEvidenceEntries` の回帰に寄せ、指輪 evidence が1件だけになり、同時所持の `unopened_birthday_gift` inventory evidence が残ることを確認する形にした。UI、storage、route gate、replay hint family、scenario prose は変更していない。

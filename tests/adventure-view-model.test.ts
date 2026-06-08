@@ -140,7 +140,7 @@ test("Adventure evidence uses loaded clue schema while preserving current flag e
 
   const evidence = deriveEvidenceEntries(pack, state);
 
-  assert.equal(pack.clues.length, 11);
+  assert.equal(pack.clues.length, 12);
   assert.deepEqual(
     evidence.map((entry) => [entry.id, entry.title, entry.category, entry.source]),
     [
@@ -170,6 +170,28 @@ test("Adventure evidence keeps inventory-derived entries outside the clue parity
   assert.equal(itemEvidence.title, "未開封の誕生日プレゼント");
   assert.equal(itemEvidence.category, "confirmed");
   assert.doesNotMatch(itemEvidence.source, /^scene_/);
+});
+
+test("Adventure evidence uses the authored wedding rings clue without duplicating item evidence", () => {
+  const state = {
+    ...createInitialState(pack),
+    inventory: ["relatives_wedding_rings", "unopened_birthday_gift"],
+  };
+
+  const evidence = deriveEvidenceEntries(pack, state);
+  const weddingRingEntries = evidence.filter((entry) => entry.id === "item:relatives_wedding_rings");
+  const giftEvidence = evidence.find((entry) => entry.id === "item:unopened_birthday_gift");
+
+  assert.equal(weddingRingEntries.length, 1);
+  const weddingRingEvidence = weddingRingEntries[0];
+  assert.ok(weddingRingEvidence);
+  assert.equal(weddingRingEvidence.title, "二人分のペア媒介");
+  assert.equal(weddingRingEvidence.category, "confirmed");
+  assert.equal(weddingRingEvidence.description, "親族夫婦の対の指輪は、二人分の帰還儀式を束ねる媒介になる。");
+  assert.match(weddingRingEvidence.source, /親族夫婦の結婚指輪/);
+  assert.match(weddingRingEvidence.source, /プレゼント案を断った後/);
+  assert.ok(giftEvidence);
+  assert.equal(giftEvidence.title, "未開封の誕生日プレゼント");
 });
 
 test("Adventure evidence supports action and check backed authored clues", () => {
