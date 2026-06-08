@@ -308,3 +308,11 @@
 - check-backed clue には `check_escape_returning_family` を選んだ。check は成功/失敗にかかわらず AdventurePlayer が `usedActionIds` に保存するため、clue 文面は成功断定ではなく「包囲を抜けても帰還の環の本拠地へ追い込まれる」という両 outcome に合う情報へ寄せた。
 - item-derived evidence は引き続き `items.yaml` 由来のままにした。今回の slice は action/check-backed clue authoring の証明であり、inventory evidence の authoring 範囲を広げる stage ではないため。
 - Stage16-5C replay hints との境界は `EvidenceEntry[]` のまま維持した。新しい clue は evidence count/category/source の入力にはなるが、hint family、visible copy、`CompletedRunRecord`、history-wide missing-evidence inference は変更していない。
+
+## 2026-06-08 Stage 16-7E Item-Backed Authored Clue Decision
+
+- Stage16-7E は docs-only に留め、`items.yaml`、`clues.yaml`、runtime、storage、UI、replay hint、route gate、ending 条件、scenario prose は変更しなかった。目的が item-backed clue の実装ではなく、item ごとの authoring 必要性の判定だったため。
+- item-backed clue の判断基準は、item description だけでは足りない clue-specific copy、default `confirmed` 以外の category、複数 source、item 所持より細かい reveal、validation したい authored source/reveal があるかにした。単に inventory evidence として表示できるだけなら `items.yaml` 由来を維持する判断。
+- `relatives_wedding_rings` だけを Stage16-7F の候補として残した。`found_in_scene_id` は `scene_006_four_rooms_ritual` だが、実際の player-facing 取得は `scene_007_return_fire` の `take_wedding_rings` なので、item だけより action/source を組み合わせた clue の方が根拠を説明しやすいため。
+- ただし Stage16-7E では `relatives_wedding_rings` clue を実装しなかった。現行 `deriveEvidenceEntries` は schema-backed clue と inventory item-derived evidence の両方を出すため、実装前に duplicate evidence を許容するか、item-backed clue precedence / suppression を設計する必要があるため。
+- `unopened_birthday_gift` は候補にしなかった。既に `clue_gift_respected_unopened` が未開封を尊重する判断を authored clue として持っており、item 自体の表示が強すぎる場合は clue migration ではなく item/evidence copy polish として別 stage で扱う方が安全なため。
