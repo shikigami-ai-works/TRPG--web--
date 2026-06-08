@@ -316,3 +316,10 @@
 - `relatives_wedding_rings` だけを Stage16-7F の候補として残した。`found_in_scene_id` は `scene_006_four_rooms_ritual` だが、実際の player-facing 取得は `scene_007_return_fire` の `take_wedding_rings` なので、item だけより action/source を組み合わせた clue の方が根拠を説明しやすいため。
 - ただし Stage16-7E では `relatives_wedding_rings` clue を実装しなかった。現行 `deriveEvidenceEntries` は schema-backed clue と inventory item-derived evidence の両方を出すため、実装前に duplicate evidence を許容するか、item-backed clue precedence / suppression を設計する必要があるため。
 - `unopened_birthday_gift` は候補にしなかった。既に `clue_gift_respected_unopened` が未開封を尊重する判断を authored clue として持っており、item 自体の表示が強すぎる場合は clue migration ではなく item/evidence copy polish として別 stage で扱う方が安全なため。
+
+## 2026-06-08 Stage 16-7F-A Duplicate Evidence Policy Decision
+
+- Stage16-7F-A は docs-only に留め、`items.yaml`、`clues.yaml`、runtime、storage、UI、replay hint、route gate、ending 条件、tests、scenario prose は変更しなかった。目的は Stage16-7F 実装前に duplicate item/clue evidence policy を固定すること。
+- duplicate evidence は許容しない判断にした。現行 `formatClueEvidenceId` は single-item reveal の authored clue を `item:<id>` にし、inventory 由来 evidence も同じ `item:<id>` を出すため、player meaning が重複し、AdventurePlayer の evidence card key も重複し得るため。
+- Stage16-7F を実装するなら、`relatives_wedding_rings` 1件に限って authored item-backed clue precedence を採用する。revealed clue 側を唯一の `EvidenceEntry` とし、同じ item の inventory-derived entry だけを抑制する方針。`EvidenceEntry[]` 境界と item-derived evidence の default 維持は崩さない。
+- Stage16-7F が1件を超える、一般 item migration になる、または route/storage/UI/replay hint 変更を要求する場合は、実装せず Option 3 として inventory-derived evidence を維持して defer する判断。
