@@ -15,3 +15,9 @@
 - When work is broad or ambiguous, first choose the safest next step that moves the project forward without overreaching.
 - The prompt should preserve intent and include objective, context, target files, constraints, verification commands, done criteria, and reporting expectations.
 - After writing the prompt, immediately use it as the working instruction unless the user asks only for the prompt or tells Codex to pause.
+
+## Autonomous Orchestration
+
+- Treat lightweight autonomous orchestration as the default for nontrivial work in this project: run a capability preflight, choose the smallest safe next stage, and decide whether Explorer, Worker, Auditor, or Preserver sub-agents are useful before execution.
+- When Shiki asks for expanded autonomous execution, use the project workflow in `docs/codex-autonomous-workflow.md` and the saved prompt template under `D:\Codex\AI Automate Prompt\拡張自走レーン_監査エージェント運用プロンプト.md`.
+- Do not treat expanded autonomy as permission to commit, push, delete files, change story canon, alter route gates, expand storage schemas, or run external services without explicit instruction.
