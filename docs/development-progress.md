@@ -22,7 +22,7 @@ Use this file only as a progress overview and restart map.
 ## Current Snapshot
 
 - Branch: `main`
-- Latest committed Stage16 revision: `5edea86 Document stage16-7f-a duplicate evidence policy`.
+- Latest committed Stage16 revision: `ec9b3ac Add stage16-7f wedding rings clue`.
 - Stage16-6 is committed and pushed.
 - Stage 15 AdventurePlayer scene 1-7 flow is committed and pushed.
 - Stage16-5A AdventurePlayer local save/resume and minimal post-ending record entry is committed and pushed.
@@ -35,7 +35,11 @@ Use this file only as a progress overview and restart map.
 - Stage16-7D action/check-backed clue authoring smoke slice is implemented and verified as the current commit/push bundle.
 - Stage16-7E item-backed authored clue scope decision is committed and pushed.
 - Stage16-7F-A duplicate evidence policy decision is committed and pushed.
-- Stage16-7F `relatives_wedding_rings` item-backed authored clue implementation is in the current working tree and verified.
+- Stage16-7F `relatives_wedding_rings` item-backed authored clue implementation is committed and pushed.
+- Stage16-7G clue/evidence continuation scope decision is in the current working tree as a docs-only decision.
+- Stage16-7H evidence identity regression guard is in the current working tree as a test-only change.
+- Software development Agent Orchestra workflow docs are in the current working tree as a docs-only operations update.
+- NextChat Full + Obsidian Git preservation docs for the Agent Orchestra workflow are in the current working tree.
 - Post-push untracked preservation docs include Stage 14R historical handoff/ledger files, Stage16 handoff/ledger files through Stage16-7F-A, `docs/archive/`, and `docs/scenario-choice-planning-kimidake_ga_oboeteiru_jiko.md`; keep them out of Stage16 spec commits unless Shiki explicitly chooses otherwise.
 - `.runtime/` and `.context-archive/` are local-only evidence/archive areas and should not be staged by default.
 
@@ -55,6 +59,8 @@ Use this file only as a progress overview and restart map.
 - Stage16-7E decides item-backed authored clue scope docs-first: no blanket item migration, keep item-derived evidence by default, and preserve only `relatives_wedding_rings` as a possible one-clue Stage16-7F candidate.
 - Stage16-7F-A rejects duplicate item/clue evidence and conditionally selects authored item-backed clue precedence for a future one-clue `relatives_wedding_rings` Stage16-7F slice.
 - Stage16-7F adds that one `relatives_wedding_rings` authored clue and suppresses only the matching inventory-derived `item:relatives_wedding_rings` entry while leaving other inventory-derived evidence unchanged.
+- Stage16-7G stops further clue-data expansion for now and selects a future test-focused evidence identity guard as the safest next clue/evidence candidate.
+- Stage16-7H adds that evidence identity guard as a regression test without changing clue data, runtime logic, storage, UI, or replay hints.
 - The player-facing UI is deterministic. No AI GM, free input, AI narration, Tauri/API integration, cloud save, or external save integration is in scope yet.
 
 ## Progress Timeline
@@ -393,8 +399,8 @@ Verification:
 
 ### 2026-06-08 - Stage 16-7F Relatives Wedding Rings Item-Backed Authored Clue
 
-- Commit: uncommitted local implementation.
-- Status: implemented in the current working tree; verification passed.
+- Commit: `ec9b3ac Add stage16-7f wedding rings clue`.
+- Status: committed and pushed.
 
 - Added one authored clue, `clue_pair_medium_wedding_rings`, revealed by existing inventory item `relatives_wedding_rings`.
 - Kept the generated evidence ID as `item:relatives_wedding_rings` through the existing single-item reveal convention.
@@ -413,6 +419,73 @@ Verification:
 - `npm run build`: PASS.
 - `npm run audit:adventure-player`: PASS; latest output saved under `.runtime/adventure-player-ui-audit-2026-06-08T07-07-28-528Z/`.
 
+### 2026-06-08 - Stage 16-7G Clue/Evidence Continuation Scope Decision
+
+- Commit: uncommitted docs-only local decision.
+- Status: implemented in the current working tree; docs verification passed.
+
+- Added `docs/stage16-7g-clue-evidence-continuation-scope-decision.md`.
+- Decided not to add more authored item-backed clues now because Stage16-7F completed the only currently justified item-backed clue candidate.
+- Kept `EvidenceEntry[]` as the AdventurePlayer-facing boundary and kept item-derived evidence in `items.yaml` by default.
+- Deferred evidence board UI, missing-evidence checklist, deduction declaration, scene-reached predicates, history-wide replay inference, `CompletedRunRecord` extension, replay hint copy/family changes, route gates, ending conditions, scene order, and scenario prose changes.
+- Selected a future Stage16-7H candidate as a small evidence identity regression guard, focused on tests rather than new clue data or product behavior.
+
+Verification:
+
+- `git diff --check`: PASS, LF-to-CRLF warnings only.
+- Trailing-whitespace scan for changed docs: PASS.
+- Runtime verification is intentionally not required because this is docs-only scope guidance.
+
+### 2026-06-08 - Stage 16-7H Evidence Identity Regression Guard
+
+- Commit: uncommitted local test-only change.
+- Status: implemented in the current working tree; focused verification passed.
+
+- Added a regression test to `tests/adventure-view-model.test.ts` that derives evidence for a representative state with all current flag-backed clues, the action/check-backed authored clues, and all current inventory items.
+- Asserted that all derived `EvidenceEntry.id` values are unique.
+- Reconfirmed that the authored `relatives_wedding_rings` clue appears as the single `item:relatives_wedding_rings` entry while unrelated inventory evidence, including `unopened_birthday_gift`, remains present.
+- Preserved `EvidenceEntry[]` as the AdventurePlayer-facing boundary.
+- Did not change `clues.yaml`, `items.yaml`, runtime evidence logic, loader/types/validation code, storage schema, route gates, ending conditions, replay hint copy/families, UI controls, or scenario prose.
+
+Verification:
+
+- `npm run test`: PASS, 37 tests.
+- `npm run validate:scenarios`: PASS, 1 pack / 0 errors / 0 warnings.
+- `git diff --check`: PASS, LF-to-CRLF warnings only.
+
+### 2026-06-08 - Software Development Agent Orchestra Workflow Template
+
+- Commit: uncommitted docs-only local operations update.
+- Status: implemented in the current working tree; docs verification passed.
+
+- Added `docs/workflows/software-development-orchestra.md` as the practical operating template for software development with Agent Orchestration.
+- Captured the five working rules Shiki asked for: Main Orchestrator authority, self-drive levels, Stage Prompt loop, standard agent orchestra, and repo operating template.
+- Added activation phrases, agent role boundaries, verification matrix, record matrix, Git / nextchat / Obsidian boundaries, copyable orchestration prompt, stop conditions, and completion report shape.
+- Updated `docs/codex-autonomous-workflow.md` to point software-development orchestration requests to the new workflow template while keeping that file as the higher-level policy document.
+- Aligned the older `nextchat` table in `docs/codex-autonomous-workflow.md` with the current default that bare `nextchat` means NextChat Full unless Shiki explicitly asks for a lightweight handoff-only result.
+- Did not change product code, scenario YAML/body, route gates, storage schemas, tests, runtime behavior, Git state, Obsidian vault, or nextchat artifacts.
+
+Verification:
+
+- `git diff --check`: PASS for tracked docs diff, LF-to-CRLF warning only.
+- New workflow doc trailing-whitespace scan: PASS.
+- Runtime verification is intentionally not required because this is docs-only operations guidance.
+
+### 2026-06-08 - Agent Orchestra NextChat Full And Obsidian Git Preservation
+
+- Commit: uncommitted local preservation update.
+- Status: project-local ledger and handoff created; Obsidian Git save requested in the same stage.
+
+- Created `docs/NEXTCHAT_CONTEXT_LEDGER_2026-06-08_software-development-orchestra-nextchatfull-obsidiangit.md`.
+- Created `docs/NEXT_CHAT_HANDOFF_2026-06-08_software-development-orchestra-nextchatfull-obsidiangit.md`.
+- Labeled raw archive preservation as unavailable / best-effort because discoverable Codex session JSONL includes hidden developer/system prompt material and must not be archived into user-visible project or Obsidian artifacts.
+- Kept software repo Git push out of scope because Shiki requested NextChat Full and Obsidian Git, not `Git push`.
+
+Verification:
+
+- NextChat ledger/handoff files created in `docs/`.
+- Raw archive intentionally omitted for privacy/safety boundary.
+
 ## Area Status
 
 | Area | Status | Notes |
@@ -421,13 +494,14 @@ Verification:
 | ScenarioExplorer debug UI | Stable | Preserved under `/debug`. |
 | AdventurePlayer scenes 1-7 | Committed and pushed in Stage 15 | Browser/UI audit passed through true ending and `/debug` remained available. |
 | Evidence drawer | Polished | Derived from existing flags/items; Stage16-7B adds optional clue-schema parity for the current flag evidence without changing the view output. |
-| Clue/evidence schema | Stage16-7F item-backed authored clue slice implemented locally | Optional `clues.yaml` parity adapter exists for current flag evidence; action/check-backed clues are covered by a small smoke slice; item-derived evidence stays in `items.yaml` by default; duplicate item/clue evidence is rejected; `relatives_wedding_rings` has the only item-backed authored clue. |
+| Clue/evidence schema | Stage16-7H evidence identity regression guard added locally | Optional `clues.yaml` parity adapter exists for current flag evidence; action/check-backed clues are covered by a small smoke slice; item-derived evidence stays in `items.yaml` by default; duplicate item/clue evidence is rejected; `relatives_wedding_rings` has the only item-backed authored clue; representative derived evidence IDs are now covered by a uniqueness regression test. |
 | Log drawer | Polished | Structured UI entries derived from existing runtime log strings. |
 | Status drawer | Committed and pushed in Stage 15 | Player-facing labels first, raw values as supporting detail, plus four-room carry-out selection. |
 | Assets | Gated | Native UI/placeholders only unless later approval opens imports. |
 | Scene 4+ AdventurePlayer support | Committed and pushed in Stage 15 | Uses existing scenario YAML and runtime helpers. |
 | Post-ending save/replay spec | Stage16-5A-5C committed and pushed | Stage16-5A implements save/resume/history append; Stage16-5B implements the minimal ending progress/reward sheet; Stage16-5C implements passive deterministic replay hints. |
 | Browser/UI audit tooling | Stage16-6 committed and pushed | `npm run audit:adventure-player` covers `/`, post-ending guarantees, existing post-ending controls, and `/debug`; evidence stays in `.runtime/`. |
+| Autonomous development workflow | Software Development Agent Orchestra template added locally | `docs/codex-autonomous-workflow.md` remains the policy layer; `docs/workflows/software-development-orchestra.md` is the practical software stage template. |
 | AI GM / free input | Out of scope | Future layer after deterministic core. |
 | Real player-facing save UX | Stage16-5A implemented and pushed | LocalStorage-backed active-run restore, auto-save, completed history append-once, and restart behavior use existing storage helpers. |
 | Tauri/API integration | Out of scope | No current implementation. |
@@ -442,8 +516,9 @@ Verification:
 
 ## Next Safe Stages
 
-1. Decide separately what to do with historical untracked handoff/ledger/archive docs; do not mix that cleanup into Stage16 specs by default.
-2. If clue/evidence work continues, define the next slice docs-first before adding more item-backed clues, evidence-board UI, storage changes, or replay hint changes.
+1. If Shiki says `Git push`, inspect status/diff and stage only the explicitly intended local work; likely candidates are the Agent Orchestra workflow docs plus Stage16-7G/7H files, but historical untracked handoff/archive docs must stay out unless Shiki explicitly includes them.
+2. Decide separately what to do with historical untracked handoff/ledger/archive docs; do not mix that cleanup into Stage16 specs by default.
+3. If clue/evidence work continues beyond Stage16-7H, define the next slice docs-first before any more clue data, evidence-board UI, storage changes, or replay hint changes.
 
 ## Update Rule
 

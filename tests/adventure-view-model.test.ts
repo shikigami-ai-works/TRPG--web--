@@ -194,6 +194,38 @@ test("Adventure evidence uses the authored wedding rings clue without duplicatin
   assert.equal(giftEvidence.title, "未開封の誕生日プレゼント");
 });
 
+test("Adventure evidence keeps derived evidence ids unique for representative states", () => {
+  const state = {
+    ...createInitialState(pack),
+    flags: {
+      ...createInitialState(pack).flags,
+      noticed_parallel_displacement: true,
+      said_not_replacement: true,
+      acted_as_dead_friend: true,
+      akari_regret_spoken: true,
+      gift_respected_unopened: true,
+      found_cult_recovery_trace: true,
+      akari_rested_in_empty_house: true,
+      dead_friend_home_respected: true,
+      confirmed_empty_house_identity: true,
+    },
+    inventory: pack.items.map((item) => item.id),
+    usedActionIds: ["stand_beside_akari_choice", "check_escape_returning_family"],
+  };
+
+  const evidence = deriveEvidenceEntries(pack, state);
+  const evidenceIds = evidence.map((entry) => entry.id);
+  const duplicateIds = evidenceIds.filter((id, index) => evidenceIds.indexOf(id) !== index);
+
+  assert.deepEqual(duplicateIds, []);
+  assert.equal(new Set(evidenceIds).size, evidenceIds.length);
+  assert.equal(evidence.filter((entry) => entry.id === "item:relatives_wedding_rings").length, 1);
+  assert.ok(evidence.some((entry) => entry.id === "item:relatives_wedding_rings" && entry.title === "二人分のペア媒介"));
+  assert.ok(evidence.some((entry) => entry.id === "item:unopened_birthday_gift"));
+  assert.ok(evidence.some((entry) => entry.id === "action:stand_beside_akari_choice"));
+  assert.ok(evidence.some((entry) => entry.id === "check:check_escape_returning_family"));
+});
+
 test("Adventure evidence supports action and check backed authored clues", () => {
   const state = {
     ...createInitialState(pack),
