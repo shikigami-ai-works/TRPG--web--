@@ -32,6 +32,7 @@ import {
   saveCheckProfile,
   type CompletedRunRecord,
 } from "../lib/scenarios/storage";
+import { buildBestRelationshipContactRecord, buildRelationshipContactRecordForRun } from "../lib/scenarios/relationship-contact-record";
 import { validateScenarioPack } from "../lib/scenarios/validation";
 import type {
   CheckOutcome,
@@ -659,6 +660,83 @@ test("ending progress entries expose reached details and keep locked endings con
   assert.equal("hiddenDescription" in locked, false);
 });
 
+test("relationship contact records classify Akari clear traces without exposing raw ids", () => {
+  const records = new Map(
+    [
+      createCompletedRunRecord("return_with_akari", "2026-05-27T10:00:00.000Z", {
+        finalTrust: { minase_akari: 90 },
+      }),
+      createCompletedRunRecord("return_without_akari", "2026-05-27T11:00:00.000Z", {
+        finalTrust: { minase_akari: 65 },
+      }),
+      createCompletedRunRecord("stay_with_akari", "2026-05-27T12:00:00.000Z", {
+        finalTrust: { minase_akari: 80 },
+      }),
+      createCompletedRunRecord("boundary_collapse", "2026-05-27T13:00:00.000Z", {
+        finalTrust: { minase_akari: 90 },
+      }),
+    ].map((record) => [record.endingId, buildRelationshipContactRecordForRun(pack, record)]),
+  );
+
+  const active = records.get("return_with_akari");
+  const memory = records.get("return_without_akari");
+  const shared = records.get("stay_with_akari");
+  const lost = records.get("boundary_collapse");
+
+  assert.equal(active?.category, "active_contact_record");
+  assert.equal(memory?.category, "memory_contact_trace");
+  assert.equal(shared?.category, "shared_boundary_record");
+  assert.equal(lost?.category, "lost_relationship_trace");
+  assert.match(active?.rewardLabels.join(" / ") ?? "", /関係のしるし/);
+  assert.match(memory?.rewardLabels.join(" / ") ?? "", /記憶の断片/);
+  assert.equal(lost?.trustLabel, undefined);
+
+  for (const record of Array.from(records.values())) {
+    assertSafeRelationshipContactCopy(record.statusLabel, record.summary, record.detail, record.trustLabel, ...record.rewardLabels);
+  }
+});
+
+test("best relationship contact record preserves the strongest Akari trace across history", () => {
+  const history = [
+    createCompletedRunRecord("boundary_collapse", "2026-05-27T14:00:00.000Z", {
+      finalTrust: { minase_akari: 95 },
+    }),
+    createCompletedRunRecord("stay_with_akari", "2026-05-27T13:00:00.000Z", {
+      finalTrust: { minase_akari: 80 },
+    }),
+    createCompletedRunRecord("return_without_akari", "2026-05-27T12:00:00.000Z", {
+      finalTrust: { minase_akari: 65 },
+    }),
+    createCompletedRunRecord("return_with_akari", "2026-05-27T10:00:00.000Z", {
+      finalTrust: { minase_akari: 90 },
+    }),
+  ];
+
+  const best = buildBestRelationshipContactRecord(pack, history);
+
+  assert.equal(best.category, "active_contact_record");
+  assert.equal(best.sourceEndingId, "return_with_akari");
+  assert.equal(best.completedAt, "2026-05-27T10:00:00.000Z");
+  assertSafeRelationshipContactCopy(best.statusLabel, best.summary, best.detail, best.trustLabel, ...best.rewardLabels);
+
+  const latestMemory = buildBestRelationshipContactRecord(pack, [
+    createCompletedRunRecord("return_without_akari", "2026-05-27T11:00:00.000Z"),
+    createCompletedRunRecord("return_without_akari", "2026-05-27T12:00:00.000Z"),
+  ]);
+
+  assert.equal(latestMemory.category, "memory_contact_trace");
+  assert.equal(latestMemory.completedAt, "2026-05-27T12:00:00.000Z");
+
+  const noRecord = buildBestRelationshipContactRecord(pack, [
+    createCompletedRunRecord("return_with_akari", "2026-05-27T10:00:00.000Z", {
+      scenarioId: "other_scenario",
+    }),
+  ]);
+
+  assert.equal(noRecord.category, "no_record");
+  assert.equal(noRecord.rewardLabels.length, 0);
+});
+
 function playReturnRoute({
   carryTwoArtifacts,
   openGift,
@@ -803,6 +881,13 @@ function findProgressEntry(entries: ReturnType<typeof buildEndingProgressEntries
   const entry = entries.find((candidate) => candidate.endingId === endingId);
   assert.ok(entry, `${endingId} should be visible in ending progress`);
   return entry;
+}
+
+function assertSafeRelationshipContactCopy(...texts: Array<string | undefined>): void {
+  const combined = texts.filter(Boolean).join(" / ");
+  assert.doesNotMatch(combined, /return_with_akari|return_without_akari|stay_with_akari|boundary_collapse/);
+  assert.doesNotMatch(combined, /reward_|memory_fragment|relationship_asset|minase_akari/);
+  assert.doesNotMatch(combined, /player_returns|npc_returns|unlock_conditions|contact_unlock_threshold/);
 }
 
 function createCompletedRunRecord(endingId: string, completedAt: string, overrides: Partial<CompletedRunRecord> = {}): CompletedRunRecord {

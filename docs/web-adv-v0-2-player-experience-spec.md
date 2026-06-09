@@ -566,3 +566,113 @@ Run typecheck, lint, build, test, validate:scenarios, browser check for `/` and 
 Done:
 The player can open `/`, read/advance scenes 1-3 as a paper-theater ADV on a smartphone-sized vertical viewport, make choices, see dice/story results, view evidence/log/status/trust through bottom drawers, and use the same experience on desktop with a side panel while the debug route still works.
 ```
+
+## 13. Stage17 Development Direction During Asset Production
+
+Decision date: 2026-06-09 JST
+
+Shiki decided that visual asset production will continue in parallel, but the
+software development lane should not block on finished graphics. Until the
+first production-ready background, character, prop, UI, and effect assets are
+available, development should move into the deterministic post-clear
+relationship/contact lane.
+
+The next software direction is:
+
+```text
+Stage17: Contact And Relationship Record System
+```
+
+Japanese direction:
+
+```text
+素材がそろうまでの間は、連絡先を受け取った後の交友・縁の記録システムを進める。
+ただし、最初からAI自由会話や本格メッセージアプリには進まない。
+まずは、クリア後に灯との縁が残ったことを、到達記録・報酬・信頼状態から
+deterministic に表示する。
+```
+
+### 13.1 Why This Lane
+
+This lane can progress before final visual assets because it mostly uses
+existing deterministic data:
+
+- completed run history;
+- ending metadata and rewards;
+- Akari trust;
+- current relationship/reward labels;
+- existing post-ending progress surface;
+- existing localStorage-backed completed history.
+
+It also fits the original MVP handbook direction that each scenario should have
+at least one NPC with affection/contact value, while keeping the current
+Web ADV rule that the deterministic runtime owns game state.
+
+### 13.2 First Safe Slice
+
+The first Stage17 slice should be docs-first:
+
+```text
+Stage17A: Contact And Relationship System Spec
+```
+
+Objective:
+
+- Define the minimum post-clear relationship/contact system for Akari.
+- Decide what is unlocked after `return_with_akari`, `return_without_akari`,
+  and `stay_with_akari`.
+- Keep the first implementation as a relationship record / contact record,
+  not an AI chat surface.
+
+Recommended artifact:
+
+```text
+docs/stage17-contact-relationship-system-spec.md
+```
+
+### 13.3 First Implementation Candidate
+
+After Stage17A is written and reviewed, Stage17B can implement a narrow UI
+slice:
+
+- add a post-ending relationship/contact card for Akari;
+- derive its state from completed run history and ending rewards;
+- show the latest reached ending, relationship trace, trust band, and preserved
+  memory/reward label;
+- expose it from the post-ending surface or progress/reward sheet;
+- keep all controls user-observable and deterministic.
+
+### 13.4 Boundaries
+
+Stage17 must preserve:
+
+- `/` as `AdventurePlayer`;
+- `/debug` as `ScenarioExplorer`;
+- `EvidenceEntry[]` as the AdventurePlayer evidence boundary;
+- current scenario YAML/body;
+- ending route gates and ending conditions;
+- localStorage completed-run history as the current durable source.
+
+Stage17 must not introduce yet:
+
+- AI free chat with Akari;
+- generated NPC replies;
+- smartphone messenger simulation as the first slice;
+- cloud save or external account persistence;
+- broad `CompletedRunRecord` schema expansion;
+- new route gates, ending conditions, or scenario prose changes;
+- production asset import.
+
+### 13.5 Copy Direction
+
+The first player-facing copy should avoid treating Akari as a romance reward or
+possession. Prefer language like:
+
+- `灯との縁`;
+- `残った記憶`;
+- `関係のしるし`;
+- `もう一度たどるための記録`;
+- `連絡先の痕跡`.
+
+Avoid copy that implies the player owns Akari, rescued her as a prize, or can
+freely summon her outside deterministic story state.

@@ -892,15 +892,74 @@ button {
 
 .adv-ending-summary,
 .adv-replay-hints,
+.adv-relationship-card,
 .adv-ending-actions {
   display: grid;
   gap: 8px;
 }
 
 .adv-ending-summary,
-.adv-replay-hints {
+.adv-replay-hints,
+.adv-relationship-card {
   border-top: 1px solid rgba(241, 236, 226, 0.12);
   padding-top: 10px;
+}
+
+.adv-relationship-card {
+  border-left: 2px solid rgba(87, 157, 136, 0.46);
+  padding-left: 10px;
+}
+
+.adv-relationship-card strong {
+  color: #f1ece2;
+  font-size: 0.94rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.adv-relationship-card dl {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.adv-relationship-card dl div {
+  display: grid;
+  gap: 2px;
+}
+
+.adv-relationship-card dt,
+.adv-relationship-card dd {
+  margin: 0;
+}
+
+.adv-relationship-card dt {
+  color: #cfc5b8;
+  font-size: 0.73rem;
+  font-weight: 700;
+}
+
+.adv-relationship-card dd {
+  color: #e3ddd3;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.adv-relationship-card[data-relationship-contact-category="active_contact_record"] {
+  border-left-color: rgba(87, 157, 136, 0.72);
+}
+
+.adv-relationship-card[data-relationship-contact-category="memory_contact_trace"] {
+  border-left-color: rgba(247, 216, 137, 0.58);
+}
+
+.adv-relationship-card[data-relationship-contact-category="shared_boundary_record"] {
+  border-left-color: rgba(171, 140, 214, 0.58);
+}
+
+.adv-relationship-card[data-relationship-contact-category="lost_relationship_trace"] {
+  border-left-color: rgba(240, 162, 108, 0.56);
 }
 
 .adv-replay-hint {

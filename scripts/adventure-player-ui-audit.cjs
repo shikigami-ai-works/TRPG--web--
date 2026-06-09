@@ -108,6 +108,33 @@ const forbiddenPlayerTextTokens = [
   "trust >=",
   "counter:",
   "flag:",
+  "reward_",
+  "memory_fragment",
+  "relationship_asset",
+  "active_contact_record",
+  "memory_contact_trace",
+  "shared_boundary_record",
+  "lost_relationship_trace",
+  "sourceRunId",
+  "sourceEndingId",
+  "completedRunId",
+  "攻略報酬",
+  "入手したNPC",
+  "所有",
+  "いつでも話せる",
+  "AI灯",
+  "AIチャット",
+  "AI会話",
+  "チャット",
+  "メッセンジャー",
+  "メッセージ",
+  "送信",
+  "返信",
+  "通知",
+  "未読",
+  "AI chat",
+  "free chat",
+  "messenger",
 ];
 
 fs.mkdirSync(screenshotDir, { recursive: true });
@@ -334,10 +361,11 @@ async function collectState(cdp, label) {
           ariaPressed: element.getAttribute("aria-pressed") || "",
           className: typeof element.className === "string" ? element.className : "",
         }));
-      const bodyText = text(document.body);
-      return {
-        label: ${JSON.stringify(label)},
-        url: location.href,
+       const bodyText = text(document.body);
+       const relationshipContactCard = document.querySelector("[data-relationship-contact-category]");
+       return {
+         label: ${JSON.stringify(label)},
+         url: location.href,
         title: document.title,
         bodyText,
         hasAdventureShell: Boolean(document.querySelector(".adv-shell")),
@@ -353,11 +381,17 @@ async function collectState(cdp, label) {
           state: element.getAttribute("data-ending-progress-state") || "",
           current: element.getAttribute("data-current-ending") || "",
         })),
-        replayHintFamilies: Array.from(document.querySelectorAll("[data-replay-hint-family]")).map((element) =>
-          element.getAttribute("data-replay-hint-family") || ""
-        ),
-        postEndingActionCount: document.querySelectorAll(".adv-ending-actions button").length,
-        drawerOpen: Boolean(document.querySelector(".adv-mobile-drawer.open")),
+         replayHintFamilies: Array.from(document.querySelectorAll("[data-replay-hint-family]")).map((element) =>
+           element.getAttribute("data-replay-hint-family") || ""
+         ),
+         relationshipContactVisible: Boolean(relationshipContactCard && visible(relationshipContactCard)),
+         relationshipContactCategory: relationshipContactCard?.getAttribute("data-relationship-contact-category") || "",
+         relationshipContactText: text(relationshipContactCard),
+         relationshipContactControlCount: relationshipContactCard
+           ? Array.from(relationshipContactCard.querySelectorAll("button, a, input")).filter(visible).length
+           : 0,
+         postEndingActionCount: document.querySelectorAll(".adv-ending-actions button").length,
+         drawerOpen: Boolean(document.querySelector(".adv-mobile-drawer.open")),
         drawerText: text(document.querySelector(".adv-mobile-drawer.open")),
         activeDrawerLabel: text(document.querySelector(".adv-mobile-drawer.open .adv-drawer-header strong")),
         hasLogDrawerContent: Boolean(document.querySelector(".adv-mobile-drawer.open .adv-log-list, .adv-mobile-drawer.open .adv-muted")),
@@ -431,6 +465,24 @@ function assertNoForbiddenPlayerText(state) {
 
 function assertNoPlaceholderControls(state) {
   assert(state.placeholderControls.length === 0, `${state.label} has placeholder controls: ${JSON.stringify(state.placeholderControls)}`);
+}
+
+function assertRelationshipContactCard(state, expectedCategory) {
+  assert(state.relationshipContactVisible, `${state.label} relationship/contact card is not visible`);
+  assert(
+    state.relationshipContactCategory === expectedCategory,
+    `${state.label} relationship/contact category mismatch: ${state.relationshipContactCategory}`,
+  );
+  assert(
+    state.relationshipContactText.includes("灯") &&
+      state.relationshipContactText.includes("縁") &&
+      state.relationshipContactText.includes("連絡先の痕跡"),
+    `${state.label} relationship/contact card copy is missing expected safe labels: ${state.relationshipContactText}`,
+  );
+  assert(
+    state.relationshipContactControlCount === 0,
+    `${state.label} relationship/contact card added enabled controls: ${state.relationshipContactControlCount}`,
+  );
 }
 
 function collectErrors(events) {
@@ -555,6 +607,7 @@ async function main() {
       ["branch", "evidence", "carry_out"].every((family) => mobilePostEnding.replayHintFamilies.includes(family)),
       `Stage16-5C replay hint families missing: ${mobilePostEnding.replayHintFamilies.join(", ")}`,
     );
+    assertRelationshipContactCard(mobilePostEnding, "active_contact_record");
     assert(mobilePostEnding.postEndingActionCount >= 4, "post-ending action controls are missing");
     assertNoForbiddenPlayerText(mobilePostEnding);
     assertNoPlaceholderControls(mobilePostEnding);
@@ -567,6 +620,7 @@ async function main() {
       screenshot: mobileShot,
       replayHintFamilies: mobilePostEnding.replayHintFamilies,
       progressEntries: mobilePostEnding.progressEntries,
+      relationshipContactCategory: mobilePostEnding.relationshipContactCategory,
     });
 
     await clickEndingAction(cdp, 1, "log");
@@ -608,6 +662,7 @@ async function main() {
       ["branch", "evidence", "carry_out"].every((family) => desktopPostEnding.replayHintFamilies.includes(family)),
       "desktop replay hint families are missing",
     );
+    assertRelationshipContactCard(desktopPostEnding, "active_contact_record");
     assertNoForbiddenPlayerText(desktopPostEnding);
     assertNoPlaceholderControls(desktopPostEnding);
     assertNoHorizontalOverflow(desktopPostEnding);
@@ -617,6 +672,7 @@ async function main() {
       viewport: "1280x720",
       result: "desktop post-ending contract visible",
       screenshot: desktopShot,
+      relationshipContactCategory: desktopPostEnding.relationshipContactCategory,
     });
 
     await navigateAndWait(cdp, `${appUrl}/debug`, ".shell");
@@ -648,8 +704,10 @@ async function main() {
     result.assertions.push(
       "/ renders AdventurePlayer",
       "post-ending progress sheet is visible",
+      "Akari relationship/contact card is visible and static",
       "branch/evidence/carry_out replay hint families are visible",
       "player text hides raw ending ids, raw conditions, and route-gate tokens",
+      "player text avoids AI chat and messenger implications",
       "post-ending controls have visible outcomes",
       "/debug renders ScenarioExplorer",
       "no console errors or request failures",

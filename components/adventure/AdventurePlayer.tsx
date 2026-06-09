@@ -7,6 +7,10 @@ import { formatEndingTypeLabel, TARGET_SCENARIO_ID } from "@/lib/adventure/label
 import { advanceAdventureScene, applyAdventureAction, rollAdventureCheck } from "@/lib/adventure/session";
 import { buildAdventureViewModel } from "@/lib/adventure/view-model";
 import { buildEndingProgressEntries, type EndingProgressEntry } from "@/lib/scenarios/ending-progress";
+import {
+  buildBestRelationshipContactRecord,
+  type RelationshipContactRecord,
+} from "@/lib/scenarios/relationship-contact-record";
 import { createInitialState } from "@/lib/scenarios/runtime";
 import { toggleCarryOutItem } from "@/lib/scenarios/runtime";
 import {
@@ -74,6 +78,10 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
   const currentText = view?.textPages[Math.min(pageIndex, view.textPages.length - 1)] ?? "";
   const canAdvanceText = view ? !view.ending && pageIndex < view.textPages.length - 1 : false;
   const endingProgress = useMemo(() => (pack ? buildEndingProgressEntries(pack, runHistory) : []), [pack, runHistory]);
+  const relationshipContactRecord = useMemo(
+    () => (pack ? buildBestRelationshipContactRecord(pack, runHistory) : undefined),
+    [pack, runHistory],
+  );
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -222,6 +230,7 @@ export default function AdventurePlayer({ packs }: AdventurePlayerProps) {
               onPanel={handlePanel}
               onRestart={handleRestart}
               recordStatus={endingRecordStatus}
+              relationshipContactRecord={relationshipContactRecord}
               view={view}
             />
           ) : (
@@ -353,12 +362,14 @@ function EndingView({
   onPanel,
   onRestart,
   recordStatus,
+  relationshipContactRecord,
   view,
 }: {
   endingProgress: EndingProgressEntry[];
   onPanel: (panel: PanelId) => void;
   onRestart: () => void;
   recordStatus: EndingRecordStatus;
+  relationshipContactRecord?: RelationshipContactRecord;
   view: NonNullable<ReturnType<typeof buildAdventureViewModel>>;
 }) {
   const ending = view.ending;
@@ -381,6 +392,7 @@ function EndingView({
       <p className="adv-ending-record" data-ending-record-status={recordStatus}>
         {formatEndingRecordStatusLabel(recordStatus)}
       </p>
+      <RelationshipContactCard record={relationshipContactRecord} />
       <ReplayHintSheet hints={view.replayHints} />
       <EndingProgressSheet currentEndingId={ending.id} entries={endingProgress} />
       <div className="adv-ending-actions">
@@ -397,6 +409,51 @@ function EndingView({
           状態を見る
         </button>
       </div>
+    </section>
+  );
+}
+
+function RelationshipContactCard({ record }: { record?: RelationshipContactRecord }) {
+  if (!record || record.category === "no_record") {
+    return null;
+  }
+
+  return (
+    <section
+      className="adv-relationship-card"
+      data-relationship-contact-category={record.category}
+      aria-label={`${record.npcName}との縁の記録`}
+    >
+      <div className="adv-evidence-meta">
+        <span>{record.npcName}との縁</span>
+        <small>{record.statusLabel}</small>
+      </div>
+      <strong>{record.summary}</strong>
+      <p>{record.detail}</p>
+      <dl>
+        {record.sourceEndingTitle ? (
+          <div>
+            <dt>支えになった結末</dt>
+            <dd>{record.sourceEndingTitle}</dd>
+          </div>
+        ) : null}
+        {record.completedAt ? (
+          <div>
+            <dt>記録日時</dt>
+            <dd>{formatDateTimeLabel(record.completedAt)}</dd>
+          </div>
+        ) : null}
+        {record.trustLabel ? (
+          <div>
+            <dt>灯の距離</dt>
+            <dd>{record.trustLabel}</dd>
+          </div>
+        ) : null}
+        <div>
+          <dt>残ったしるし</dt>
+          <dd>{record.rewardLabels.length ? record.rewardLabels.join(" / ") : "この記録では静かに伏せられている"}</dd>
+        </div>
+      </dl>
     </section>
   );
 }
