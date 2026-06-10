@@ -22,7 +22,9 @@ Use this file only as a progress overview and restart map.
 ## Current Snapshot
 
 - Branch: `main`
-- Latest committed project revision: `9325219 Record stage19a skip decision`.
+- Latest active-contact stage milestone revision: `9325219 Record stage19a skip decision`.
+- Current `HEAD` should be checked with `git log -1` when resuming; this ledger
+  does not chase ledger-only sync commits.
 - Latest committed Stage16 revision: `1dacfc2 Add stage16-7h evidence guard workflow`.
 - Stage16-6 is committed and pushed.
 - Stage 15 AdventurePlayer scene 1-7 flow is committed and pushed.
