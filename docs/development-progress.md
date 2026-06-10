@@ -22,7 +22,7 @@ Use this file only as a progress overview and restart map.
 ## Current Snapshot
 
 - Branch: `main`
-- Latest committed project revision: `cf308aa Add stage18a contact eligibility detail`.
+- Latest committed project revision: `9325219 Record stage19a skip decision`.
 - Latest committed Stage16 revision: `1dacfc2 Add stage16-7h evidence guard workflow`.
 - Stage16-6 is committed and pushed.
 - Stage 15 AdventurePlayer scene 1-7 flow is committed and pushed.
@@ -55,7 +55,7 @@ Use this file only as a progress overview and restart map.
 - Stage18 active contact contract is committed and pushed in `18746a0 Add stage18 active contact contract`.
 - Stage18A Akari Contact Eligibility Detail is committed and pushed in `cf308aa`; it adds deterministic record-only eligibility detail copy without opening message input, send/reply behavior, AI/RAG, messenger, notification, storage/schema, route/reward, or scenario changes.
 - Stage19 active contact scope contract is committed and pushed in `9d1138f`; it closes Stage18A and opens only one optional static copy/audit/explanation polish ticket, without active communication.
-- Stage19A Static Contact Copy And Audit Polish is the current local ASO skip stage; the existing Stage18A copy, regression tests, and AdventurePlayer audit guard already satisfy the Stage19A ticket, so no product code change is needed.
+- Stage19A Static Contact Copy And Audit Polish is committed and pushed in `9325219`; the existing Stage18A copy, regression tests, and AdventurePlayer audit guard already satisfy the Stage19A ticket, so no product code change was needed.
 - Historical uncommitted preservation docs and the scenario-choice planning doc are gathered under `docs/archive/uncommitted-docs/`; keep them out of active software commits unless Shiki explicitly chooses otherwise.
 - The historical docs were copied as-is to `shikigami-ai-works/shiki-work-archive` at `97cad34 Archive TRPG web uncommitted docs`; the source repo copies remain local/untracked for Shiki's later cleanup choice.
 - `.runtime/` and `.context-archive/` are local-only evidence/archive areas and should not be staged by default.
@@ -808,8 +808,8 @@ Verification:
 
 ### 2026-06-11 - Stage19A Static Contact Copy And Audit Polish ASO
 
-- Commit: publication approved by Shiki's standing approval for this ASO cycle.
-- Status: local docs-only skip decision complete; verification passed.
+- Commit: `9325219 Record stage19a skip decision`.
+- Status: committed and pushed to `origin/main`.
 
 - Rechecked the existing Stage18A card, helper copy, regression tests, and
   AdventurePlayer audit guard.
@@ -853,7 +853,7 @@ Verification:
 | Assets | Gated | Native UI/placeholders only unless later approval opens imports. |
 | Scene 4+ AdventurePlayer support | Committed and pushed in Stage 15 | Uses existing scenario YAML and runtime helpers. |
 | Post-ending save/replay spec | Stage16-5A-5C committed and pushed | Stage16-5A implements save/resume/history append; Stage16-5B implements the minimal ending progress/reward sheet; Stage16-5C implements passive deterministic replay hints. |
-| Akari relationship/contact record | Stage17 passive record layer committed and pushed in `86df8cb`; Stage18 active-contact contract committed and pushed in `18746a0`; Stage18A committed and pushed in `cf308aa`; Stage19 scope contract committed and pushed in `9d1138f`; Stage19A skip decision is local docs-only | The post-ending AdventurePlayer card is deterministic, static/read-only, completed-history-derived, explicitly not an AI chat or messenger feature. Stage18A adds static eligibility-detail explanation and still adds no enabled contact controls. Stage19A finds no additional static copy/audit polish needed. |
+| Akari relationship/contact record | Stage17 passive record layer committed and pushed in `86df8cb`; Stage18 active-contact contract committed and pushed in `18746a0`; Stage18A committed and pushed in `cf308aa`; Stage19 scope contract committed and pushed in `9d1138f`; Stage19A skip decision committed and pushed in `9325219` | The post-ending AdventurePlayer card is deterministic, static/read-only, completed-history-derived, explicitly not an AI chat or messenger feature. Stage18A adds static eligibility-detail explanation and still adds no enabled contact controls. Stage19A finds no additional static copy/audit polish needed. |
 | Browser/UI audit tooling | Stage17C hardening committed and pushed in `1207b93`; Stage17B-4 passive record copy guard committed and pushed in `06d4ce4`; closeout failure evidence improvement committed and pushed in `86df8cb`; Stage18A audit copy guard committed and pushed in `cf308aa` | `npm run audit:adventure-player` covers `/`, mobile/drawer/story/choice/save/post-ending controls, post-ending relationship/contact copy, multiple viewports, and `/debug`; failure artifacts now preserve console/network detail when available; evidence stays in `.runtime/`. |
 | Autonomous development workflow | Software Development Agent Orchestra template committed and pushed | `docs/codex-autonomous-workflow.md` remains the policy layer; `docs/workflows/software-development-orchestra.md` is the practical software stage template. |
 | AI GM / free input | Out of scope | Future layer after deterministic core. |
