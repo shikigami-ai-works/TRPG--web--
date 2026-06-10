@@ -54,7 +54,8 @@ Use this file only as a progress overview and restart map.
 - Stage17 passive record closeout is committed and pushed in `86df8cb Close stage17 passive record layer`.
 - Stage18 active contact contract is committed and pushed in `18746a0 Add stage18 active contact contract`.
 - Stage18A Akari Contact Eligibility Detail is committed and pushed in `cf308aa`; it adds deterministic record-only eligibility detail copy without opening message input, send/reply behavior, AI/RAG, messenger, notification, storage/schema, route/reward, or scenario changes.
-- Stage19 active contact scope contract is the current local docs-first ASOC stage; it closes Stage18A and opens only one optional static copy/audit/explanation polish ticket, without active communication.
+- Stage19 active contact scope contract is committed and pushed in `9d1138f`; it closes Stage18A and opens only one optional static copy/audit/explanation polish ticket, without active communication.
+- Stage19A Static Contact Copy And Audit Polish is the current local ASO skip stage; the existing Stage18A copy, regression tests, and AdventurePlayer audit guard already satisfy the Stage19A ticket, so no product code change is needed.
 - Historical uncommitted preservation docs and the scenario-choice planning doc are gathered under `docs/archive/uncommitted-docs/`; keep them out of active software commits unless Shiki explicitly chooses otherwise.
 - The historical docs were copied as-is to `shikigami-ai-works/shiki-work-archive` at `97cad34 Archive TRPG web uncommitted docs`; the source repo copies remain local/untracked for Shiki's later cleanup choice.
 - `.runtime/` and `.context-archive/` are local-only evidence/archive areas and should not be staged by default.
@@ -85,6 +86,7 @@ Use this file only as a progress overview and restart map.
 - Stage18 defines active contact as deterministic eligibility/explanation before any communication behavior.
 - Stage18A adds static eligibility-detail copy to the existing post-ending Akari relationship/contact card; it remains record-only and adds no enabled contact controls.
 - Stage19 keeps the next active-contact boundary limited to static display, audit, and explanation cleanup unless a separate contract reopens communication, storage/schema, AI/RAG, scenario, route, reward, or canon behavior.
+- Stage19A confirms that no additional static copy/audit polish is needed before stopping the active-contact line at the current record-only surface.
 - The player-facing UI is deterministic. No AI GM, free input, AI narration, Tauri/API integration, cloud save, or external save integration is in scope yet.
 
 ## Progress Timeline
@@ -772,9 +774,8 @@ Verification:
 
 ### 2026-06-10 - Stage19 Active Contact Scope Contract ASOC
 
-- Commit: publication requested after the docs-first Stage19 cycle.
-- Status: docs-first contract stage complete; verification passed; scoped
-  Git commit/push requested by Shiki on 2026-06-11.
+- Commit: `9d1138f Add stage19 active contact scope contract`.
+- Status: committed and pushed to `origin/main` on 2026-06-11.
 
 - Added `docs/stage19-active-contact-scope-contract-2026-06-10.md`.
 - Added `docs/stage19-active-contact-implementation-ticket-2026-06-10.md`.
@@ -805,6 +806,39 @@ Verification:
   Stage19 docs/progress files plus pre-existing unrelated untracked docs are
   present.
 
+### 2026-06-11 - Stage19A Static Contact Copy And Audit Polish ASO
+
+- Commit: publication approved by Shiki's standing approval for this ASO cycle.
+- Status: local docs-only skip decision complete; verification passed.
+
+- Rechecked the existing Stage18A card, helper copy, regression tests, and
+  AdventurePlayer audit guard.
+- Decided no Stage19A implementation change is needed because the current card
+  already shows deterministic record-derived eligibility detail as static text.
+- Confirmed the card still has no enabled or focusable contact controls.
+- Confirmed tests and audit guards already require safe record-only copy and
+  forbid raw IDs, ownership/prize framing, AI chat, messenger, notification,
+  message, send, or reply implications.
+- Kept product code, tests, audit tooling, scenario YAML/body, route gates,
+  ending conditions, replay hints, reward behavior, storage schema,
+  `CompletedRunRecord`, localStorage, AI/RAG/model behavior, Git/NextChat/
+  Obsidian, archive cleanup, file deletion, and unrelated untracked docs out of
+  scope.
+- Kept `docs/implementation-notes.md` unchanged because the Stage19A decision is
+  a ticket skip based on existing contract coverage, not a new implementation
+  judgment.
+
+Verification:
+
+- `git diff --check -- docs/development-progress.md`: PASS, LF-to-CRLF warning
+  only.
+- Stage19A progress heading/boundary search: PASS; hits are progress history,
+  forbidden-scope, or next-contract text.
+- Stage19A progress trailing whitespace scan: PASS.
+- `git status --short --branch --untracked-files=all`: checked; only the
+  Stage19A progress update plus pre-existing unrelated untracked docs are
+  present.
+
 ## Area Status
 
 | Area | Status | Notes |
@@ -819,7 +853,7 @@ Verification:
 | Assets | Gated | Native UI/placeholders only unless later approval opens imports. |
 | Scene 4+ AdventurePlayer support | Committed and pushed in Stage 15 | Uses existing scenario YAML and runtime helpers. |
 | Post-ending save/replay spec | Stage16-5A-5C committed and pushed | Stage16-5A implements save/resume/history append; Stage16-5B implements the minimal ending progress/reward sheet; Stage16-5C implements passive deterministic replay hints. |
-| Akari relationship/contact record | Stage17 passive record layer committed and pushed in `86df8cb`; Stage18 active-contact contract committed and pushed in `18746a0`; Stage18A committed and pushed in `cf308aa`; Stage19 scope contract is local docs-first | The post-ending AdventurePlayer card is deterministic, static/read-only, completed-history-derived, explicitly not an AI chat or messenger feature. Stage18A adds static eligibility-detail explanation and still adds no enabled contact controls. Stage19 opens only optional static copy/audit/explanation polish. |
+| Akari relationship/contact record | Stage17 passive record layer committed and pushed in `86df8cb`; Stage18 active-contact contract committed and pushed in `18746a0`; Stage18A committed and pushed in `cf308aa`; Stage19 scope contract committed and pushed in `9d1138f`; Stage19A skip decision is local docs-only | The post-ending AdventurePlayer card is deterministic, static/read-only, completed-history-derived, explicitly not an AI chat or messenger feature. Stage18A adds static eligibility-detail explanation and still adds no enabled contact controls. Stage19A finds no additional static copy/audit polish needed. |
 | Browser/UI audit tooling | Stage17C hardening committed and pushed in `1207b93`; Stage17B-4 passive record copy guard committed and pushed in `06d4ce4`; closeout failure evidence improvement committed and pushed in `86df8cb`; Stage18A audit copy guard committed and pushed in `cf308aa` | `npm run audit:adventure-player` covers `/`, mobile/drawer/story/choice/save/post-ending controls, post-ending relationship/contact copy, multiple viewports, and `/debug`; failure artifacts now preserve console/network detail when available; evidence stays in `.runtime/`. |
 | Autonomous development workflow | Software Development Agent Orchestra template committed and pushed | `docs/codex-autonomous-workflow.md` remains the policy layer; `docs/workflows/software-development-orchestra.md` is the practical software stage template. |
 | AI GM / free input | Out of scope | Future layer after deterministic core. |
@@ -830,13 +864,14 @@ Verification:
 
 - Whether the historical handoff/ledger/archive docs now gathered under `docs/archive/uncommitted-docs/` should remain as local source copies after the `shiki-work-archive` save, be removed locally later by Shiki, or be selectively committed.
 - Whether Stage16's later replay UX should remain a minimal localStorage-backed player surface or later expand into a richer persistence/reward layer.
-- Whether Stage19A static copy/audit polish is actually needed, or whether the
-  current Stage18A copy and audit guard are sufficient to skip it.
+- Whether the active-contact line should remain stopped at record-only
+  eligibility detail, or whether Shiki wants a separate future contract for any
+  broader behavior.
 - Whether older `.runtime/stage14r3-ui-audit.cjs`, `.runtime/stage15-adventureplayer-ui-audit.cjs`, and `.runtime/stage16-5a-ui-audit.cjs` should remain local-only historical evidence or be deleted after the Stage16-6 runner is committed.
 
 ## Next Safe Stages
 
-1. Stage19A Static Contact Copy And Audit Polish: optional next ticket only if the current Stage18A copy/audit guard needs a small static clarification. Skip it if no change is needed. Any communication, storage/schema, AI/RAG, scenario, route, reward, replay hint, or canon work requires a separate contract first.
+1. Stage20 docs-first active-contact continuation decision, only if Shiki wants to reopen broader behavior. Any communication, storage/schema, AI/RAG, scenario, route, reward, replay hint, or canon work requires a separate contract before implementation.
 
 ## Update Rule
 
