@@ -336,3 +336,9 @@
 
 - Stage17 は、灯との関係/連絡を能動機能ではなく completed run history 由来の受動記録レイヤーとして閉じる判断にした。送信、返信、通知、メッセンジャー、AI灯、RAG、storage/schema 拡張は未実装のまま、次に進める場合は docs-first 契約から始める。
 - `scripts/adventure-player-ui-audit.cjs` は、監査失敗時にも CDP から拾えた `consoleErrors` / `networkFailures` / 到達済み routes / interactions / control snapshot count を `audit.json` に残す形へ補強した。これは product 挙動や監査合否条件の変更ではなく、失敗時に原因を再現・調査できる証跡品質の改善として扱う。
+
+## 2026-06-10 Stage18A Akari Contact Eligibility Detail
+
+- Stage18A の説明文は `AdventurePlayer` に直書きせず、既存の `RelationshipContactRecord` に `eligibilityDetail` として持たせた。カテゴリごとの意味を helper と回帰テストで固定し、UI はその記録を静的に表示するだけにするため。
+- 送信、返信、メッセージ、通知、AI、チャットを連想させる enabled control は追加しなかった。Stage18A の目的は、到達済み記録から「表示してよい痕跡」を説明することであり、接触機能そのものを開く段階ではないため。
+- `送信` / `返信` の語は契約上は否定文なら使えるが、既存 audit の禁則語として扱われているため、Stage18A の player-facing copy では `まだやりとりする欄ではありません` という静的な否定表現に寄せた。将来この語を明示したい場合は、別契約で audit の許可条件も同時に更新する。

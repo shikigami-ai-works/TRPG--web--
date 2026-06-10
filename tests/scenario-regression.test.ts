@@ -690,9 +690,21 @@ test("relationship contact records classify Akari clear traces without exposing 
   assert.match(active?.rewardLabels.join(" / ") ?? "", /関係のしるし/);
   assert.match(memory?.rewardLabels.join(" / ") ?? "", /記憶の断片/);
   assert.equal(lost?.trustLabel, undefined);
+  assert.match(active?.eligibilityDetail ?? "", /到達済みの記録/);
+  assert.match(active?.eligibilityDetail ?? "", /まだやりとりする欄ではありません/);
+  assert.match(memory?.eligibilityDetail ?? "", /記憶と約束の痕跡/);
+  assert.match(shared?.eligibilityDetail ?? "", /境界で灯のそばに残った縁/);
+  assert.match(lost?.eligibilityDetail ?? "", /表示できません/);
 
   for (const record of Array.from(records.values())) {
-    assertSafeRelationshipContactCopy(record.statusLabel, record.summary, record.detail, record.trustLabel, ...record.rewardLabels);
+    assertSafeRelationshipContactCopy(
+      record.statusLabel,
+      record.summary,
+      record.detail,
+      record.eligibilityDetail,
+      record.trustLabel,
+      ...record.rewardLabels,
+    );
   }
 });
 
@@ -717,7 +729,14 @@ test("best relationship contact record preserves the strongest Akari trace acros
   assert.equal(best.category, "active_contact_record");
   assert.equal(best.sourceEndingId, "return_with_akari");
   assert.equal(best.completedAt, "2026-05-27T10:00:00.000Z");
-  assertSafeRelationshipContactCopy(best.statusLabel, best.summary, best.detail, best.trustLabel, ...best.rewardLabels);
+  assertSafeRelationshipContactCopy(
+    best.statusLabel,
+    best.summary,
+    best.detail,
+    best.eligibilityDetail,
+    best.trustLabel,
+    ...best.rewardLabels,
+  );
 
   const latestMemory = buildBestRelationshipContactRecord(pack, [
     createCompletedRunRecord("return_without_akari", "2026-05-27T11:00:00.000Z"),
@@ -734,6 +753,7 @@ test("best relationship contact record preserves the strongest Akari trace acros
   ]);
 
   assert.equal(noRecord.category, "no_record");
+  assert.match(noRecord.eligibilityDetail, /到達済みの記録がまだない/);
   assert.equal(noRecord.rewardLabels.length, 0);
 });
 

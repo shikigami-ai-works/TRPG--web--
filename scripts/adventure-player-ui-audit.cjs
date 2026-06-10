@@ -569,7 +569,8 @@ function assertRelationshipContactCard(state, expectedCategory) {
     state.relationshipContactText.includes("灯") &&
       state.relationshipContactText.includes("縁") &&
       state.relationshipContactText.includes("連絡先の痕跡") &&
-      state.relationshipContactText.includes("到達済みの記録"),
+      state.relationshipContactText.includes("到達済みの記録") &&
+      state.relationshipContactText.includes("まだやりとりする欄ではありません"),
     `${state.label} relationship/contact card copy is missing expected safe labels: ${state.relationshipContactText}`,
   );
   assert(
@@ -781,7 +782,7 @@ function writeAuditArtifacts(result) {
 
 function renderAuditReport(result) {
   const lines = [
-    "# Stage17C UI Interaction And Copy Audit",
+    "# Stage18A UI Interaction And Copy Audit",
     "",
     `Generated: ${new Date().toISOString()}`,
     `Result JSON: ${result.resultPath}`,
@@ -836,7 +837,7 @@ async function main() {
   }
 
   const result = {
-    stage: "Stage17C",
+    stage: "Stage18A",
     appUrl,
     browserPath,
     serverLogPath,
@@ -944,7 +945,7 @@ async function main() {
     recordControlSnapshot(result, mobilePostEnding, "player");
     result.copyAudit.push({
       scope: "post-ending mobile relationship/contact card",
-      result: "safe copy, no raw IDs, no AI chat or messenger implication, static/read-only",
+      result: "safe eligibility detail, no raw IDs, no AI chat or messenger implication, static/read-only",
     });
     const mobileShot = await capture(cdp, "adventure-player-post-ending-430x932.png");
     result.routes.push({
@@ -1030,7 +1031,7 @@ async function main() {
     recordControlSnapshot(result, desktopPostEnding, "player");
     result.copyAudit.push({
       scope: "post-ending desktop relationship/contact card",
-      result: "safe copy, no raw IDs, no AI chat or messenger implication, static/read-only",
+      result: "safe eligibility detail, no raw IDs, no AI chat or messenger implication, static/read-only",
     });
     const desktopShot = await capture(cdp, "adventure-player-post-ending-1280x720.png");
     result.routes.push({
@@ -1086,6 +1087,7 @@ async function main() {
       "post-ending progress sheet is visible",
       "Akari relationship/contact card is visible and static",
       "relationship/contact card has no enabled or focusable controls",
+      "relationship/contact card explains record-derived eligibility without opening interaction",
       "branch/evidence/carry_out replay hint families are visible",
       "player text hides raw ending ids, raw conditions, and route-gate tokens",
       "player text avoids AI chat and messenger implications",

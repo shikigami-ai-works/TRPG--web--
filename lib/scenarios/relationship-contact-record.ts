@@ -18,6 +18,7 @@ export interface RelationshipContactRecord {
   statusLabel: string;
   summary: string;
   detail: string;
+  eligibilityDetail: string;
   sourceEndingId?: string;
   sourceEndingTitle?: string;
   sourceRunId?: string;
@@ -143,6 +144,7 @@ function buildNoRecord(pack: ScenarioPack, npcId: string): RelationshipContactRe
     statusLabel: "まだ記録されていない縁",
     summary: "灯との縁はまだ記録されていない。",
     detail: "クリア後の到達記録が増えると、ここに残った記憶や連絡先の痕跡を表示できる。",
+    eligibilityDetail: "到達済みの記録がまだないため、この欄には灯との縁を表示していません。",
     rewardLabels: [],
   };
 }
@@ -150,31 +152,39 @@ function buildNoRecord(pack: ScenarioPack, npcId: string): RelationshipContactRe
 function formatCategoryCopy(
   category: Exclude<RelationshipContactCategory, "no_record">,
   endingTitle: string,
-): Pick<RelationshipContactRecord, "statusLabel" | "summary" | "detail"> {
+): Pick<RelationshipContactRecord, "statusLabel" | "summary" | "detail" | "eligibilityDetail"> {
   switch (category) {
     case "active_contact_record":
       return {
         statusLabel: "連絡先の痕跡が残っている",
         summary: "灯との縁が、帰還後の記録として残っている。",
         detail: `${endingTitle}。同じ灯を見て帰った記録。`,
+        eligibilityDetail:
+          "到達済みの記録から、帰還後にも縁の痕跡を表示してよいと判定しています。まだやりとりする欄ではありません。",
       };
     case "memory_contact_trace":
       return {
         statusLabel: "記憶の断片として残っている",
         summary: "灯は向こう側に残った。けれど、記憶の断片と約束の痕跡は残っている。",
         detail: `${endingTitle}。連絡先ではなく、戻る理由として残った縁。`,
+        eligibilityDetail:
+          "到達済みの記録から、記憶と約束の痕跡だけを表示しています。帰還後の連絡先そのものではありません。",
       };
     case "shared_boundary_record":
       return {
         statusLabel: "そばに残った記録",
         summary: "帰還ではなく、灯のいる境界に残った記録。",
         detail: `${endingTitle}。連絡先ではなく、そばに残った縁。`,
+        eligibilityDetail:
+          "到達済みの記録から、境界で灯のそばに残った縁として表示しています。戻った世界の連絡先ではありません。",
       };
     case "lost_relationship_trace":
       return {
         statusLabel: "この周回では残らなかった",
         summary: "この周回では、灯との連絡先の痕跡は残らなかった。",
         detail: `${endingTitle}。過去の到達記録がある場合だけ、別の記録として灯との縁を見返せる。`,
+        eligibilityDetail:
+          "この到達記録だけでは、灯との接触めいた痕跡を表示できません。過去の強い記録がある場合だけ別の縁として残ります。",
       };
   }
 }
