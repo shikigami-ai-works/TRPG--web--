@@ -1119,7 +1119,29 @@ async function main() {
       ),
     );
   } catch (error) {
-    fs.writeFileSync(resultPath, `${JSON.stringify({ ok: false, error: error.stack || String(error), serverLogPath }, null, 2)}\n`, "utf8");
+    if (cdp) {
+      const errors = collectErrors(cdp.events);
+      result.consoleErrors = errors.consoleErrors;
+      result.networkFailures = errors.networkFailures;
+    }
+    fs.writeFileSync(
+      resultPath,
+      `${JSON.stringify(
+        {
+          ok: false,
+          error: error.stack || String(error),
+          serverLogPath,
+          consoleErrors: result.consoleErrors,
+          networkFailures: result.networkFailures,
+          routes: result.routes,
+          interactions: result.interactions,
+          controlSnapshotCount: result.controlSnapshots.length,
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
     throw error;
   } finally {
     if (cdp) cdp.close();

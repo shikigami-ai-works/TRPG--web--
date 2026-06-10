@@ -331,3 +331,8 @@
 - authored clue の `EvidenceEntry.id` は既存の single-item reveal 慣習どおり `item:relatives_wedding_rings` のままにした。React key と replay hint 境界を新しい clue id へ揺らさず、重複だけを抑える方が Stage16-7F-A の方針に合うため。
 - source は item と `take_wedding_rings` action の2つにした。item の存在だけでなく、Scene 7 でプレゼント案を断った後に取りに戻る player-facing acquisition context を Evidence drawer へ載せるため。
 - テストは `deriveEvidenceEntries` の回帰に寄せ、指輪 evidence が1件だけになり、同時所持の `unopened_birthday_gift` inventory evidence が残ることを確認する形にした。UI、storage、route gate、replay hint family、scenario prose は変更していない。
+
+## 2026-06-10 Stage17 Passive Record Completion Closeout
+
+- Stage17 は、灯との関係/連絡を能動機能ではなく completed run history 由来の受動記録レイヤーとして閉じる判断にした。送信、返信、通知、メッセンジャー、AI灯、RAG、storage/schema 拡張は未実装のまま、次に進める場合は docs-first 契約から始める。
+- `scripts/adventure-player-ui-audit.cjs` は、監査失敗時にも CDP から拾えた `consoleErrors` / `networkFailures` / 到達済み routes / interactions / control snapshot count を `audit.json` に残す形へ補強した。これは product 挙動や監査合否条件の変更ではなく、失敗時に原因を再現・調査できる証跡品質の改善として扱う。
