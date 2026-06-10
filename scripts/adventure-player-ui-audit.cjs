@@ -12,6 +12,7 @@ const appUrl = `http://127.0.0.1:${appPort}`;
 const browserOrigin = `http://127.0.0.1:${browserPort}`;
 const outDir = path.join(runtimeDir, `adventure-player-ui-audit-${stamp}`);
 const resultPath = path.join(outDir, "audit.json");
+const reportPath = path.join(outDir, "audit.md");
 const serverLogPath = path.join(outDir, "server.log");
 const screenshotDir = path.join(outDir, "screens");
 const browserProfileDir = path.join(outDir, "browser-profile");
@@ -136,6 +137,19 @@ const forbiddenPlayerTextTokens = [
   "free chat",
   "messenger",
 ];
+
+const forbiddenRelationshipCopyTokens = forbiddenPlayerTextTokens.filter(
+  (token) =>
+    ![
+      "active_contact_record",
+      "memory_contact_trace",
+      "shared_boundary_record",
+      "lost_relationship_trace",
+      "sourceRunId",
+      "sourceEndingId",
+      "completedRunId",
+    ].includes(token),
+);
 
 fs.mkdirSync(screenshotDir, { recursive: true });
 fs.writeFileSync(serverLogPath, "");
@@ -337,6 +351,7 @@ async function collectState(cdp, label) {
   return evaluate(
     cdp,
     `(() => {
+      const controlSelector = "button, a, input, select, textarea, [role='button'], [tabindex]";
       const text = (element) => (element?.innerText || element?.textContent || "").replace(/\\s+/g, " ").trim();
       const visible = (element) => {
         if (!element) return false;
@@ -344,28 +359,52 @@ async function collectState(cdp, label) {
         const rect = element.getBoundingClientRect();
         return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
       };
+      const disabled = (element) =>
+        ("disabled" in element && Boolean(element.disabled)) || element.getAttribute("aria-disabled") === "true";
+      const controlKey = (element, index) => {
+        const tag = element.tagName.toLowerCase();
+        const label = text(element) || element.getAttribute("aria-label") || element.getAttribute("title") || "";
+        if (element.closest(".adv-ending-actions")) return "post-ending:" + label;
+        if (element.classList.contains("adv-advance-button")) return "story:advance-text";
+        if (element.getAttribute("data-control")) return "story:" + element.getAttribute("data-control");
+        if (element.getAttribute("data-choice-id")) return "choice:" + element.getAttribute("data-choice-id");
+        if (element.closest(".adv-bottom-nav")) return "bottom-nav:" + label;
+        if (element.closest(".adv-panel-tabs")) return "desktop-panel:" + label;
+        if (element.closest(".adv-drawer-header")) return "drawer:" + label;
+        if (element.closest(".adv-save-notice")) return "save-notice:" + label;
+        if (element.getAttribute("data-carry-item-id")) return "carry-out:" + element.getAttribute("data-carry-item-id");
+        if (element.closest(".shell")) return "debug:" + label;
+        return tag + ":" + label + ":" + index;
+      };
       const parseJson = (value, fallback) => {
         try { return value ? JSON.parse(value) : fallback; } catch { return fallback; }
       };
-      const controls = Array.from(document.querySelectorAll("button, a, input"))
+      const controls = Array.from(document.querySelectorAll(controlSelector))
         .filter(visible)
         .map((element, index) => ({
           index,
           tag: element.tagName.toLowerCase(),
+          key: controlKey(element, index),
           text: text(element),
+          role: element.getAttribute("role") || "",
+          tabIndex: element.getAttribute("tabindex") || "",
+          ariaLabel: element.getAttribute("aria-label") || "",
           href: element instanceof HTMLAnchorElement ? element.getAttribute("href") || "" : "",
-          disabled: "disabled" in element ? Boolean(element.disabled) : false,
+          disabled: disabled(element),
           dataChoiceId: element.getAttribute("data-choice-id") || "",
           dataControl: element.getAttribute("data-control") || "",
           dataCarryItemId: element.getAttribute("data-carry-item-id") || "",
           ariaPressed: element.getAttribute("aria-pressed") || "",
           className: typeof element.className === "string" ? element.className : "",
         }));
-       const bodyText = text(document.body);
-       const relationshipContactCard = document.querySelector("[data-relationship-contact-category]");
-       return {
-         label: ${JSON.stringify(label)},
-         url: location.href,
+      const bodyText = text(document.body);
+      const relationshipContactCard = document.querySelector("[data-relationship-contact-category]");
+      const relationshipContactControls = relationshipContactCard
+        ? Array.from(relationshipContactCard.querySelectorAll(controlSelector)).filter(visible)
+        : [];
+      return {
+        label: ${JSON.stringify(label)},
+        url: location.href,
         title: document.title,
         bodyText,
         hasAdventureShell: Boolean(document.querySelector(".adv-shell")),
@@ -381,19 +420,21 @@ async function collectState(cdp, label) {
           state: element.getAttribute("data-ending-progress-state") || "",
           current: element.getAttribute("data-current-ending") || "",
         })),
-         replayHintFamilies: Array.from(document.querySelectorAll("[data-replay-hint-family]")).map((element) =>
-           element.getAttribute("data-replay-hint-family") || ""
-         ),
-         relationshipContactVisible: Boolean(relationshipContactCard && visible(relationshipContactCard)),
-         relationshipContactCategory: relationshipContactCard?.getAttribute("data-relationship-contact-category") || "",
-         relationshipContactText: text(relationshipContactCard),
-         relationshipContactControlCount: relationshipContactCard
-           ? Array.from(relationshipContactCard.querySelectorAll("button, a, input")).filter(visible).length
-           : 0,
-         postEndingActionCount: document.querySelectorAll(".adv-ending-actions button").length,
-         drawerOpen: Boolean(document.querySelector(".adv-mobile-drawer.open")),
+        replayHintFamilies: Array.from(document.querySelectorAll("[data-replay-hint-family]")).map((element) =>
+          element.getAttribute("data-replay-hint-family") || ""
+        ),
+        relationshipContactVisible: Boolean(relationshipContactCard && visible(relationshipContactCard)),
+        relationshipContactCategory: relationshipContactCard?.getAttribute("data-relationship-contact-category") || "",
+        relationshipContactText: text(relationshipContactCard),
+        relationshipContactControlCount: relationshipContactControls.filter((element) => !disabled(element)).length,
+        relationshipContactFocusableCount: relationshipContactControls.length,
+        postEndingActionCount: document.querySelectorAll(".adv-ending-actions button").length,
+        drawerOpen: Boolean(document.querySelector(".adv-mobile-drawer.open")),
         drawerText: text(document.querySelector(".adv-mobile-drawer.open")),
         activeDrawerLabel: text(document.querySelector(".adv-mobile-drawer.open .adv-drawer-header strong")),
+        activeBottomPanelLabel: text(document.querySelector(".adv-bottom-nav button.active")),
+        activeDesktopPanelLabel: text(document.querySelector(".adv-panel-tabs button.active")),
+        desktopPanelText: text(document.querySelector(".adv-side-panel")),
         hasLogDrawerContent: Boolean(document.querySelector(".adv-mobile-drawer.open .adv-log-list, .adv-mobile-drawer.open .adv-muted")),
         hasEvidenceDrawerContent: Boolean(document.querySelector(".adv-mobile-drawer.open .adv-panel-list")),
         hasStatusDrawerContent: Boolean(document.querySelector(".adv-mobile-drawer.open .adv-status-detail")),
@@ -402,6 +443,7 @@ async function collectState(cdp, label) {
         scrollWidth: document.documentElement.scrollWidth,
         clientWidth: document.documentElement.clientWidth,
         controls,
+        enabledControls: controls.filter((control) => !control.disabled),
         placeholderControls: controls.filter((control) =>
           control.href === "#" ||
           control.href.toLowerCase().startsWith("javascript:") ||
@@ -412,25 +454,33 @@ async function collectState(cdp, label) {
   );
 }
 
-async function clickEndingAction(cdp, index, label) {
+async function clickIndexedControl(cdp, selector, index, label) {
   const target = await evaluate(
     cdp,
     `(() => {
-      const button = document.querySelectorAll(".adv-ending-actions button")[${index}];
-      if (!button) return { clicked: false, reason: "missing" };
-      if (button.disabled) return { clicked: false, reason: "disabled" };
-      button.scrollIntoView({ block: "center", inline: "center" });
-      const rect = button.getBoundingClientRect();
+      const visible = (element) => {
+        if (!element) return false;
+        const style = getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+      };
+      const disabled = (element) =>
+        ("disabled" in element && Boolean(element.disabled)) || element.getAttribute("aria-disabled") === "true";
+      const element = Array.from(document.querySelectorAll(${JSON.stringify(selector)})).filter(visible)[${index}];
+      if (!element) return { clicked: false, reason: "missing" };
+      if (disabled(element)) return { clicked: false, reason: "disabled" };
+      element.scrollIntoView({ block: "center", inline: "center" });
+      const rect = element.getBoundingClientRect();
       return {
         clicked: true,
-        text: (button.innerText || button.textContent || "").replace(/\\s+/g, " ").trim(),
+        text: (element.innerText || element.textContent || "").replace(/\\s+/g, " ").trim(),
         x: rect.left + rect.width / 2,
         y: rect.top + rect.height / 2,
       };
     })()`,
   );
   if (!target.clicked) {
-    throw new Error(`post-ending action ${label} failed: ${target.reason}`);
+    throw new Error(`${label} failed: ${target.reason}`);
   }
   await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: target.x, y: target.y });
   await cdp.send("Input.dispatchMouseEvent", { type: "mousePressed", x: target.x, y: target.y, button: "left", clickCount: 1 });
@@ -439,10 +489,47 @@ async function clickEndingAction(cdp, index, label) {
   return target;
 }
 
+async function clickControl(cdp, selector, label) {
+  return clickIndexedControl(cdp, selector, 0, label);
+}
+
+async function clickControlByText(cdp, selector, expectedText, label) {
+  const index = await evaluate(
+    cdp,
+    `(() => {
+      const visible = (element) => {
+        if (!element) return false;
+        const style = getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+      };
+      return Array.from(document.querySelectorAll(${JSON.stringify(selector)}))
+        .filter(visible)
+        .findIndex((element) => ((element.innerText || element.textContent || "").replace(/\\s+/g, " ").trim()) === ${JSON.stringify(
+          expectedText,
+        )});
+    })()`,
+  );
+  if (index < 0) {
+    throw new Error(`${label} failed: visible control ${expectedText} missing`);
+  }
+  return clickIndexedControl(cdp, selector, index, label);
+}
+
+async function clickEndingAction(cdp, index, label) {
+  return clickIndexedControl(cdp, ".adv-ending-actions button", index, `post-ending action ${label}`);
+}
+
 async function closeDrawer(cdp, label) {
   await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", windowsVirtualKeyCode: 27, nativeVirtualKeyCode: 27 });
   await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", windowsVirtualKeyCode: 27, nativeVirtualKeyCode: 27 });
   await waitFor(async () => !(await collectState(cdp, `wait-close-${label}`)).drawerOpen, 5000, `close drawer after ${label}`);
+}
+
+async function closeDrawerWithButton(cdp, result, label) {
+  await clickControl(cdp, ".adv-drawer-header button", `close drawer ${label}`);
+  await waitFor(async () => !(await collectState(cdp, `wait-close-button-${label}`)).drawerOpen, 5000, `close drawer button after ${label}`);
+  recordInteraction(result, "drawer:閉じる", "drawer close button", "Drawer closes", "pass");
 }
 
 function assert(condition, message) {
@@ -461,6 +548,11 @@ function assertNoHorizontalOverflow(state) {
 function assertNoForbiddenPlayerText(state) {
   const leaked = forbiddenPlayerTextTokens.filter((token) => state.bodyText.includes(token));
   assert(leaked.length === 0, `${state.label} leaked raw player text tokens: ${leaked.join(", ")}`);
+}
+
+function assertNoForbiddenRelationshipCopy(state) {
+  const leaked = forbiddenRelationshipCopyTokens.filter((token) => state.relationshipContactText.includes(token));
+  assert(leaked.length === 0, `${state.label} relationship/contact copy leaked forbidden tokens: ${leaked.join(", ")}`);
 }
 
 function assertNoPlaceholderControls(state) {
@@ -483,6 +575,188 @@ function assertRelationshipContactCard(state, expectedCategory) {
     state.relationshipContactControlCount === 0,
     `${state.label} relationship/contact card added enabled controls: ${state.relationshipContactControlCount}`,
   );
+  assert(
+    state.relationshipContactFocusableCount === 0,
+    `${state.label} relationship/contact card added focusable controls: ${state.relationshipContactFocusableCount}`,
+  );
+  assertNoForbiddenRelationshipCopy(state);
+}
+
+function recordControlSnapshot(result, state, scope) {
+  result.controlSnapshots.push({
+    label: state.label,
+    scope,
+    enabledControls: state.enabledControls.map((control) => ({
+      key: control.key,
+      text: control.text,
+      tag: control.tag,
+      role: control.role,
+      ariaPressed: control.ariaPressed,
+    })),
+  });
+}
+
+function recordInteraction(result, key, control, expected, observed) {
+  if (!result.verifiedControls.includes(key)) {
+    result.verifiedControls.push(key);
+  }
+  result.interactions.push({ control, key, expected, observed, result: "pass" });
+}
+
+function assertControlCoverage(result) {
+  const observed = new Map();
+  for (const snapshot of result.controlSnapshots) {
+    if (snapshot.scope !== "player") {
+      continue;
+    }
+    for (const control of snapshot.enabledControls) {
+      observed.set(control.key, control);
+    }
+  }
+
+  const verified = new Set(result.verifiedControls);
+  const missing = Array.from(observed.values()).filter((control) => !verified.has(control.key));
+  assert(
+    missing.length === 0,
+    `visible enabled player controls lack observed outcomes: ${missing.map((control) => control.key).join(", ")}`,
+  );
+}
+
+function findEnabledControl(state, predicate, label) {
+  const control = state.enabledControls.find(predicate);
+  assert(control, `${state.label} missing enabled control: ${label}`);
+  return control;
+}
+
+function hasEnabledControl(state, key) {
+  return state.enabledControls.some((control) => control.key === key);
+}
+
+function assertDrawerPanelState(state, panelLabel) {
+  assert(state.drawerOpen && state.activeDrawerLabel === panelLabel, `${state.label} did not open ${panelLabel} drawer`);
+  if (panelLabel === "ログ") {
+    assert(state.hasLogDrawerContent, `${state.label} log drawer has no visible content`);
+  }
+  if (panelLabel === "証拠") {
+    assert(state.hasEvidenceDrawerContent, `${state.label} evidence drawer has no visible content`);
+  }
+  if (panelLabel === "状態") {
+    assert(state.hasStatusDrawerContent, `${state.label} status drawer has no visible content`);
+  }
+}
+
+async function auditMobileBottomNav(cdp, result, panelLabel) {
+  await clickControlByText(cdp, ".adv-bottom-nav button", panelLabel, `bottom nav ${panelLabel}`);
+  await waitFor(
+    async () => {
+      const state = await collectState(cdp, `wait-bottom-nav-${panelLabel}`);
+      return state.drawerOpen && state.activeDrawerLabel === panelLabel;
+    },
+    5000,
+    `bottom nav ${panelLabel} drawer`,
+  );
+  const drawerState = await collectState(cdp, `bottom-nav-${panelLabel}`);
+  assertDrawerPanelState(drawerState, panelLabel);
+  assertNoForbiddenPlayerText(drawerState);
+  assertNoPlaceholderControls(drawerState);
+  recordControlSnapshot(result, drawerState, "player");
+  recordInteraction(result, `bottom-nav:${panelLabel}`, `bottom nav ${panelLabel}`, `${panelLabel} drawer opens`, "pass");
+  await closeDrawerWithButton(cdp, result, panelLabel);
+}
+
+async function auditDesktopPanelTab(cdp, result, panelLabel) {
+  await clickControlByText(cdp, ".adv-panel-tabs button", panelLabel, `desktop panel ${panelLabel}`);
+  await waitFor(
+    async () => (await collectState(cdp, `wait-desktop-panel-${panelLabel}`)).activeDesktopPanelLabel === panelLabel,
+    5000,
+    `desktop panel ${panelLabel}`,
+  );
+  const panelState = await collectState(cdp, `desktop-panel-${panelLabel}`);
+  assert(panelState.desktopPanelText.includes(panelLabel), `${panelState.label} desktop panel text missing ${panelLabel}`);
+  assertNoForbiddenPlayerText(panelState);
+  assertNoPlaceholderControls(panelState);
+  recordControlSnapshot(result, panelState, "player");
+  recordInteraction(result, `desktop-panel:${panelLabel}`, `desktop panel ${panelLabel}`, `${panelLabel} side panel becomes active`, "pass");
+}
+
+async function clearAdventureStorageAndReload(cdp) {
+  await evaluate(cdp, `(() => { localStorage.clear(); return true; })()`);
+  await reloadAndWait(cdp, ".adv-shell");
+}
+
+async function revealChoiceState(cdp, result, labelPrefix) {
+  let state = await collectState(cdp, `${labelPrefix}-choice-reveal-start`);
+  recordControlSnapshot(result, state, "player");
+  assertNoForbiddenPlayerText(state);
+  for (let step = 0; step < 4; step += 1) {
+    if (state.enabledControls.some((control) => control.key.startsWith("choice:"))) {
+      break;
+    }
+    if (!hasEnabledControl(state, "story:advance-text")) {
+      break;
+    }
+    const beforeText = state.bodyText;
+    await clickControl(cdp, ".adv-advance-button", `story advance text ${step + 1}`);
+    await waitFor(
+      async () => (await collectState(cdp, `wait-${labelPrefix}-advance-text-${step + 1}`)).bodyText !== beforeText,
+      5000,
+      `story text changes ${labelPrefix} ${step + 1}`,
+    );
+    recordInteraction(result, "story:advance-text", "読み進める", "Visible story text advances", "pass");
+    state = await collectState(cdp, `${labelPrefix}-advance-loop-${step + 1}`);
+    recordControlSnapshot(result, state, "player");
+    assertNoForbiddenPlayerText(state);
+  }
+
+  findEnabledControl(state, (control) => control.key.startsWith("choice:"), "visible choice");
+  return state;
+}
+
+async function auditFreshRunControls(cdp, result) {
+  let state = await revealChoiceState(cdp, result, "fresh-run");
+  const choices = state.enabledControls.filter((control) => control.key.startsWith("choice:"));
+
+  for (const [index, choice] of choices.entries()) {
+    if (index > 0) {
+      await clearAdventureStorageAndReload(cdp);
+      state = await revealChoiceState(cdp, result, `fresh-run-choice-${index + 1}`);
+    }
+    const liveChoice = findEnabledControl(state, (control) => control.key === choice.key, choice.key);
+    await clickControl(cdp, `[data-choice-id="${liveChoice.dataChoiceId}"]`, `choice ${liveChoice.text}`);
+    await waitFor(
+      async () => !(await collectState(cdp, `wait-choice-outcome-${index + 1}`)).enabledControls.some((control) => control.key === liveChoice.key),
+      5000,
+      `choice outcome ${liveChoice.key}`,
+    );
+    recordInteraction(result, liveChoice.key, liveChoice.text, "Choice applies state and disappears from visible once-per-run choices", "pass");
+    state = await collectState(cdp, `fresh-run-after-choice-${index + 1}`);
+    recordControlSnapshot(result, state, "player");
+    assertNoForbiddenPlayerText(state);
+  }
+
+  const sceneIdBeforeAdvance = state.sceneId;
+  findEnabledControl(state, (control) => control.key === "story:advance-scene", "next scene control");
+  await clickControl(cdp, "[data-control='advance-scene']", "advance scene");
+  await waitFor(async () => (await collectState(cdp, "wait-advance-scene")).sceneId !== sceneIdBeforeAdvance, 5000, "scene changes");
+  recordInteraction(result, "story:advance-scene", "次の場面へ", "Scene advances to the next scene", "pass");
+  state = await collectState(cdp, "fresh-run-after-scene-advance");
+  recordControlSnapshot(result, state, "player");
+  assertNoForbiddenPlayerText(state);
+
+  await waitFor(async () => hasEnabledControl(await collectState(cdp, "wait-save-restart"), "save-notice:最初から"), 5000, "save restart control");
+  await clickControl(cdp, ".adv-save-notice button", "save notice restart");
+  await waitFor(
+    async () => {
+      const restarted = await collectState(cdp, "wait-save-restart-outcome");
+      return restarted.sceneId === "scene_001_parallel_arrival" && restarted.activeRun === null;
+    },
+    5000,
+    "save notice restart returns to scene 1",
+  );
+  recordInteraction(result, "save-notice:最初から", "最初から", "Fresh run starts and active run storage clears", "pass");
+  state = await collectState(cdp, "fresh-run-after-save-restart");
+  recordControlSnapshot(result, state, "player");
+  assertNoForbiddenPlayerText(state);
 }
 
 function collectErrors(events) {
@@ -497,6 +771,49 @@ function collectErrors(events) {
     .filter((params) => params?.errorText !== "net::ERR_ABORTED" && params?.canceled !== true)
     .slice(0, 20);
   return { consoleErrors, networkFailures };
+}
+
+function writeAuditArtifacts(result) {
+  fs.writeFileSync(resultPath, `${JSON.stringify(result, null, 2)}\n`, "utf8");
+  fs.writeFileSync(reportPath, `${renderAuditReport(result)}\n`, "utf8");
+}
+
+function renderAuditReport(result) {
+  const lines = [
+    "# Stage17C UI Interaction And Copy Audit",
+    "",
+    `Generated: ${new Date().toISOString()}`,
+    `Result JSON: ${result.resultPath}`,
+    `Screenshots: ${result.screenshotDir}`,
+    "",
+    "## Routes",
+    ...result.routes.map((route) => `- ${route.path} @ ${route.viewport}: ${route.result}${route.screenshot ? ` (${route.screenshot})` : ""}`),
+    "",
+    "## Control Audit Matrix",
+    ...result.interactions.map(
+      (entry) => `- ${entry.key}: ${entry.expected} -> ${entry.observed ?? entry.result} (${entry.control})`,
+    ),
+    "",
+    "## Enabled Control Snapshots",
+    ...result.controlSnapshots.map((snapshot) => {
+      const controls = snapshot.enabledControls.length
+        ? snapshot.enabledControls.map((control) => `${control.key}${control.text ? ` [${control.text}]` : ""}`).join(", ")
+        : "none";
+      return `- ${snapshot.label} (${snapshot.scope}): ${controls}`;
+    }),
+    "",
+    "## Copy Guards",
+    ...result.copyAudit.map((entry) => `- ${entry.scope}: ${entry.result}`),
+    "",
+    "## Assertions",
+    ...result.assertions.map((assertion) => `- ${assertion}`),
+    "",
+    "## Console And Network",
+    `- Console errors: ${result.consoleErrors.length}`,
+    `- Network failures: ${result.networkFailures.length}`,
+  ];
+
+  return lines.join("\n");
 }
 
 function killTree(process) {
@@ -518,14 +835,18 @@ async function main() {
   }
 
   const result = {
-    stage: "Stage16-6",
+    stage: "Stage17C",
     appUrl,
     browserPath,
     serverLogPath,
     resultPath,
+    reportPath,
     screenshotDir,
     routes: [],
     interactions: [],
+    controlSnapshots: [],
+    verifiedControls: [],
+    copyAudit: [],
     assertions: [],
     consoleErrors: [],
     networkFailures: [],
@@ -580,14 +901,21 @@ async function main() {
     let initialState = await collectState(cdp, "adventure-player-initial");
     assert(initialState.hasAdventureShell, "/ did not render AdventurePlayer");
     assert(!initialState.hasScenarioExplorerShell, "/ rendered ScenarioExplorer shell");
+    assertNoForbiddenPlayerText(initialState);
     assertNoPlaceholderControls(initialState);
     assertNoHorizontalOverflow(initialState);
+    recordControlSnapshot(result, initialState, "player");
     result.routes.push({
       path: "/",
       viewport: "430x932",
       result: "AdventurePlayer rendered",
       sceneId: initialState.sceneId,
     });
+
+    await auditMobileBottomNav(cdp, result, "ログ");
+    await auditMobileBottomNav(cdp, result, "証拠");
+    await auditMobileBottomNav(cdp, result, "状態");
+    await auditFreshRunControls(cdp, result);
 
     await seedPostEnding(cdp);
     await reloadAndWait(cdp, '[data-ending-id="return_with_akari"]');
@@ -612,6 +940,11 @@ async function main() {
     assertNoForbiddenPlayerText(mobilePostEnding);
     assertNoPlaceholderControls(mobilePostEnding);
     assertNoHorizontalOverflow(mobilePostEnding);
+    recordControlSnapshot(result, mobilePostEnding, "player");
+    result.copyAudit.push({
+      scope: "post-ending mobile relationship/contact card",
+      result: "safe copy, no raw IDs, no AI chat or messenger implication, static/read-only",
+    });
     const mobileShot = await capture(cdp, "adventure-player-post-ending-430x932.png");
     result.routes.push({
       path: "/",
@@ -623,10 +956,28 @@ async function main() {
       relationshipContactCategory: mobilePostEnding.relationshipContactCategory,
     });
 
+    await setViewport(cdp, 390, 844);
+    const compactMobilePostEnding = await collectState(cdp, "post-ending-mobile-compact");
+    assert(compactMobilePostEnding.hasEndingView, "compact mobile post-ending view is not visible");
+    assert(compactMobilePostEnding.hasProgressSheet, "compact mobile progress sheet is not visible");
+    assertRelationshipContactCard(compactMobilePostEnding, "active_contact_record");
+    assertNoForbiddenPlayerText(compactMobilePostEnding);
+    assertNoPlaceholderControls(compactMobilePostEnding);
+    assertNoHorizontalOverflow(compactMobilePostEnding);
+    recordControlSnapshot(result, compactMobilePostEnding, "player");
+    const compactMobileShot = await capture(cdp, "adventure-player-post-ending-390x844.png");
+    result.routes.push({
+      path: "/",
+      viewport: "390x844",
+      result: "compact mobile post-ending contract visible",
+      screenshot: compactMobileShot,
+      relationshipContactCategory: compactMobilePostEnding.relationshipContactCategory,
+    });
+
     await clickEndingAction(cdp, 1, "log");
     const logState = await collectState(cdp, "post-ending-log-action");
     assert(logState.drawerOpen && logState.hasLogDrawerContent, "log action did not open a visible drawer outcome");
-    result.interactions.push({ control: "post-ending log action", expected: "Log drawer opens", result: "pass" });
+    recordInteraction(result, "post-ending:記録を見る", "post-ending log action", "Log drawer opens", "pass");
     await closeDrawer(cdp, "log");
 
     await clickEndingAction(cdp, 2, "evidence");
@@ -635,13 +986,13 @@ async function main() {
       evidenceState.drawerOpen && evidenceState.hasEvidenceDrawerContent,
       "evidence action did not open a visible drawer outcome",
     );
-    result.interactions.push({ control: "post-ending evidence action", expected: "Evidence drawer opens", result: "pass" });
+    recordInteraction(result, "post-ending:手がかりを見る", "post-ending evidence action", "Evidence drawer opens", "pass");
     await closeDrawer(cdp, "evidence");
 
     await clickEndingAction(cdp, 3, "status");
     const statusState = await collectState(cdp, "post-ending-status-action");
     assert(statusState.drawerOpen && statusState.hasStatusDrawerContent, "status action did not open a visible drawer outcome");
-    result.interactions.push({ control: "post-ending status action", expected: "Status drawer opens", result: "pass" });
+    recordInteraction(result, "post-ending:状態を見る", "post-ending status action", "Status drawer opens", "pass");
     await closeDrawer(cdp, "status");
 
     await clickEndingAction(cdp, 0, "restart");
@@ -650,10 +1001,19 @@ async function main() {
     assert(!restartState.endingId && restartState.sceneId === "scene_001_parallel_arrival", "restart did not return to fresh scene 1");
     assert(restartState.activeRun === null, "restart did not clear active run storage");
     assert(restartState.history.length === 1, "restart did not preserve completed run history");
-    result.interactions.push({ control: "post-ending restart action", expected: "Fresh run starts and history remains", result: "pass" });
+    recordInteraction(result, "post-ending:もう一度たどる", "post-ending restart action", "Fresh run starts and history remains", "pass");
 
     await setViewport(cdp, 1280, 720);
     await navigateAndWait(cdp, appUrl, ".adv-shell");
+    const desktopInitial = await collectState(cdp, "adventure-player-desktop-initial");
+    assertNoForbiddenPlayerText(desktopInitial);
+    assertNoPlaceholderControls(desktopInitial);
+    assertNoHorizontalOverflow(desktopInitial);
+    recordControlSnapshot(result, desktopInitial, "player");
+    await auditDesktopPanelTab(cdp, result, "ログ");
+    await auditDesktopPanelTab(cdp, result, "証拠");
+    await auditDesktopPanelTab(cdp, result, "状態");
+
     await seedPostEnding(cdp);
     await reloadAndWait(cdp, '[data-ending-id="return_with_akari"]');
     const desktopPostEnding = await collectState(cdp, "post-ending-desktop");
@@ -666,6 +1026,11 @@ async function main() {
     assertNoForbiddenPlayerText(desktopPostEnding);
     assertNoPlaceholderControls(desktopPostEnding);
     assertNoHorizontalOverflow(desktopPostEnding);
+    recordControlSnapshot(result, desktopPostEnding, "player");
+    result.copyAudit.push({
+      scope: "post-ending desktop relationship/contact card",
+      result: "safe copy, no raw IDs, no AI chat or messenger implication, static/read-only",
+    });
     const desktopShot = await capture(cdp, "adventure-player-post-ending-1280x720.png");
     result.routes.push({
       path: "/",
@@ -673,6 +1038,23 @@ async function main() {
       result: "desktop post-ending contract visible",
       screenshot: desktopShot,
       relationshipContactCategory: desktopPostEnding.relationshipContactCategory,
+    });
+
+    await setViewport(cdp, 1440, 900);
+    const wideDesktopPostEnding = await collectState(cdp, "post-ending-desktop-wide");
+    assert(wideDesktopPostEnding.hasAdventureShell && wideDesktopPostEnding.hasEndingView, "wide desktop / post-ending view is not visible");
+    assertRelationshipContactCard(wideDesktopPostEnding, "active_contact_record");
+    assertNoForbiddenPlayerText(wideDesktopPostEnding);
+    assertNoPlaceholderControls(wideDesktopPostEnding);
+    assertNoHorizontalOverflow(wideDesktopPostEnding);
+    recordControlSnapshot(result, wideDesktopPostEnding, "player");
+    const wideDesktopShot = await capture(cdp, "adventure-player-post-ending-1440x900.png");
+    result.routes.push({
+      path: "/",
+      viewport: "1440x900",
+      result: "wide desktop post-ending contract visible",
+      screenshot: wideDesktopShot,
+      relationshipContactCategory: wideDesktopPostEnding.relationshipContactCategory,
     });
 
     await navigateAndWait(cdp, `${appUrl}/debug`, ".shell");
@@ -689,36 +1071,37 @@ async function main() {
       screenshot: debugShot,
     });
 
-    result.interactions.push({
-      control: "replay hint sheet",
-      expected: "Passive display only; no enabled control added",
-      result: "pass",
-    });
+    recordInteraction(result, "passive:replay-hint-sheet", "replay hint sheet", "Passive display only; no enabled control added", "pass");
 
     const errors = collectErrors(cdp.events);
     result.consoleErrors = errors.consoleErrors;
     result.networkFailures = errors.networkFailures;
     assert(result.consoleErrors.length === 0, `console errors detected: ${result.consoleErrors.length}`);
     assert(result.networkFailures.length === 0, `network failures detected: ${result.networkFailures.length}`);
+    assertControlCoverage(result);
 
     result.assertions.push(
       "/ renders AdventurePlayer",
       "post-ending progress sheet is visible",
       "Akari relationship/contact card is visible and static",
+      "relationship/contact card has no enabled or focusable controls",
       "branch/evidence/carry_out replay hint families are visible",
       "player text hides raw ending ids, raw conditions, and route-gate tokens",
       "player text avoids AI chat and messenger implications",
-      "post-ending controls have visible outcomes",
+      "mobile bottom navigation, drawer close, story advance, choices, scene advance, save restart, desktop panel tabs, and post-ending controls have visible outcomes",
+      "all visible enabled player controls in audited states have observed outcomes",
+      "390x844, 430x932, 1280x720, and 1440x900 audited without horizontal overflow",
       "/debug renders ScenarioExplorer",
       "no console errors or request failures",
     );
 
-    fs.writeFileSync(resultPath, `${JSON.stringify(result, null, 2)}\n`, "utf8");
+    writeAuditArtifacts(result);
     console.log(
       JSON.stringify(
         {
           ok: true,
           resultPath,
+          reportPath,
           screenshotDir,
           routes: result.routes.map((route) => ({
             path: route.path,
@@ -726,6 +1109,7 @@ async function main() {
             result: route.result,
           })),
           interactions: result.interactions,
+          controlSnapshotCount: result.controlSnapshots.length,
           consoleErrorCount: result.consoleErrors.length,
           networkFailureCount: result.networkFailures.length,
         },

@@ -1,6 +1,6 @@
 # Development Progress
 
-Last updated: 2026-06-08 JST
+Last updated: 2026-06-10 JST
 
 This document is the project progress ledger for `D:\Codex\TRPG--web--`.
 It is not the scenario specification, not the implementation decision log, and
@@ -22,7 +22,8 @@ Use this file only as a progress overview and restart map.
 ## Current Snapshot
 
 - Branch: `main`
-- Latest committed Stage16 revision: `ec9b3ac Add stage16-7f wedding rings clue`.
+- Latest committed project revision: `adf4257 Add stage17 Akari contact record`.
+- Latest committed Stage16 revision: `1dacfc2 Add stage16-7h evidence guard workflow`.
 - Stage16-6 is committed and pushed.
 - Stage 15 AdventurePlayer scene 1-7 flow is committed and pushed.
 - Stage16-5A AdventurePlayer local save/resume and minimal post-ending record entry is committed and pushed.
@@ -31,16 +32,21 @@ Use this file only as a progress overview and restart map.
 - Stage16-6 reusable AdventurePlayer browser/UI audit runner is committed and pushed.
 - Stage16-7A clue/evidence schema design is committed and pushed.
 - Stage16-7B clue schema parity adapter is committed and pushed.
-- Stage16-7C clue authoring scope decision is docs-only and included in the current Stage16-7D commit/push bundle.
-- Stage16-7D action/check-backed clue authoring smoke slice is implemented and verified as the current commit/push bundle.
+- Stage16-7C clue authoring scope decision is docs-only and included in the Stage16-7D commit/push bundle.
+- Stage16-7D action/check-backed clue authoring smoke slice is committed and pushed.
 - Stage16-7E item-backed authored clue scope decision is committed and pushed.
 - Stage16-7F-A duplicate evidence policy decision is committed and pushed.
 - Stage16-7F `relatives_wedding_rings` item-backed authored clue implementation is committed and pushed.
-- Stage16-7G clue/evidence continuation scope decision is in the current working tree as a docs-only decision.
-- Stage16-7H evidence identity regression guard is in the current working tree as a test-only change.
-- Software development Agent Orchestra workflow docs are in the current working tree as a docs-only operations update.
-- NextChat Full + Obsidian Git preservation docs for the Agent Orchestra workflow are in the current working tree.
-- Post-push untracked preservation docs include Stage 14R historical handoff/ledger files, Stage16 handoff/ledger files through Stage16-7F-A, `docs/archive/`, and `docs/scenario-choice-planning-kimidake_ga_oboeteiru_jiko.md`; keep them out of Stage16 spec commits unless Shiki explicitly chooses otherwise.
+- Stage16-7G clue/evidence continuation scope decision is committed and pushed.
+- Stage16-7H evidence identity regression guard is committed and pushed.
+- Software development Agent Orchestra workflow docs are committed and pushed.
+- Stage16-7H NextChat Full + Obsidian Git preservation docs are committed and pushed.
+- Stage17A contact/relationship system spec is committed and pushed.
+- Stage17B-1 deterministic Akari relationship/contact record helper and tests are committed and pushed.
+- Stage17B-2 AdventurePlayer Akari relationship/contact card is committed and pushed.
+- Stage17C UI interaction and copy audit hardening is implemented and verified locally; it is prepared as the next software commit candidate with this Stage17D ledger refresh.
+- Historical uncommitted preservation docs and the scenario-choice planning doc are gathered under `docs/archive/uncommitted-docs/`; keep them out of active software commits unless Shiki explicitly chooses otherwise.
+- The historical docs were copied as-is to `shikigami-ai-works/shiki-work-archive` at `97cad34 Archive TRPG web uncommitted docs`; the source repo copies remain local/untracked for Shiki's later cleanup choice.
 - `.runtime/` and `.context-archive/` are local-only evidence/archive areas and should not be staged by default.
 
 ## Current Product Shape
@@ -61,6 +67,10 @@ Use this file only as a progress overview and restart map.
 - Stage16-7F adds that one `relatives_wedding_rings` authored clue and suppresses only the matching inventory-derived `item:relatives_wedding_rings` entry while leaving other inventory-derived evidence unchanged.
 - Stage16-7G stops further clue-data expansion for now and selects a future test-focused evidence identity guard as the safest next clue/evidence candidate.
 - Stage16-7H adds that evidence identity guard as a regression test without changing clue data, runtime logic, storage, UI, or replay hints.
+- Stage17A defines deterministic Akari relationship/contact records as post-clear history-derived state, not AI chat or messenger behavior.
+- Stage17B-1 adds the pure relationship/contact record helper and regression coverage for the four Stage17 categories plus history-wide best-record ranking.
+- Stage17B-2 shows a small static/read-only Akari relationship/contact card on the post-ending AdventurePlayer surface using completed run history.
+- Stage17C hardens the AdventurePlayer UI audit so every visible enabled player control in audited states has a user-observable outcome, and the Akari card copy stays free of raw IDs, ownership/romance reward framing, AI chat, and messenger implications.
 - The player-facing UI is deterministic. No AI GM, free input, AI narration, Tauri/API integration, cloud save, or external save integration is in scope yet.
 
 ## Progress Timeline
@@ -421,8 +431,8 @@ Verification:
 
 ### 2026-06-08 - Stage 16-7G Clue/Evidence Continuation Scope Decision
 
-- Commit: uncommitted docs-only local decision.
-- Status: implemented in the current working tree; docs verification passed.
+- Commit: `1dacfc2 Add stage16-7h evidence guard workflow`.
+- Status: committed and pushed with the Stage16-7H bundle.
 
 - Added `docs/stage16-7g-clue-evidence-continuation-scope-decision.md`.
 - Decided not to add more authored item-backed clues now because Stage16-7F completed the only currently justified item-backed clue candidate.
@@ -438,8 +448,8 @@ Verification:
 
 ### 2026-06-08 - Stage 16-7H Evidence Identity Regression Guard
 
-- Commit: uncommitted local test-only change.
-- Status: implemented in the current working tree; focused verification passed.
+- Commit: `1dacfc2 Add stage16-7h evidence guard workflow`.
+- Status: committed and pushed.
 
 - Added a regression test to `tests/adventure-view-model.test.ts` that derives evidence for a representative state with all current flag-backed clues, the action/check-backed authored clues, and all current inventory items.
 - Asserted that all derived `EvidenceEntry.id` values are unique.
@@ -455,15 +465,15 @@ Verification:
 
 ### 2026-06-08 - Software Development Agent Orchestra Workflow Template
 
-- Commit: uncommitted docs-only local operations update.
-- Status: implemented in the current working tree; docs verification passed.
+- Commit: `1dacfc2 Add stage16-7h evidence guard workflow`.
+- Status: committed and pushed.
 
 - Added `docs/workflows/software-development-orchestra.md` as the practical operating template for software development with Agent Orchestration.
 - Captured the five working rules Shiki asked for: Main Orchestrator authority, self-drive levels, Stage Prompt loop, standard agent orchestra, and repo operating template.
 - Added activation phrases, agent role boundaries, verification matrix, record matrix, Git / nextchat / Obsidian boundaries, copyable orchestration prompt, stop conditions, and completion report shape.
 - Updated `docs/codex-autonomous-workflow.md` to point software-development orchestration requests to the new workflow template while keeping that file as the higher-level policy document.
 - Aligned the older `nextchat` table in `docs/codex-autonomous-workflow.md` with the current default that bare `nextchat` means NextChat Full unless Shiki explicitly asks for a lightweight handoff-only result.
-- Did not change product code, scenario YAML/body, route gates, storage schemas, tests, runtime behavior, Git state, Obsidian vault, or nextchat artifacts.
+- Did not change product code, scenario YAML/body, route gates, storage schemas, runtime behavior, or product UI.
 
 Verification:
 
@@ -473,18 +483,120 @@ Verification:
 
 ### 2026-06-08 - Agent Orchestra NextChat Full And Obsidian Git Preservation
 
-- Commit: uncommitted local preservation update.
-- Status: project-local ledger and handoff created; Obsidian Git save requested in the same stage.
+- Commit: `1dacfc2 Add stage16-7h evidence guard workflow`.
+- Status: project-local ledger and handoff committed and pushed with the Stage16-7H bundle; Obsidian Git save was completed separately.
 
 - Created `docs/NEXTCHAT_CONTEXT_LEDGER_2026-06-08_software-development-orchestra-nextchatfull-obsidiangit.md`.
 - Created `docs/NEXT_CHAT_HANDOFF_2026-06-08_software-development-orchestra-nextchatfull-obsidiangit.md`.
 - Labeled raw archive preservation as unavailable / best-effort because discoverable Codex session JSONL includes hidden developer/system prompt material and must not be archived into user-visible project or Obsidian artifacts.
-- Kept software repo Git push out of scope because Shiki requested NextChat Full and Obsidian Git, not `Git push`.
+- Preserved the software development workflow context as part of the later Stage16-7H `Git push next chat obsidian git` bundle.
 
 Verification:
 
 - NextChat ledger/handoff files created in `docs/`.
 - Raw archive intentionally omitted for privacy/safety boundary.
+
+### 2026-06-08 - Stage 16-7H Git Push NextChat Obsidian Git Bundle
+
+- Commit: `1dacfc2 Add stage16-7h evidence guard workflow`.
+- Status: committed and pushed to `origin/main`; matching Obsidian note verified under `D:\Obsidian\MyVault\Codex\Projects\TRPG--web--\2026-06-08-stage16-7h-git-push-nextchat-obsidiangit.md`.
+
+- Bundled Stage16-7G, Stage16-7H, Software Development Agent Orchestra workflow docs, and the matching repo-local NextChat Full handoff/ledger docs.
+- Verified that `main`, `origin/main`, and `origin/HEAD` point at `1dacfc2`.
+- Kept historical handoff/ledger/archive docs out of the software repo commit.
+- Later gathered those historical uncommitted docs under `docs/archive/uncommitted-docs/` so they are separated from active restart sources.
+
+Verification:
+
+- `npm run test`: PASS, 37 tests.
+- `npm run validate:scenarios`: PASS, 1 pack / 0 errors / 0 warnings.
+- `git diff --check`: PASS, LF-to-CRLF warnings only.
+- Intended-file trailing whitespace scan: PASS.
+- Staged diff check before commit: PASS.
+
+### 2026-06-09 - Historical Docs Archive Repo Save
+
+- Software repo commit: not requested; `D:\Codex\TRPG--web--` remains uncommitted after the docs cleanup.
+- Archive repo commit: `97cad34 Archive TRPG web uncommitted docs` in `shikigami-ai-works/shiki-work-archive`.
+- Status: historical uncommitted docs copied and pushed to the separate work archive repository.
+
+- Copied 31 Markdown documents from the TRPG source repo into `D:\Codex\shiki-work-archive\projects\TRPG--web--\2026-06-09-uncommitted-docs\`.
+- Preserved original relative paths under `source-paths/`.
+- Added `MANIFEST.tsv` with source path, archive path, SHA-256, byte count, and source git status.
+- Added `SOURCE_STATUS.txt` with the TRPG repo dirty state at capture time.
+- Kept the source repo copies in place; no TRPG files were deleted or staged by this archive save.
+
+Verification:
+
+- `shiki-work-archive` `main` pushed to `origin/main` at `97cad34`.
+- Source/archive SHA-256 comparison: PASS for 31 source Markdown files.
+- Archive repo status after push: clean.
+- TRPG source repo status after archive save: still dirty with `docs/development-progress.md` modified and historical docs untracked under `docs/archive/uncommitted-docs/`.
+
+### 2026-06-09 - Stage17 Akari Contact Relationship Record
+
+- Commit: `adf4257 Add stage17 Akari contact record`.
+- Status: committed and pushed to `origin/main`.
+
+- Added `docs/stage17-contact-relationship-system-spec.md` as the deterministic Akari post-clear relationship/contact record spec.
+- Updated the player experience spec with Stage17's record-only boundary: no AI free chat, messenger UI, generated replies, notification simulation, or free-contact behavior.
+- Added `lib/scenarios/relationship-contact-record.ts` to derive Akari's best relationship/contact record from completed run history and scenario metadata.
+- Added regression coverage for the Stage17 categories: `active_contact_record`, `memory_contact_trace`, `shared_boundary_record`, and `lost_relationship_trace`.
+- Added a static/read-only Akari relationship/contact card to the AdventurePlayer post-ending surface.
+- Updated the reusable AdventurePlayer UI audit so the Stage17B-2 card is visible, category-backed, and copy-safe.
+- Preserved scenario YAML/body, route gates, ending conditions, storage schema, replay hint logic, and AI behavior.
+
+Verification:
+
+- `npm run typecheck`: PASS.
+- `npm run lint`: PASS.
+- `npm run test`: PASS.
+- `npm run build`: PASS.
+- `npm run validate:scenarios`: PASS.
+- `npm run audit:adventure-player`: PASS.
+- `git diff --check`: PASS, LF-to-CRLF warnings only.
+
+### 2026-06-09 - Stage17C UI Interaction And Copy Audit
+
+- Commit: uncommitted local audit/report change.
+- Status: implemented and verified locally; prepared for the next software commit candidate with the Stage17D progress refresh.
+
+- Hardened `scripts/adventure-player-ui-audit.cjs` from a post-ending smoke check into a visible-control audit across mobile, compact mobile, desktop, and wide desktop states.
+- The audit now records enabled-control snapshots, interaction outcomes, copy guard results, JSON evidence, and a Markdown audit report under `.runtime/adventure-player-ui-audit-<timestamp>/`.
+- Verified mobile bottom navigation, drawer close, story text advance, first visible choices, next scene control, save restart, post-ending actions, desktop side-panel tabs, and the passive replay hint sheet.
+- Rechecked the Stage17 relationship/contact card as static/read-only and copy-safe with no enabled or focusable controls.
+- Added `docs/stage17c-ui-interaction-copy-audit-2026-06-09.md` as the user-visible Stage17C audit report.
+- Preserved product UI, scenario data, storage schema, route gates, replay hints, and AI behavior.
+
+Primary runtime evidence:
+
+- JSON: `D:\Codex\TRPG--web--\.runtime\adventure-player-ui-audit-2026-06-09T09-19-26-521Z\audit.json`
+- Markdown: `D:\Codex\TRPG--web--\.runtime\adventure-player-ui-audit-2026-06-09T09-19-26-521Z\audit.md`
+- Screenshots: `D:\Codex\TRPG--web--\.runtime\adventure-player-ui-audit-2026-06-09T09-19-26-521Z\screens`
+
+Verification:
+
+- `npm run audit:adventure-player`: PASS.
+- `npm run typecheck`: PASS.
+- `npm run lint`: PASS.
+- `npm run test`: PASS, 39 tests.
+- `npm run build`: PASS.
+- `npm run validate:scenarios`: PASS.
+- `git diff --check`: PASS, LF-to-CRLF warnings only.
+
+### 2026-06-10 - Stage17D Progress And Implementation Notes Refresh
+
+- Commit: uncommitted docs-only progress refresh.
+- Status: implemented locally as a commit-preparation companion to Stage17C.
+
+- Updated this progress ledger so the restart map includes Stage17A, Stage17B-1, Stage17B-2, Stage17C, and the current Stage17D commit-preparation state.
+- Kept `docs/implementation-notes.md` unchanged because Stage17B/C implementation choices were already covered by the Stage17 spec and Stage17C audit report.
+- Kept historical handoff/archive docs, `.runtime/`, `.context-archive/`, scenario data, route gates, storage schema, replay hints, and AI behavior out of scope.
+
+Verification:
+
+- Stage17D diff audit: PASS.
+- `git diff --check`: PASS, LF-to-CRLF warnings only.
 
 ## Area Status
 
@@ -494,31 +606,31 @@ Verification:
 | ScenarioExplorer debug UI | Stable | Preserved under `/debug`. |
 | AdventurePlayer scenes 1-7 | Committed and pushed in Stage 15 | Browser/UI audit passed through true ending and `/debug` remained available. |
 | Evidence drawer | Polished | Derived from existing flags/items; Stage16-7B adds optional clue-schema parity for the current flag evidence without changing the view output. |
-| Clue/evidence schema | Stage16-7H evidence identity regression guard added locally | Optional `clues.yaml` parity adapter exists for current flag evidence; action/check-backed clues are covered by a small smoke slice; item-derived evidence stays in `items.yaml` by default; duplicate item/clue evidence is rejected; `relatives_wedding_rings` has the only item-backed authored clue; representative derived evidence IDs are now covered by a uniqueness regression test. |
+| Clue/evidence schema | Stage16-7H evidence identity regression guard committed and pushed | Optional `clues.yaml` parity adapter exists for current flag evidence; action/check-backed clues are covered by a small smoke slice; item-derived evidence stays in `items.yaml` by default; duplicate item/clue evidence is rejected; `relatives_wedding_rings` has the only item-backed authored clue; representative derived evidence IDs are now covered by a uniqueness regression test. |
 | Log drawer | Polished | Structured UI entries derived from existing runtime log strings. |
 | Status drawer | Committed and pushed in Stage 15 | Player-facing labels first, raw values as supporting detail, plus four-room carry-out selection. |
 | Assets | Gated | Native UI/placeholders only unless later approval opens imports. |
 | Scene 4+ AdventurePlayer support | Committed and pushed in Stage 15 | Uses existing scenario YAML and runtime helpers. |
 | Post-ending save/replay spec | Stage16-5A-5C committed and pushed | Stage16-5A implements save/resume/history append; Stage16-5B implements the minimal ending progress/reward sheet; Stage16-5C implements passive deterministic replay hints. |
-| Browser/UI audit tooling | Stage16-6 committed and pushed | `npm run audit:adventure-player` covers `/`, post-ending guarantees, existing post-ending controls, and `/debug`; evidence stays in `.runtime/`. |
-| Autonomous development workflow | Software Development Agent Orchestra template added locally | `docs/codex-autonomous-workflow.md` remains the policy layer; `docs/workflows/software-development-orchestra.md` is the practical software stage template. |
+| Akari relationship/contact record | Stage17B-2 committed and pushed; Stage17C audit hardening prepared locally | The post-ending AdventurePlayer card is deterministic, static/read-only, completed-history-derived, and explicitly not an AI chat or messenger feature. |
+| Browser/UI audit tooling | Stage17C hardening prepared locally | `npm run audit:adventure-player` covers `/`, mobile/drawer/story/choice/save/post-ending controls, post-ending relationship/contact copy, multiple viewports, and `/debug`; evidence stays in `.runtime/`. |
+| Autonomous development workflow | Software Development Agent Orchestra template committed and pushed | `docs/codex-autonomous-workflow.md` remains the policy layer; `docs/workflows/software-development-orchestra.md` is the practical software stage template. |
 | AI GM / free input | Out of scope | Future layer after deterministic core. |
 | Real player-facing save UX | Stage16-5A implemented and pushed | LocalStorage-backed active-run restore, auto-save, completed history append-once, and restart behavior use existing storage helpers. |
 | Tauri/API integration | Out of scope | No current implementation. |
 
 ## Open Decisions
 
-- Whether the two untracked Stage 14R-3 post-push handoff/ledger docs should be committed as history, organized, or left local.
-- Whether the six older untracked Stage 14R / Stage 14R-2 preservation docs now under `docs/archive/` should later be moved to Shiki's external storage, committed as history, or deleted.
+- Whether the historical handoff/ledger/archive docs now gathered under `docs/archive/uncommitted-docs/` should remain as local source copies after the `shiki-work-archive` save, be removed locally later by Shiki, or be selectively committed.
 - Whether Stage16's later replay UX should remain a minimal localStorage-backed player surface or later expand into a richer persistence/reward layer.
+- Whether any future Stage17 relationship/contact interaction should exist at all; the current committed card is intentionally static/read-only, and any real interaction needs a separate docs-first stage.
 - Whether older `.runtime/stage14r3-ui-audit.cjs`, `.runtime/stage15-adventureplayer-ui-audit.cjs`, and `.runtime/stage16-5a-ui-audit.cjs` should remain local-only historical evidence or be deleted after the Stage16-6 runner is committed.
-- Whether the remaining untracked NextChat/handoff/archive docs should stay local, be archived elsewhere, or be committed separately.
 
 ## Next Safe Stages
 
-1. If Shiki says `Git push`, inspect status/diff and stage only the explicitly intended local work; likely candidates are the Agent Orchestra workflow docs plus Stage16-7G/7H files, but historical untracked handoff/archive docs must stay out unless Shiki explicitly includes them.
-2. Decide separately what to do with historical untracked handoff/ledger/archive docs; do not mix that cleanup into Stage16 specs by default.
-3. If clue/evidence work continues beyond Stage16-7H, define the next slice docs-first before any more clue data, evidence-board UI, storage changes, or replay hint changes.
+1. Stage17E Publication Or Preservation: commit/push, NextChat Full, or Obsidian Git only with Shiki's explicit trigger; keep historical untracked docs out unless explicitly included.
+2. If Stage17 continues beyond the static record card, define a separate docs-first Stage17B-3 interaction decision before adding any real contact action, message UI, AI chat, notification, storage migration, or route/reward change.
+3. Decide separately whether to leave or remove the local source copies under `docs/archive/uncommitted-docs/`; they are already copied to `shiki-work-archive` at `97cad34`.
 
 ## Update Rule
 
