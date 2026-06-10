@@ -568,7 +568,8 @@ function assertRelationshipContactCard(state, expectedCategory) {
   assert(
     state.relationshipContactText.includes("灯") &&
       state.relationshipContactText.includes("縁") &&
-      state.relationshipContactText.includes("連絡先の痕跡"),
+      state.relationshipContactText.includes("連絡先の痕跡") &&
+      state.relationshipContactText.includes("到達済みの記録"),
     `${state.label} relationship/contact card copy is missing expected safe labels: ${state.relationshipContactText}`,
   );
   assert(

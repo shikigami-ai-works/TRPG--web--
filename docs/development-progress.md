@@ -22,7 +22,7 @@ Use this file only as a progress overview and restart map.
 ## Current Snapshot
 
 - Branch: `main`
-- Latest committed project revision: `adf4257 Add stage17 Akari contact record`.
+- Latest committed project revision: `1207b93 Harden stage17 adventure audit`.
 - Latest committed Stage16 revision: `1dacfc2 Add stage16-7h evidence guard workflow`.
 - Stage16-6 is committed and pushed.
 - Stage 15 AdventurePlayer scene 1-7 flow is committed and pushed.
@@ -44,7 +44,13 @@ Use this file only as a progress overview and restart map.
 - Stage17A contact/relationship system spec is committed and pushed.
 - Stage17B-1 deterministic Akari relationship/contact record helper and tests are committed and pushed.
 - Stage17B-2 AdventurePlayer Akari relationship/contact card is committed and pushed.
-- Stage17C UI interaction and copy audit hardening is implemented and verified locally; it is prepared as the next software commit candidate with this Stage17D ledger refresh.
+- Stage17C UI interaction and copy audit hardening is committed and pushed in `1207b93 Harden stage17 adventure audit`.
+- Stage17D progress ledger / implementation-notes refresh is committed and pushed in `1207b93 Harden stage17 adventure audit`.
+- Stage17D-2 post-push progress ledger sync is the current docs-only local refresh; commit/push was not requested for this stage.
+- Stage17B-3 contact interaction decision is the current docs-only local ASOC stage; it keeps active contact behavior gated and selects only passive record-detail/copy/audit follow-ups as safe candidates.
+- Stage17B-4 passive Akari record detail disclosure is the current local ASOC code stage; it adds static record-only clarification copy and an audit guard without adding enabled contact controls.
+- Stage17B-5 passive record detail audit report is the current local ASOC docs-only stage; it documents B-4 verification and stops further hidden expansion behind explicit Shiki direction.
+- Stage17E publication/preservation bundle is in progress after Shiki explicitly requested Git push, NextChat Full archive, and Obsidian Git.
 - Historical uncommitted preservation docs and the scenario-choice planning doc are gathered under `docs/archive/uncommitted-docs/`; keep them out of active software commits unless Shiki explicitly chooses otherwise.
 - The historical docs were copied as-is to `shikigami-ai-works/shiki-work-archive` at `97cad34 Archive TRPG web uncommitted docs`; the source repo copies remain local/untracked for Shiki's later cleanup choice.
 - `.runtime/` and `.context-archive/` are local-only evidence/archive areas and should not be staged by default.
@@ -558,8 +564,8 @@ Verification:
 
 ### 2026-06-09 - Stage17C UI Interaction And Copy Audit
 
-- Commit: uncommitted local audit/report change.
-- Status: implemented and verified locally; prepared for the next software commit candidate with the Stage17D progress refresh.
+- Commit: `1207b93 Harden stage17 adventure audit`.
+- Status: committed and pushed to `origin/main`.
 
 - Hardened `scripts/adventure-player-ui-audit.cjs` from a post-ending smoke check into a visible-control audit across mobile, compact mobile, desktop, and wide desktop states.
 - The audit now records enabled-control snapshots, interaction outcomes, copy guard results, JSON evidence, and a Markdown audit report under `.runtime/adventure-player-ui-audit-<timestamp>/`.
@@ -586,10 +592,10 @@ Verification:
 
 ### 2026-06-10 - Stage17D Progress And Implementation Notes Refresh
 
-- Commit: uncommitted docs-only progress refresh.
-- Status: implemented locally as a commit-preparation companion to Stage17C.
+- Commit: `1207b93 Harden stage17 adventure audit`.
+- Status: committed and pushed to `origin/main` with the Stage17C audit hardening bundle.
 
-- Updated this progress ledger so the restart map includes Stage17A, Stage17B-1, Stage17B-2, Stage17C, and the current Stage17D commit-preparation state.
+- Updated this progress ledger so the restart map includes Stage17A, Stage17B-1, Stage17B-2, Stage17C, and the Stage17D progress/implementation-notes refresh state.
 - Kept `docs/implementation-notes.md` unchanged because Stage17B/C implementation choices were already covered by the Stage17 spec and Stage17C audit report.
 - Kept historical handoff/archive docs, `.runtime/`, `.context-archive/`, scenario data, route gates, storage schema, replay hints, and AI behavior out of scope.
 
@@ -597,6 +603,86 @@ Verification:
 
 - Stage17D diff audit: PASS.
 - `git diff --check`: PASS, LF-to-CRLF warnings only.
+
+### 2026-06-10 - Stage17D-2 Post-Push Progress Ledger Sync
+
+- Commit: current docs-only sync after `1207b93 Harden stage17 adventure audit`; commit/push was not requested for this stage.
+- Status: local progress-ledger refresh for post-push restart accuracy.
+
+- Updated the current snapshot, Stage17C/D timeline entries, and area status so the restart map reflects `1207b93` as the latest pushed project revision.
+- Kept `docs/implementation-notes.md` unchanged because no new spec-missing implementation decision was discovered.
+- Kept historical preservation/prompt/archive docs, `docs/archive/`, `.runtime/`, `.context-archive/`, product code, scenario data, route gates, storage schema, replay hints, and AI behavior out of scope.
+
+Verification:
+
+- `git diff --check -- docs/development-progress.md`: PASS.
+- Stage17C/D stale wording audit: PASS; no obsolete local-prep or wrong latest-commit wording remains.
+- `git status --short --branch`: checked; only this tracked docs change plus untracked preservation/prompt/archive docs remain.
+
+### 2026-06-10 - Stage17B-3 Contact Interaction Decision
+
+- Commit: local docs-only ASOC Cycle 1 stage; commit/push was not requested.
+- Status: local decision doc added.
+
+- Added `docs/stage17b-3-contact-interaction-decision.md`.
+- Decided that Akari's Stage17 post-clear surface remains a deterministic record layer, not an active contact/messenger/AI conversation feature.
+- Allowed only passive record-detail disclosure, copy-only clarification, or regression/audit guards as future micro-slices unless Shiki explicitly reopens active contact behavior.
+- Kept product code, scenario YAML/body, route gates, ending conditions, replay hints, storage schema, AI behavior, `docs/implementation-notes.md`, and preservation/archive docs out of scope.
+
+Verification:
+
+- `git diff --check -- docs/development-progress.md docs/stage17b-3-contact-interaction-decision.md`: PASS.
+- Stage17B-3 scope/copy search: PASS.
+- `git status --short --branch`: checked.
+
+### 2026-06-10 - Stage17B-4 Passive Akari Record Detail Disclosure
+
+- Commit: local ASOC Cycle 2 code/audit stage; commit/push was not requested.
+- Status: local implementation complete; commit/push was not requested.
+
+- Added static clarification copy to the Akari relationship/contact card: the surface displays only the bond readable from reached records.
+- Extended `scripts/adventure-player-ui-audit.cjs` so the AdventurePlayer audit requires that passive record-only copy while still asserting no enabled or focusable controls exist inside the card.
+- Preserved scenario YAML/body, route gates, ending conditions, replay hints, storage schema, AI behavior, messenger/contact actions, `CompletedRunRecord`, and preservation/archive docs.
+
+Verification:
+
+- `npm run typecheck`: PASS.
+- `npm run lint`: PASS.
+- `npm run test`: PASS, 39 tests.
+- `npm run build`: PASS.
+- `npm run audit:adventure-player`: PASS; latest evidence under `.runtime/adventure-player-ui-audit-2026-06-10T09-43-05-619Z/`.
+- `git diff --check`: PASS, LF-to-CRLF warnings only.
+
+### 2026-06-10 - Stage17B-5 Passive Record Detail Audit Report
+
+- Commit: local ASOC Cycle 3 docs-only stage; commit/push was not requested.
+- Status: local audit report added.
+
+- Added `docs/stage17b-4-passive-record-detail-audit-2026-06-10.md` to summarize the B-4 change, preserved boundaries, and verification evidence.
+- Recorded the stop gate: further active contact behavior, storage, route/reward, AI, Git, NextChat, or Obsidian work needs explicit Shiki direction.
+- Did not change product code, audit runner code, scenario data, storage schema, route gates, replay hints, AI behavior, or preservation/archive files in this cycle.
+
+Verification:
+
+- `git diff --check -- docs/development-progress.md docs/stage17b-4-passive-record-detail-audit-2026-06-10.md`: PASS.
+- Stage17B-5 report search: PASS.
+- `git status --short --branch`: checked.
+
+### 2026-06-10 - Stage17E Git Push NextChat Full Obsidian Git Bundle
+
+- Commit: this preservation bundle commit; read `git log -1 --oneline --decorate` after push for the exact hash.
+- Status: Git push, NextChat Full ledger/handoff, and Obsidian Git were explicitly requested by Shiki.
+
+- Added `docs/NEXTCHAT_CONTEXT_LEDGER_2026-06-10_stage17b-passive-record-asoc-gitpush-nextchatfull-obsidiangit.md`.
+- Added `docs/NEXT_CHAT_HANDOFF_2026-06-10_stage17b-passive-record-asoc-gitpush-nextchatfull-obsidiangit.md`.
+- Raw exact transcript archive is unavailable because no safe user-visible primary transcript/export was available; the NextChat Full layer is best-effort ledger/handoff preservation, not one-character-perfect raw transcript preservation.
+- Intended software commit scope is limited to the Stage17D-2/B-3/B-4/B-5/NextChat files and excludes unrelated untracked preservation/prompt/archive docs.
+- Obsidian Git will be saved as a separate vault context note after the software push.
+
+Verification:
+
+- Stage17B-4 verification remains PASS: typecheck, lint, test, build, AdventurePlayer audit, and `git diff --check`.
+- Final scoped staged diff review, software push, and Obsidian vault push are performed as separate Red-gate actions in this bundle.
 
 ## Area Status
 
@@ -612,8 +698,8 @@ Verification:
 | Assets | Gated | Native UI/placeholders only unless later approval opens imports. |
 | Scene 4+ AdventurePlayer support | Committed and pushed in Stage 15 | Uses existing scenario YAML and runtime helpers. |
 | Post-ending save/replay spec | Stage16-5A-5C committed and pushed | Stage16-5A implements save/resume/history append; Stage16-5B implements the minimal ending progress/reward sheet; Stage16-5C implements passive deterministic replay hints. |
-| Akari relationship/contact record | Stage17B-2 committed and pushed; Stage17C audit hardening prepared locally | The post-ending AdventurePlayer card is deterministic, static/read-only, completed-history-derived, and explicitly not an AI chat or messenger feature. |
-| Browser/UI audit tooling | Stage17C hardening prepared locally | `npm run audit:adventure-player` covers `/`, mobile/drawer/story/choice/save/post-ending controls, post-ending relationship/contact copy, multiple viewports, and `/debug`; evidence stays in `.runtime/`. |
+| Akari relationship/contact record | Stage17B-2 committed and pushed; Stage17C audit hardening committed and pushed in `1207b93`; Stage17B-3 decision and Stage17B-4 passive disclosure are local ASOC stages | The post-ending AdventurePlayer card is deterministic, static/read-only, completed-history-derived, and explicitly not an AI chat or messenger feature; active contact behavior remains gated. |
+| Browser/UI audit tooling | Stage17C hardening committed and pushed in `1207b93`; Stage17D-2 ledger sync is local docs-only | `npm run audit:adventure-player` covers `/`, mobile/drawer/story/choice/save/post-ending controls, post-ending relationship/contact copy, multiple viewports, and `/debug`; evidence stays in `.runtime/`. |
 | Autonomous development workflow | Software Development Agent Orchestra template committed and pushed | `docs/codex-autonomous-workflow.md` remains the policy layer; `docs/workflows/software-development-orchestra.md` is the practical software stage template. |
 | AI GM / free input | Out of scope | Future layer after deterministic core. |
 | Real player-facing save UX | Stage16-5A implemented and pushed | LocalStorage-backed active-run restore, auto-save, completed history append-once, and restart behavior use existing storage helpers. |
@@ -623,13 +709,13 @@ Verification:
 
 - Whether the historical handoff/ledger/archive docs now gathered under `docs/archive/uncommitted-docs/` should remain as local source copies after the `shiki-work-archive` save, be removed locally later by Shiki, or be selectively committed.
 - Whether Stage16's later replay UX should remain a minimal localStorage-backed player surface or later expand into a richer persistence/reward layer.
-- Whether any future Stage17 relationship/contact interaction should exist at all; the current committed card is intentionally static/read-only, and any real interaction needs a separate docs-first stage.
+- Whether to implement the Stage17B-3 allowed passive record-detail disclosure or copy-only clarification; active contact/messenger/AI behavior still needs a separate explicit Shiki trigger and docs-first contract.
 - Whether older `.runtime/stage14r3-ui-audit.cjs`, `.runtime/stage15-adventureplayer-ui-audit.cjs`, and `.runtime/stage16-5a-ui-audit.cjs` should remain local-only historical evidence or be deleted after the Stage16-6 runner is committed.
 
 ## Next Safe Stages
 
 1. Stage17E Publication Or Preservation: commit/push, NextChat Full, or Obsidian Git only with Shiki's explicit trigger; keep historical untracked docs out unless explicitly included.
-2. If Stage17 continues beyond the static record card, define a separate docs-first Stage17B-3 interaction decision before adding any real contact action, message UI, AI chat, notification, storage migration, or route/reward change.
+2. Stop before further Stage17 expansion unless Shiki explicitly chooses one: Git push, NextChat/Obsidian preservation, or a new docs-first Stage17 contract for active contact/storage/route/reward/AI behavior.
 3. Decide separately whether to leave or remove the local source copies under `docs/archive/uncommitted-docs/`; they are already copied to `shiki-work-archive` at `97cad34`.
 
 ## Update Rule

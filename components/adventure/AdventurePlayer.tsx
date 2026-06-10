@@ -430,6 +430,7 @@ function RelationshipContactCard({ record }: { record?: RelationshipContactRecor
       </div>
       <strong>{record.summary}</strong>
       <p>{record.detail}</p>
+      <p>この欄は、到達済みの記録から読み取れる縁だけを表示しています。</p>
       <dl>
         {record.sourceEndingTitle ? (
           <div>
