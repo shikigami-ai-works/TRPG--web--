@@ -21,3 +21,15 @@
 - Treat lightweight autonomous orchestration as the default for nontrivial work in this project: run a capability preflight, choose the smallest safe next stage, and decide whether Explorer, Worker, Auditor, or Preserver sub-agents are useful before execution.
 - When Shiki asks for expanded autonomous execution, use the project workflow in `docs/codex-autonomous-workflow.md` and the saved prompt template under `D:\Codex\AI Automate Prompt\拡張自走レーン_監査エージェント運用プロンプト.md`.
 - Do not treat expanded autonomy as permission to commit, push, delete files, change story canon, alter route gates, expand storage schemas, or run external services without explicit instruction.
+
+<!-- REPO_LOCAL_GIT_GUARD_START -->
+## Repo-local Git Guard
+
+- Treat this repository as software Git. `Git push`, `Git up`, and `Git uｐ` mean inspect this repository, commit only intended project changes, then push only when explicitly requested.
+- Do not use `git add .`, `git add -A`, or broad wildcards. Run `git status --short --branch`, inspect relevant diffs, then stage only explicit paths with `git add -- <path>`.
+- Keep preservation/archive material out of normal Git unless Shiki explicitly approves that exact material: raw chat/session exports, transcript bodies, rollout JSONL, huge logs, `.context-archive/`, `Nextchat_full_archive/`, `full_archive/`, `raw_archive/`, compressed archives, SQLite/DB indexes, and bulky evidence.
+- Do not commit secrets or local runtime state: `.env*` except reviewed examples, API keys, tokens, passwords, recovery codes, private keys, browser profiles, cookies, caches, or generated local state.
+- `docs/PROGRESS.md`, `docs/implementation-notes.md`, and small handoff pointers may be tracked when the project uses them, but raw snapshots and heavy evidence should stay out.
+- If forbidden artifacts are already tracked, report them first. Do not run `git rm --cached`, delete files, rewrite history, commit, or push without explicit approval.
+- Keep pre-existing dirty files separate from preservation-policy edits, and report what was left untouched.
+<!-- REPO_LOCAL_GIT_GUARD_END -->

@@ -12,3 +12,33 @@ dist/
 
 .env
 .env*.local
+
+# Codex preservation artifacts
+NEXT_CHAT_HANDOFF.md
+NEXT_CHAT_HANDOFF_*.md
+NEXTCHAT_CONTEXT_LEDGER.md
+NEXTCHAT_CONTEXT_LEDGER_*.md
+docs/NEXT_CHAT_HANDOFF.md
+docs/NEXT_CHAT_HANDOFF_*.md
+docs/NEXTCHAT_CONTEXT_LEDGER.md
+docs/NEXTCHAT_CONTEXT_LEDGER_*.md
+docs/progress-snapshots/
+Nextchat_full_archive/
+full_archive/
+raw_archive/
+raw-archive/
+**/.context-archive/
+**/Nextchat_full_archive/
+**/full_archive/
+**/raw_archive/
+**/raw-archive/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.gz
+*.session.jsonl
+*.session.jsonl.gz
